@@ -63,7 +63,7 @@
             </v-btn>
             <v-btn color="red darken-1" @click="dialog = false"> Close </v-btn>
           </v-card-actions>
-          <v-carousel
+          <!-- <v-carousel
             show-arrows-on-hover
             hide-delimiters
             :height="220"
@@ -95,7 +95,7 @@
                 </v-card>
               </div>
             </v-carousel-item>
-          </v-carousel>
+          </v-carousel> -->
         </v-card>
       </v-dialog>
     </v-row>
