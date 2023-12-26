@@ -1,0 +1,124 @@
+<template>
+  <div class="ml-16">
+    <v-row>
+      <v-col cols="12">
+        <v-img
+          contain
+          :src="poster"
+          style="
+            margin-top: 5%;
+            max-width: 600px;
+            max-height: 400px;
+            width: auto;
+            height: auto;
+          "
+        />
+      </v-col>
+      <h5 class="text-h5">{{ title }}</h5>
+
+      <v-col cols="12" class="d-flex flex-row ma-0 pa-0">
+        <v-btn icon color="primary"> <v-icon>mdi-star</v-icon> </v-btn
+        ><v-btn icon color="primary"> <v-icon>mdi-star</v-icon> </v-btn
+        ><v-btn icon color="primary"> <v-icon>mdi-star</v-icon> </v-btn
+        ><v-btn icon color="primary"> <v-icon>mdi-star</v-icon> </v-btn
+        ><v-btn icon color="primary">
+          <v-icon>mdi-star</v-icon>
+        </v-btn>
+        <p class="pa-0 ml-3 mt-2 mb-0 font-weight-light">
+          <!-- {{ topMovie[0].release_date }} -->
+        </p>
+        <p class="pa-0 ml-3 mt-2 mb-0 font-weight-light">124 min</p>
+        <v-chip class="mt-2 mb-0 ml-3" small> Ultra HD 4k </v-chip>
+        <v-chip class="ml-3 mt-2 mb-0" small> 5.1 </v-chip>
+      </v-col>
+      {{ overview }}
+      <v-col cols="4">
+        <p class="subheading font-weight-regular">
+          <!-- {{ topMovie[0].overview }} -->
+        </p>
+      </v-col>
+
+      <v-col cols="12">
+        <v-btn class="black--text mr-2" color="white" @click="handleClick">
+          <v-icon color="black">mdi-play</v-icon>
+          Play
+        </v-btn>
+        <v-btn color="grey">
+          <v-icon>mdi-alert-circle-outline</v-icon>
+          Mais Informações
+        </v-btn>
+      </v-col>
+    </v-row>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "Titulo",
+  props: {
+    title: String,
+    overview: String,
+    poster: String,
+    id: String,
+  },
+  methods: {
+    handleClick() {
+      location.href = this.id;
+    },
+  },
+  data() {
+    return {
+      ecosystem: [
+        {
+          text: "vuetify-loader",
+          href: "https://github.com/vuetifyjs/vuetify-loader",
+        },
+        {
+          text: "github",
+          href: "https://github.com/vuetifyjs/vuetify",
+        },
+        {
+          text: "awesome-vuetify",
+          href: "https://github.com/vuetifyjs/awesome-vuetify",
+        },
+      ],
+      importantLinks: [
+        {
+          text: "Documentation",
+          href: "https://vuetifyjs.com",
+        },
+        {
+          text: "Chat",
+          href: "https://community.vuetifyjs.com",
+        },
+        {
+          text: "Made with Vuetify",
+          href: "https://madewithvuejs.com/vuetify",
+        },
+        {
+          text: "Twitter",
+          href: "https://twitter.com/vuetifyjs",
+        },
+        {
+          text: "Articles",
+          href: "https://medium.com/vuetify",
+        },
+      ],
+      whatsNext: [
+        {
+          text: "Explore components",
+          href: "https://vuetifyjs.com/components/api-explorer",
+        },
+        {
+          text: "Select a layout",
+          href: "https://vuetifyjs.com/getting-started/pre-made-layouts",
+        },
+        {
+          text: "Frequently Asked Questions",
+          href: "https://vuetifyjs.com/getting-started/frequently-asked-questions",
+        },
+      ],
+    };
+  },
+};
+</script>
