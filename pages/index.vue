@@ -179,7 +179,7 @@ export default {
           for (let index = 0; index < 10; index++) {
             this.itemsUm.push({
               title: json.results[index].title,
-              image:
+              poster_path:
                 "https://image.tmdb.org/t/p//w500" +
                 json.results[index].poster_path,
               isActive: true,
@@ -211,9 +211,7 @@ export default {
           for (let index = 0; index < 10; index++) {
             itemList.push({
               title: json.results[index].title,
-              image:
-                "https://image.tmdb.org/t/p//w500" +
-                json.results[index].poster_path,
+              poster_path: json.results[index].poster_path,
               isActive: true,
               class: json.results[index].title,
               overview: json.results[index].overview,

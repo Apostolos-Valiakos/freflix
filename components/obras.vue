@@ -30,9 +30,9 @@
               color="#e5e5e500"
             >
               <v-img
-                v-if="item.image"
+                v-if="item.poster_path"
                 @click="handleclick(item)"
-                :src="item.image"
+                :src="'https://image.tmdb.org/t/p//w500' + item.poster_path"
                 height="200"
                 width="285"
                 contain
@@ -47,9 +47,9 @@
       </v-carousel>
     </div>
     <v-row justify="center">
-      <v-dialog v-model="dialog" persistent max-width="600">
+      <v-dialog v-model="dialog" max-width="1000px">
         <v-card>
-          <v-img :src="itemImg" />
+          <v-img :src="itemImg" max-height="350px" contain />
           <v-card-title class="text-h5">
             {{ itemTitle }}
           </v-card-title>
@@ -63,39 +63,47 @@
             </v-btn>
             <v-btn color="red darken-1" @click="dialog = false"> Close </v-btn>
           </v-card-actions>
-          <!-- <v-carousel
-            show-arrows-on-hover
-            hide-delimiters
-            :height="220"
-            style="white-space: nowrap; display: inline-block"
+          <label class="ml-10 text-h5">Similar Movies</label>
+          <v-sheet
+            class="d-flex align-content-center flex-wrap bg-surface-variant"
+            min-height="200"
           >
-            <v-carousel-item v-for="(el, index) in slider" :key="index">
-              <div
-                class="d-flex align-center pa-0 ma-0"
-                style="white-space: nowrap; display: inline-block"
+            <v-sheet
+              v-for="(item, index) in similarMovies"
+              :key="index"
+              class="ma-2 pa-2"
+            >
+              <v-card
+                class="ma-2 pa-2 mx-auto"
+                @click="handleclick(item)"
+                v-if="item !== undefined"
+                width="200"
+                height="300"
               >
-                <v-card
-                  v-for="(item, index) in similarMovies"
-                  :key="index"
-                  class="elevation-0 pa-0 ma-0"
-                  color="#e5e5e500"
+                <v-card-text
+                  style="
+                    text-align: center;
+                    justify-content: center;
+                    display: flex;
+                  "
+                  >{{ item.title }}</v-card-text
                 >
-                  <v-img
-                    v-if="item.poster_path"
-                    @click="handleclick(item)"
-                    :src="'https://image.tmdb.org/t/p//w500' + item.poster_path"
-                    height="200"
-                    width="285"
-                    contain
-                    class="d-flex align-center mx-1 cursor-pointer imgJanela"
-                    @mouseover="item.isActive = true"
-                    @mouseout="item.isActive = false"
-                  >
-                  </v-img>
-                </v-card>
-              </div>
-            </v-carousel-item>
-          </v-carousel> -->
+                <v-img
+                  v-if="item.poster_path"
+                  contain
+                  :src="'https://image.tmdb.org/t/p//w500' + item.poster_path"
+                  max-width="200"
+                  max-height="200"
+                />
+                <v-sheet
+                  v-else
+                  max-height="200"
+                  width="200"
+                  color="grey"
+                ></v-sheet>
+              </v-card>
+            </v-sheet>
+          </v-sheet>
         </v-card>
       </v-dialog>
     </v-row>
@@ -133,7 +141,7 @@ export default {
     if (this.obras && this.obras.length) this.items = this.obras;
   },
   methods: {
-    getSimilarMovies(ID) {
+    async getSimilarMovies(ID) {
       const url =
         "https://api.themoviedb.org/3/movie/" +
         ID +
@@ -147,11 +155,31 @@ export default {
         },
       };
 
-      fetch(url, options)
+      await fetch(url, options)
         .then((res) => res.json())
-        .then((json) => {
-          console.log(json.results);
-          this.similarMovies = json.results;
+        .then(async (json) => {
+          for (let index = 0; index < json.results.length; index++) {
+            const element = json.results[index];
+            if (element !== undefined) {
+              this.similarMovies.push({
+                adult: element.adult,
+                backdrop_path: element.backdrop_path,
+                genre_ids: element.genre_ids,
+                id: element.id,
+                original_language: element.original_language,
+                original_title: element.original_title,
+                overview: element.overview,
+                popularity: element.popularity,
+                poster_path: element.poster_path,
+                release_date: element.release_date,
+                title: element.title,
+                video: element.video,
+                vote_average: element.vote_average,
+                vote_count: element.vote_count,
+              });
+            }
+          }
+          this.similarMovies.splice(0, 1);
         })
         .catch((err) => console.error("error:" + err));
     },
@@ -163,7 +191,7 @@ export default {
       this.itemTitle = item.title;
       this.itemOverview = item.overview;
       this.itemID = item.id;
-      this.itemImg = item.image;
+      this.itemImg = "https://image.tmdb.org/t/p//w500" + item.poster_path;
       this.getSimilarMovies(this.itemID);
     },
     prevPage() {
@@ -175,6 +203,33 @@ export default {
       for (let x = 0; x <= 5; x++) {
         this.items.push(this.items.shift());
       }
+    },
+    prevPageDialogCarousel() {
+      for (let x = 0; x <= 3; x++) {
+        this.similarMovies.unshift(this.similarMovies.pop());
+      }
+    },
+    nextPageDialogCarousel() {
+      for (let x = 0; x <= 3; x++) {
+        this.similarMovies.push(this.similarMovies.shift());
+      }
+    },
+  },
+  computed: {
+    columns() {
+      if (this.$vuetify.breakpoint.xl) {
+        return 4;
+      }
+
+      if (this.$vuetify.breakpoint.lg) {
+        return 3;
+      }
+
+      if (this.$vuetify.breakpoint.md) {
+        return 2;
+      }
+
+      return 1;
     },
   },
 };
