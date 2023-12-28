@@ -8,7 +8,7 @@
       <v-btn @click="search(1)">GO</v-btn>
       <v-select
         v-if="categories"
-        @change="searchPerCategory(selectedCategory)"
+        @change="searchPerCategory(selectedCategory, 1)"
         :item-text="'name'"
         :item-value="'id'"
         v-model="selectedCategory"
@@ -66,9 +66,14 @@ export default {
     };
   },
   methods: {
-    searchPerCategory(selectedCategory) {
+    searchPerCategory(selectedCategory, pagination) {
+      if (!pagination) {
+        pagination = 1;
+      }
       const url =
-        "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=" +
+        "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=" +
+        pagination +
+        "&sort_by=popularity.desc&with_genres=" +
         selectedCategory;
       const options = {
         method: "GET",
@@ -89,13 +94,16 @@ export default {
         .catch((err) => console.error("error:" + err));
     },
     updatePagination(pagination) {
-      this.search(pagination);
+      if (this.searchTerm) {
+        this.search(pagination);
+      } else {
+        this.searchPerCategory(this.selectedCategory, pagination);
+      }
     },
     seeMovie(link) {
       location.href = "https://autoembed.to/movie/tmdb/" + link;
     },
     async search(page) {
-      console.log(page);
       try {
         const url =
           "https://api.themoviedb.org/3/search/movie?query=" +
