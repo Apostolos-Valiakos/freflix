@@ -4,7 +4,7 @@
       <v-col cols="12">
         <v-img
           contain
-          :src="poster"
+          :src="'https://image.tmdb.org/t/p//w500' + poster_path"
           style="
             margin-top: 5%;
             max-width: 600px;
@@ -59,7 +59,7 @@ export default {
   props: {
     title: String,
     overview: String,
-    poster: String,
+    poster_path: String,
     id: Number,
     votes: Number,
     vote_count: Number,

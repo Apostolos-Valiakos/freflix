@@ -153,6 +153,7 @@ export default {
   mounted() {
     if (this.obras && this.obras.length) this.items = this.obras;
   },
+
   methods: {
     async getSimilarMovies(ID) {
       const url =
@@ -191,12 +192,12 @@ export default {
       this.getSimilarMovies(item.id);
     },
     prevPage() {
-      for (let x = 0; x <= 6; x++) {
+      for (let x = 0; x <= 4; x++) {
         this.items.unshift(this.items.pop());
       }
     },
     nextPage() {
-      for (let x = 0; x <= 5; x++) {
+      for (let x = 0; x <= 4; x++) {
         this.items.push(this.items.shift());
       }
     },

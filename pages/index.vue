@@ -8,31 +8,33 @@
         class="mt-3"
         style="text-align: right; display: flex; justify-content: center"
         to="searchResults"
-        >Search</v-btn
       >
-      <titulo
-        v-if="topMovie"
-        class="pb-10"
-        :title="topMovie.title"
-        :overview="topMovie.overview"
-        :poster="'https://image.tmdb.org/t/p//w500' + topMovie.poster_path"
-        :id="topMovie.id"
-        :votes="topMovie.vote_average"
-        :vote_count="topMovie.vote_count"
-        :release_date="topMovie.release_date"
+        Search
+      </v-btn>
+      <v-btn @click="getSeries()"> Series </v-btn>
+      <titulo v-if="topMovie" class="pb-10" v-bind="topMovie" />
+      <obras
+        class="pt-10"
+        v-if="fantasyItems"
+        :obras="fantasyItems"
+        titulo="Fantasy"
       />
-      <obras class="pt-10" v-if="itemsUm" :obras="itemsUm" titulo="Fantasy" />
-      <obras class="pt-5" v-if="itemsDois" :obras="itemsDois" titulo="Horror" />
       <obras
         class="pt-5"
-        v-if="itemsTres"
-        :obras="itemsTres"
+        v-if="horrorItems"
+        :obras="horrorItems"
+        titulo="Horror"
+      />
+      <obras
+        class="pt-5"
+        v-if="documentaryItems"
+        :obras="documentaryItems"
         titulo="Documentary"
       />
       <obras
         class="pt-5"
-        v-if="itemsQuatro"
-        :obras="itemsQuatro"
+        v-if="animationItems"
+        :obras="animationItems"
         titulo="Animation"
       />
       <!-- <obras
@@ -106,7 +108,7 @@ export default {
       topOverview: "",
       topID: "",
       topImage: "https://image.tmdb.org/t/p//w500",
-      itemsUm: [
+      fantasyItems: [
         {
           title: "Test",
           image:
@@ -116,7 +118,7 @@ export default {
           id: "0",
         },
       ],
-      itemsDois: [
+      horrorItems: [
         {
           title: "Test",
           image:
@@ -126,7 +128,7 @@ export default {
           id: "0",
         },
       ],
-      itemsTres: [
+      documentaryItems: [
         {
           title: "Test",
           image:
@@ -136,7 +138,7 @@ export default {
           id: "0",
         },
       ],
-      itemsQuatro: [
+      animationItems: [
         {
           title: "Test",
           image:
@@ -151,9 +153,11 @@ export default {
     };
   },
   methods: {
-    async getTopMovie() {
+    async getTopMovie(movie) {
       const url =
-        "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc";
+        "https://api.themoviedb.org/3/discover/" +
+        movie +
+        "?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc";
       const options = {
         method: "GET",
         headers: {
@@ -170,13 +174,14 @@ export default {
             Math.random() * (json.results.length - 0 + 1) + 0
           );
           this.topMovie = json.results[randMovieFromList];
-          console.log(json.results);
         })
         .catch((err) => console.error("error:" + err));
     },
-    getNewAddedMovies() {
+    getNewAddedMovies(movie) {
       const url =
-        "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc";
+        "https://api.themoviedb.org/3/discover/" +
+        movie +
+        "?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc";
       const options = {
         method: "GET",
         headers: {
@@ -189,16 +194,18 @@ export default {
       fetch(url, options)
         .then((res) => res.json())
         .then(async (json) => {
-          this.itemsUm.pop();
+          this.fantasyItems.pop();
           for (let index = 0; index < 10; index++) {
-            this.itemsUm.push(json.results[index]);
+            this.fantasyItems.push(json.results[index]);
           }
         })
         .catch((err) => console.error("error:" + err));
     },
-    getNowPlaying() {
+    getNowPlaying(movie) {
       const url =
-        "https://api.themoviedb.org/3/movie/now_playing?language=en-US&page=1";
+        "https://api.themoviedb.org/3/" +
+        movie +
+        "/now_playing?language=en-US&page=1";
       const options = {
         method: "GET",
         headers: {
@@ -211,16 +218,18 @@ export default {
       fetch(url, options)
         .then((res) => res.json())
         .then((json) => {
-          this.itemsDois.pop();
+          this.horrorItems.pop();
           for (let index = 0; index < 10; index++) {
-            this.itemsDois.push(json.results[index]);
+            this.horrorItems.push(json.results[index]);
           }
         })
         .catch((err) => console.error("error:" + err));
     },
-    getPopular() {
+    getPopular(movie) {
       const url =
-        "https://api.themoviedb.org/3/movie/popular?language=en-US&page=1";
+        "https://api.themoviedb.org/3/" +
+        movie +
+        "/popular?language=en-US&page=1";
       const options = {
         method: "GET",
         headers: {
@@ -233,16 +242,18 @@ export default {
       fetch(url, options)
         .then((res) => res.json())
         .then((json) => {
-          this.itemsTres.pop();
+          this.documentaryItems.pop();
           for (let index = 0; index < 10; index++) {
-            this.itemsTres.push(json.results[index]);
+            this.documentaryItems.push(json.results[index]);
           }
         })
         .catch((err) => console.error("error:" + err));
     },
-    getMoviesperGerne(gerne, itemList) {
+    getMoviesperGerne(gerne, itemList, movie) {
       const url =
-        "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=" +
+        "https://api.themoviedb.org/3/discover/" +
+        movie +
+        "?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=" +
         gerne;
       const options = {
         method: "GET",
@@ -256,16 +267,25 @@ export default {
       fetch(url, options)
         .then((res) => res.json())
         .then(async (json) => {
-          itemList.pop();
-          for (let index = 0; index < 10; index++) {
-            itemList.push(json.results[index]);
+          if (movie === "movie") {
+            itemList.pop();
+            for (let index = 0; index < 10; index++) {
+              itemList.push(json.results[index]);
+            }
+          } else if (movie === "tv") {
+            for (let index = 0; index < itemList.length; index++) {
+              itemList[index] = json.results[index];
+            }
+            console.log(itemList);
           }
         })
         .catch((err) => console.error("error:" + err));
     },
-    getTopRated() {
+    getTopRated(movie) {
       const url =
-        "https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=1";
+        "https://api.themoviedb.org/3/" +
+        movie +
+        "/top_rated?language=en-US&page=1";
       const options = {
         method: "GET",
         headers: {
@@ -278,24 +298,31 @@ export default {
       fetch(url, options)
         .then((res) => res.json())
         .then((json) => {
-          this.itemsQuatro.pop();
+          this.animationItems.pop();
           for (let index = 0; index < 10; index++) {
-            this.itemsQuatro.push(json.results[index]);
+            this.animationItems.push(json.results[index]);
           }
         })
         .catch((err) => console.error("error:" + err));
     },
+    async getSeries() {
+      this.getTopMovie("tv");
+      this.getMoviesperGerne("10765", this.fantasyItems, "tv"); //Fantasy
+      this.getMoviesperGerne("80", this.horrorItems, "tv"); //Horror
+      this.getMoviesperGerne("99", this.documentaryItems, "tv"); //documentary
+      this.getMoviesperGerne("16", this.animationItems, "tv"); //Animation
+    },
   },
   created() {
-    this.getTopMovie();
+    this.getTopMovie("movie");
     // this.getNewAddedMovies();
     // this.getNowPlaying();
     // this.getPopular();
     // this.getTopRated();
-    this.getMoviesperGerne("14", this.itemsUm); //Fantasy
-    this.getMoviesperGerne("27", this.itemsDois); //Horror
-    this.getMoviesperGerne("99", this.itemsTres); //documentary
-    this.getMoviesperGerne("16", this.itemsQuatro); //Animation
+    this.getMoviesperGerne("14", this.fantasyItems, "movie"); //Fantasy
+    this.getMoviesperGerne("27", this.horrorItems, "movie"); //Horror
+    this.getMoviesperGerne("99", this.documentaryItems, "movie"); //documentary
+    this.getMoviesperGerne("16", this.animationItems, "movie"); //Animation
   },
 };
 </script>
