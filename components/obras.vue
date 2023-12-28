@@ -184,7 +184,7 @@ export default {
         .catch((err) => console.error("error:" + err));
     },
     seeMovie(link) {
-      location.href = "https://vidsrc.xyz/embed/movie?tmdb=" + link;
+      location.href = "https://autoembed.to/movie/tmdb/" + link;
     },
     handleclick(item) {
       this.dialog = true;

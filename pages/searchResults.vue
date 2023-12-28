@@ -56,7 +56,7 @@ export default {
       this.search(pagination);
     },
     seeMovie(link) {
-      location.href = "https://vidsrc.xyz/embed/movie?tmdb=" + link;
+      location.href = "https://autoembed.to/movie/tmdb/" + link;
     },
     async search(page) {
       console.log(page);

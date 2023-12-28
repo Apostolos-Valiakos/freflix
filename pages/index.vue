@@ -155,8 +155,7 @@ export default {
           this.topTitle = json.results[0].title;
           this.topOverview = json.results[0].overview;
           this.topImage += json.results[0].poster_path;
-          this.topID =
-            "https://vidsrc.me/embed/movie?tmdb=" + json.results[0].id;
+          this.topID = "https://autoembed.to/movie/tmdb/" + json.results[0].id;
         })
         .catch((err) => console.error("error:" + err));
     },
