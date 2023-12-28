@@ -10,18 +10,31 @@
         to="searchResults"
         >Search</v-btn
       >
-
       <titulo
+        v-if="topMovie"
         class="pb-10"
-        :title="topTitle"
-        :overview="topOverview"
-        :poster="topImage"
-        :id="topID"
+        :title="topMovie.title"
+        :overview="topMovie.overview"
+        :poster="'https://image.tmdb.org/t/p//w500' + topMovie.poster_path"
+        :id="topMovie.id"
+        :votes="topMovie.vote_average"
+        :vote_count="topMovie.vote_count"
+        :release_date="topMovie.release_date"
       />
-      <obras class="pt-10" :obras="itemsUm" titulo="Νέες Κυκλοφορίες" />
-      <obras class="pt-5" :obras="itemsDois" titulo="Comedy" />
-      <obras class="pt-5" :obras="itemsTres" titulo="Documentary" />
-      <obras class="pt-5" :obras="itemsQuatro" titulo="Animation" />
+      <obras class="pt-10" v-if="itemsUm" :obras="itemsUm" titulo="Fantasy" />
+      <obras class="pt-5" v-if="itemsDois" :obras="itemsDois" titulo="Horror" />
+      <obras
+        class="pt-5"
+        v-if="itemsTres"
+        :obras="itemsTres"
+        titulo="Documentary"
+      />
+      <obras
+        class="pt-5"
+        v-if="itemsQuatro"
+        :obras="itemsQuatro"
+        titulo="Animation"
+      />
       <!-- <obras
         class="pt-5"
         :obras="itemsCinco"
@@ -88,6 +101,7 @@ export default {
     return {
       movieTitles: [],
       moviesFromDB: [],
+      topMovie: null,
       topTitle: "",
       topOverview: "",
       topID: "",
@@ -137,7 +151,7 @@ export default {
     };
   },
   methods: {
-    getTopMovie() {
+    async getTopMovie() {
       const url =
         "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc";
       const options = {
@@ -149,13 +163,14 @@ export default {
         },
       };
 
-      fetch(url, options)
+      await fetch(url, options)
         .then((res) => res.json())
         .then(async (json) => {
-          this.topTitle = json.results[0].title;
-          this.topOverview = json.results[0].overview;
-          this.topImage += json.results[0].poster_path;
-          this.topID = "https://autoembed.to/movie/tmdb/" + json.results[0].id;
+          let randMovieFromList = Math.floor(
+            Math.random() * (json.results.length - 0 + 1) + 0
+          );
+          this.topMovie = json.results[randMovieFromList];
+          console.log(json.results);
         })
         .catch((err) => console.error("error:" + err));
     },
@@ -176,16 +191,51 @@ export default {
         .then(async (json) => {
           this.itemsUm.pop();
           for (let index = 0; index < 10; index++) {
-            this.itemsUm.push({
-              title: json.results[index].title,
-              poster_path:
-                "https://image.tmdb.org/t/p//w500" +
-                json.results[index].poster_path,
-              isActive: true,
-              class: json.results[index].title,
-              overview: json.results[index].overview,
-              id: json.results[index].id,
-            });
+            this.itemsUm.push(json.results[index]);
+          }
+        })
+        .catch((err) => console.error("error:" + err));
+    },
+    getNowPlaying() {
+      const url =
+        "https://api.themoviedb.org/3/movie/now_playing?language=en-US&page=1";
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+        },
+      };
+
+      fetch(url, options)
+        .then((res) => res.json())
+        .then((json) => {
+          this.itemsDois.pop();
+          for (let index = 0; index < 10; index++) {
+            this.itemsDois.push(json.results[index]);
+          }
+        })
+        .catch((err) => console.error("error:" + err));
+    },
+    getPopular() {
+      const url =
+        "https://api.themoviedb.org/3/movie/popular?language=en-US&page=1";
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+        },
+      };
+
+      fetch(url, options)
+        .then((res) => res.json())
+        .then((json) => {
+          this.itemsTres.pop();
+          for (let index = 0; index < 10; index++) {
+            this.itemsTres.push(json.results[index]);
           }
         })
         .catch((err) => console.error("error:" + err));
@@ -208,14 +258,29 @@ export default {
         .then(async (json) => {
           itemList.pop();
           for (let index = 0; index < 10; index++) {
-            itemList.push({
-              title: json.results[index].title,
-              poster_path: json.results[index].poster_path,
-              isActive: true,
-              class: json.results[index].title,
-              overview: json.results[index].overview,
-              id: json.results[index].id,
-            });
+            itemList.push(json.results[index]);
+          }
+        })
+        .catch((err) => console.error("error:" + err));
+    },
+    getTopRated() {
+      const url =
+        "https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=1";
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+        },
+      };
+
+      fetch(url, options)
+        .then((res) => res.json())
+        .then((json) => {
+          this.itemsQuatro.pop();
+          for (let index = 0; index < 10; index++) {
+            this.itemsQuatro.push(json.results[index]);
           }
         })
         .catch((err) => console.error("error:" + err));
@@ -223,8 +288,12 @@ export default {
   },
   created() {
     this.getTopMovie();
-    this.getNewAddedMovies();
-    this.getMoviesperGerne("35", this.itemsDois); //comedy
+    // this.getNewAddedMovies();
+    // this.getNowPlaying();
+    // this.getPopular();
+    // this.getTopRated();
+    this.getMoviesperGerne("14", this.itemsUm); //Fantasy
+    this.getMoviesperGerne("27", this.itemsDois); //Horror
     this.getMoviesperGerne("99", this.itemsTres); //documentary
     this.getMoviesperGerne("16", this.itemsQuatro); //Animation
   },

@@ -17,24 +17,25 @@
       <h5 class="text-h5">{{ title }}</h5>
 
       <v-col cols="12" class="d-flex flex-row ma-0 pa-0">
-        <v-btn icon color="primary"> <v-icon>mdi-star</v-icon> </v-btn
-        ><v-btn icon color="primary"> <v-icon>mdi-star</v-icon> </v-btn
-        ><v-btn icon color="primary"> <v-icon>mdi-star</v-icon> </v-btn
-        ><v-btn icon color="primary"> <v-icon>mdi-star</v-icon> </v-btn
-        ><v-btn icon color="primary">
-          <v-icon>mdi-star</v-icon>
-        </v-btn>
+        <!-- TODO: Να φαίνονται τα αστέρια ανάλογα με την συνολίκή βαθμολογία -->
+        <v-btn icon color="primary"> <v-icon>mdi-star</v-icon> </v-btn>
+        <v-btn icon color="primary"> <v-icon>mdi-star</v-icon> </v-btn>
+        <v-btn icon color="primary"> <v-icon>mdi-star</v-icon> </v-btn>
+        <v-btn icon color="primary"> <v-icon>mdi-star</v-icon> </v-btn>
+        <v-btn icon color="primary"> <v-icon>mdi-star</v-icon> </v-btn>
         <p class="pa-0 ml-3 mt-2 mb-0 font-weight-light">
-          <!-- {{ topMovie[0].release_date }} -->
+          {{ release_date }}
         </p>
+        <!-- TODO: Να φαίνεται η διάρκεια της ταινίας -->
         <p class="pa-0 ml-3 mt-2 mb-0 font-weight-light">124 min</p>
-        <v-chip class="mt-2 mb-0 ml-3" small> Ultra HD 4k </v-chip>
-        <v-chip class="ml-3 mt-2 mb-0" small> 5.1 </v-chip>
+        <v-chip class="mt-2 mb-0 ml-3" small> {{ votes }} / 10 </v-chip>
+        <v-chip class="ml-3 mt-2 mb-0" small>
+          {{ vote_count }} total reviews
+        </v-chip>
       </v-col>
-      {{ overview }}
-      <v-col cols="4">
+      <v-col cols="12">
         <p class="subheading font-weight-regular">
-          <!-- {{ topMovie[0].overview }} -->
+          {{ overview }}
         </p>
       </v-col>
 
@@ -43,10 +44,10 @@
           <v-icon color="black">mdi-play</v-icon>
           Play
         </v-btn>
-        <v-btn color="grey">
+        <!-- <v-btn color="grey">
           <v-icon>mdi-alert-circle-outline</v-icon>
-          Mais Informações
-        </v-btn>
+          Information
+        </v-btn> -->
       </v-col>
     </v-row>
   </div>
@@ -59,11 +60,14 @@ export default {
     title: String,
     overview: String,
     poster: String,
-    id: String,
+    id: Number,
+    votes: Number,
+    vote_count: Number,
+    release_date: String,
   },
   methods: {
     handleClick() {
-      location.href = this.id;
+      location.href = "https://autoembed.to/movie/tmdb/" + this.id;
     },
   },
   data() {

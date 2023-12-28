@@ -6,7 +6,18 @@
     >
       <v-text-field label="Search" v-model="searchTerm" />
       <v-btn @click="search(1)">GO</v-btn>
-      <h2 class="page-title">Search Results for "{{ searchTerm }}"</h2>
+      <v-select
+        v-if="categories"
+        @change="searchPerCategory(selectedCategory)"
+        :item-text="'name'"
+        :item-value="'id'"
+        v-model="selectedCategory"
+        label="Search by Category"
+        :items="categories"
+      ></v-select>
+      <h2 class="page-title" v-if="searchTerm">
+        Search Results for "{{ searchTerm }}"
+      </h2>
       <v-row>
         <v-col
           v-for="(movie, index) in searchResults"
@@ -34,6 +45,7 @@
         </v-col>
       </v-row>
       <v-pagination
+        v-if="noOfPages"
         rounded
         :length="noOfPages"
         @input="updatePagination"
@@ -46,12 +58,36 @@
 export default {
   data() {
     return {
+      selectedCategory: "",
+      categories: [],
       noOfPages: 0,
       searchTerm: "", // Search term passed to this page
       searchResults: [], // List of movies received from the search
     };
   },
   methods: {
+    searchPerCategory(selectedCategory) {
+      const url =
+        "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=" +
+        selectedCategory;
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+        },
+      };
+
+      fetch(url, options)
+        .then((res) => res.json())
+        .then((json) => {
+          console.log(json);
+          this.noOfPages = json.total_pages;
+          this.searchResults = json.results;
+        })
+        .catch((err) => console.error("error:" + err));
+    },
     updatePagination(pagination) {
       this.search(pagination);
     },
@@ -88,6 +124,22 @@ export default {
         alert("Error fetching search results:", error);
       }
     },
+  },
+  created() {
+    const url = "https://api.themoviedb.org/3/genre/movie/list?language=en";
+    const options = {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        Authorization:
+          "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+      },
+    };
+
+    fetch(url, options)
+      .then((res) => res.json())
+      .then((json) => (this.categories = json.genres))
+      .catch((err) => console.error("error:" + err));
   },
 };
 </script>

@@ -9,8 +9,10 @@
       <v-card-title
         class="font-weight-bold pr-5 ma-0"
         style="color: #e5e5e5; font-size: 27px !important"
-        >{{ titulo }}</v-card-title
       >
+        {{ titulo }}
+      </v-card-title>
+
       <v-carousel
         show-arrows-on-hover
         hide-delimiters
@@ -48,13 +50,23 @@
     </div>
     <v-row justify="center">
       <v-dialog v-model="dialog" max-width="1000px">
-        <v-card>
-          <v-img :src="itemImg" max-height="350px" contain />
+        <v-card v-if="dialogItem">
+          <v-img
+            :src="'https://image.tmdb.org/t/p//w500' + dialogItem.poster_path"
+            max-height="350px"
+            contain
+          />
           <v-card-title class="text-h5">
-            {{ itemTitle }}
+            {{ dialogItem.title }}
           </v-card-title>
-          <v-card-text>
-            {{ itemOverview }}
+          <v-chip class="mt-2 mb-0 ml-3" small>
+            {{ dialogItem.vote_average }} / 10
+          </v-chip>
+          <v-chip class="ml-3 mt-2 mb-0" small>
+            {{ dialogItem.vote_count }} total reviews
+          </v-chip>
+          <v-card-text class="mt-4">
+            {{ dialogItem.overview }}
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -125,6 +137,7 @@ export default {
   data() {
     return {
       similarMovies: [],
+      dialogItem: "",
       itemTitle: "",
       itemOverview: "",
       itemID: "",
@@ -158,25 +171,11 @@ export default {
       await fetch(url, options)
         .then((res) => res.json())
         .then(async (json) => {
+          console.log(json);
           for (let index = 0; index < json.results.length; index++) {
             const element = json.results[index];
             if (element !== undefined) {
-              this.similarMovies.push({
-                adult: element.adult,
-                backdrop_path: element.backdrop_path,
-                genre_ids: element.genre_ids,
-                id: element.id,
-                original_language: element.original_language,
-                original_title: element.original_title,
-                overview: element.overview,
-                popularity: element.popularity,
-                poster_path: element.poster_path,
-                release_date: element.release_date,
-                title: element.title,
-                video: element.video,
-                vote_average: element.vote_average,
-                vote_count: element.vote_count,
-              });
+              this.similarMovies.push(element);
             }
           }
           this.similarMovies.splice(0, 1);
@@ -188,11 +187,8 @@ export default {
     },
     handleclick(item) {
       this.dialog = true;
-      this.itemTitle = item.title;
-      this.itemOverview = item.overview;
-      this.itemID = item.id;
-      this.itemImg = "https://image.tmdb.org/t/p//w500" + item.poster_path;
-      this.getSimilarMovies(this.itemID);
+      this.dialogItem = item;
+      this.getSimilarMovies(item.id);
     },
     prevPage() {
       for (let x = 0; x <= 6; x++) {
