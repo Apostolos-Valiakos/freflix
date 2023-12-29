@@ -64,10 +64,25 @@ export default {
     votes: Number,
     vote_count: Number,
     release_date: String,
+    isSerie: String,
+    episode: String,
+    season: String,
   },
   methods: {
     handleClick() {
-      location.href = "https://autoembed.to/movie/tmdb/" + this.id;
+      if (this.isSerie === "tv") {
+        location.href =
+          "https://autoembed.to/" +
+          this.isSerie +
+          "/tmdb/" +
+          this.id +
+          "-" +
+          this.sseason +
+          "-" +
+          this.episode;
+      } else {
+        location.href = "https://autoembed.to/movie/tmdb/" + this.id;
+      }
     },
   },
   data() {

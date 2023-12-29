@@ -11,37 +11,40 @@
       >
         Search
       </v-btn>
-      <v-btn to="series"> Series </v-btn>
+      <v-btn
+        to="/"
+        class="mt-3"
+        style="text-align: right; display: flex; justify-content: center"
+      >
+        Movies
+      </v-btn>
+      <v-btn @click="showDialog = true">show</v-btn>
+
       <titulo v-if="topMovie" class="pb-10" v-bind="topMovie" />
-      <obras
+      <seriesCarousel
         class="pt-10"
         v-if="fantasyItems"
         :obras="fantasyItems"
         titulo="Fantasy"
       />
-      <obras
+      <seriesCarousel
         class="pt-5"
-        v-if="horrorItems"
-        :obras="horrorItems"
-        titulo="Horror"
+        v-if="crimeItems"
+        :obras="crimeItems"
+        titulo="Crime"
       />
-      <obras
+      <seriesCarousel
         class="pt-5"
         v-if="documentaryItems"
         :obras="documentaryItems"
         titulo="Documentary"
       />
-      <obras
+      <seriesCarousel
         class="pt-5"
         v-if="animationItems"
         :obras="animationItems"
         titulo="Animation"
       />
-      <!-- <obras
-        class="pt-5"
-        :obras="itemsCinco"
-        titulo="Séries aclamadas pela crítica"
-      /> -->
     </v-img>
     <v-footer padless color="black" class="d-flex justify-center">
       <v-card
@@ -90,6 +93,7 @@
 <script>
 import titulo from "../components/titulo";
 import obras from "../components/obras";
+import seriesCarousel from "../components/seriesCarousel";
 
 export default {
   name: "Home",
@@ -97,10 +101,12 @@ export default {
   components: {
     titulo,
     obras,
+    seriesCarousel,
   },
 
   data() {
     return {
+      showDialog: false,
       movieTitles: [],
       moviesFromDB: [],
       topMovie: null,
@@ -118,7 +124,7 @@ export default {
           id: "0",
         },
       ],
-      horrorItems: [
+      crimeItems: [
         {
           title: "Test",
           image:
@@ -174,7 +180,7 @@ export default {
             Math.random() * (json.results.length - 0 + 1) + 0
           );
           this.topMovie = json.results[randMovieFromList];
-          this.topMovie.isSerie = "movie";
+          this.topMovie.isSerie = "tv";
         })
         .catch((err) => console.error("error:" + err));
     },
@@ -219,9 +225,9 @@ export default {
       fetch(url, options)
         .then((res) => res.json())
         .then((json) => {
-          this.horrorItems.pop();
+          this.crimeItems.pop();
           for (let index = 0; index < 10; index++) {
-            this.horrorItems.push(json.results[index]);
+            this.crimeItems.push(json.results[index]);
           }
         })
         .catch((err) => console.error("error:" + err));
@@ -268,16 +274,9 @@ export default {
       fetch(url, options)
         .then((res) => res.json())
         .then(async (json) => {
-          if (movie === "movie") {
-            itemList.pop();
-            for (let index = 0; index < 10; index++) {
-              itemList.push(json.results[index]);
-            }
-          } else if (movie === "tv") {
-            for (let index = 0; index < itemList.length; index++) {
-              itemList[index] = json.results[index];
-            }
-            console.log(itemList);
+          itemList.pop();
+          for (let index = 0; index < 10; index++) {
+            itemList[index] = json.results[index];
           }
         })
         .catch((err) => console.error("error:" + err));
@@ -306,20 +305,14 @@ export default {
         })
         .catch((err) => console.error("error:" + err));
     },
-    // async getSeries() {
-    //   this.getTopMovie("tv");
-    //   this.getMoviesperGerne("10765", this.fantasyItems, "tv"); //Fantasy
-    //   this.getMoviesperGerne("80", this.horrorItems, "tv"); //Horror
-    //   this.getMoviesperGerne("99", this.documentaryItems, "tv"); //documentary
-    //   this.getMoviesperGerne("16", this.animationItems, "tv"); //Animation
-    // },
   },
   created() {
-    this.getTopMovie("movie");
-    this.getMoviesperGerne("14", this.fantasyItems, "movie"); //Fantasy
-    this.getMoviesperGerne("27", this.horrorItems, "movie"); //Horror
-    this.getMoviesperGerne("99", this.documentaryItems, "movie"); //documentary
-    this.getMoviesperGerne("16", this.animationItems, "movie"); //Animation
+    this.getTopMovie("tv");
+    this.getMoviesperGerne("10765", this.fantasyItems, "tv"); //Fantasy
+    this.getMoviesperGerne("80", this.crimeItems, "tv"); //Horror
+    this.getMoviesperGerne("99", this.documentaryItems, "tv"); //documentary
+    this.getMoviesperGerne("16", this.animationItems, "tv"); //Animation
+    console.log(this.animationItems);
   },
 };
 </script>

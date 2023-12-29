@@ -69,13 +69,31 @@
             {{ dialogItem.overview }}
           </v-card-text>
           <v-card-actions>
+            <v-select
+              v-if="details"
+              v-model="selectedSeason"
+              label="Season"
+              :items="details"
+              :item-text="'season'"
+              :item-value="'season_number'"
+              @change="getNoOfEpisodesForSelectedSeason(selectedSeason)"
+            ></v-select>
+            <!-- <v-select
+              v-if="details"
+              label="Season"
+              :items="details.seasons"
+              :item-text="'name'"
+              :item-value="'season_number'"
+            ></v-select> -->
+            <!-- {{ details }} -->
             <v-spacer></v-spacer>
             <v-btn color="green darken-1" @click="seeMovie(dialogItem.id)">
               Play
             </v-btn>
             <v-btn color="red darken-1" @click="dialog = false"> Close </v-btn>
           </v-card-actions>
-          <label class="ml-10 text-h5">Similar Movies</label>
+
+          <label class="ml-10 text-h5">Similar Series</label>
           <v-sheet
             class="d-flex align-content-center flex-wrap bg-surface-variant"
             min-height="200"
@@ -137,7 +155,12 @@ export default {
   data() {
     return {
       similarMovies: [],
+      selectedSeason: null,
+      season: 1,
+      episode: 1,
       dialogItem: "",
+      details: [],
+      episodes: [],
       itemTitle: "",
       itemOverview: "",
       itemID: "",
@@ -157,7 +180,7 @@ export default {
   methods: {
     async getSimilarMovies(ID) {
       const url =
-        "https://api.themoviedb.org/3/movie/" +
+        "https://api.themoviedb.org/3/tv/" +
         ID +
         "/similar?language=en-US&page=1";
       const options = {
@@ -172,7 +195,6 @@ export default {
       await fetch(url, options)
         .then((res) => res.json())
         .then(async (json) => {
-          console.log(json);
           for (let index = 0; index < json.results.length; index++) {
             const element = json.results[index];
             if (element !== undefined) {
@@ -184,12 +206,42 @@ export default {
         .catch((err) => console.error("error:" + err));
     },
     seeMovie(link) {
-      location.href = "https://autoembed.to/movie/tmdb/" + link;
+      location.href =
+        "https://autoembed.to/tv/tmdb/" +
+        link +
+        "-" +
+        this.season +
+        "-" +
+        this.episode;
     },
     handleclick(item) {
       this.dialog = true;
       this.dialogItem = item;
+      this.getDetails(item.id);
       this.getSimilarMovies(item.id);
+    },
+    async getDetails(id) {
+      const url = "https://api.themoviedb.org/3/tv/" + id + "?language=en-US";
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+        },
+      };
+
+      await fetch(url, options)
+        .then((res) => res.json())
+        .then((json) => {
+          json.seasons.forEach((element) => {
+            this.details.push({ season: element.name });
+          });
+        })
+        .catch((err) => console.error("error:" + err));
+    },
+    getNoOfEpisodesForSelectedSeason(selectedSeason) {
+      console.log(selectedSeason);
     },
     prevPage() {
       for (let x = 0; x <= 4; x++) {
