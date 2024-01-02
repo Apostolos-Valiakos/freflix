@@ -73,8 +73,17 @@
             <v-btn color="green darken-1" @click="seeMovie(dialogItem.id)">
               Play
             </v-btn>
-            <v-btn color="red darken-1" @click="dialog = false"> Close </v-btn>
+            <v-btn color="red darken-1" @click="handleClose"> Close </v-btn>
           </v-card-actions>
+          <iframe
+            id="iframe"
+            v-if="showEmbed"
+            :src="embedLink"
+            width="1000px"
+            height="1000px"
+            frameborder="0"
+            allowfullscreen
+          ></iframe>
           <label class="ml-10 text-h5">Similar Movies</label>
           <v-sheet
             class="d-flex align-content-center flex-wrap bg-surface-variant"
@@ -136,6 +145,8 @@ export default {
   },
   data() {
     return {
+      showEmbed: false,
+      embedLink: "",
       similarMovies: [],
       dialogItem: "",
       itemTitle: "",
@@ -155,6 +166,10 @@ export default {
   },
 
   methods: {
+    handleClose() {
+      this.dialog = false;
+      this.embedLink = "";
+    },
     async getSimilarMovies(ID) {
       const url =
         "https://api.themoviedb.org/3/movie/" +
@@ -184,7 +199,9 @@ export default {
         .catch((err) => console.error("error:" + err));
     },
     seeMovie(link) {
-      location.href = "https://autoembed.to/movie/tmdb/" + link;
+      this.showEmbed = true;
+      this.embedLink = "https://autoembed.to/movie/tmdb/" + link;
+      // location.href = "https://autoembed.to/movie/tmdb/" + link;
     },
     handleclick(item) {
       this.dialog = true;

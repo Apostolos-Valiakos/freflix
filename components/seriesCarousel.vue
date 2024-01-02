@@ -70,6 +70,7 @@
           </v-card-text>
           <v-card-actions>
             <v-select
+              class="mx-2"
               v-if="details"
               v-model="selectedSeason"
               label="Season"
@@ -78,20 +79,28 @@
               :item-value="'season_number'"
               @change="getNoOfEpisodesForSelectedSeason(selectedSeason)"
             ></v-select>
-            <!-- <v-select
-              v-if="details"
-              label="Season"
-              :items="details.seasons"
-              :item-text="'name'"
-              :item-value="'season_number'"
-            ></v-select> -->
+            <v-select
+              v-if="episodes"
+              label="Episode"
+              v-model="episode"
+              :items="episodes"
+            ></v-select>
             <!-- {{ details }} -->
             <v-spacer></v-spacer>
             <v-btn color="green darken-1" @click="seeMovie(dialogItem.id)">
               Play
             </v-btn>
-            <v-btn color="red darken-1" @click="dialog = false"> Close </v-btn>
+            <v-btn color="red darken-1" @click="handleClose"> Close </v-btn>
           </v-card-actions>
+
+          <iframe
+            v-if="showEmbed"
+            :src="embedLink"
+            width="1000px"
+            height="1000px"
+            frameborder="0"
+            allowfullscreen
+          ></iframe>
 
           <label class="ml-10 text-h5">Similar Series</label>
           <v-sheet
@@ -154,12 +163,15 @@ export default {
   },
   data() {
     return {
+      showEmbed: false,
+      embedLink: "",
       similarMovies: [],
       selectedSeason: null,
       season: 1,
       episode: 1,
       dialogItem: "",
       details: [],
+      selectedSeriesInfo: null,
       episodes: [],
       itemTitle: "",
       itemOverview: "",
@@ -178,6 +190,10 @@ export default {
   },
 
   methods: {
+    handleClose() {
+      this.dialog = false;
+      this.embedLink = "";
+    },
     async getSimilarMovies(ID) {
       const url =
         "https://api.themoviedb.org/3/tv/" +
@@ -206,7 +222,9 @@ export default {
         .catch((err) => console.error("error:" + err));
     },
     seeMovie(link) {
-      location.href =
+      this.showEmbed = true;
+      // location.href
+      this.embedLink =
         "https://autoembed.to/tv/tmdb/" +
         link +
         "-" +
@@ -237,11 +255,20 @@ export default {
           json.seasons.forEach((element) => {
             this.details.push({ season: element.name });
           });
+          this.selectedSeriesInfo = json;
+          console.log(json);
         })
         .catch((err) => console.error("error:" + err));
     },
     getNoOfEpisodesForSelectedSeason(selectedSeason) {
-      console.log(selectedSeason);
+      this.selectedSeriesInfo.seasons.forEach((element) => {
+        if (element.name === selectedSeason) {
+          this.season = element.season_number;
+          for (let index = 0; index < element.episode_count; index++) {
+            this.episodes.push(index);
+          }
+        }
+      });
     },
     prevPage() {
       for (let x = 0; x <= 4; x++) {

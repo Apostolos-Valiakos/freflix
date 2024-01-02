@@ -70,7 +70,9 @@ export default {
   },
   methods: {
     handleClick() {
+      // this.showEmbed = true;
       if (this.isSerie === "tv") {
+        // this.embedLink =
         location.href =
           "https://autoembed.to/" +
           this.isSerie +
@@ -81,12 +83,15 @@ export default {
           "-" +
           this.episode;
       } else {
+        // this.embedLink = "https://autoembed.to/movie/tmdb/" + this.id;
         location.href = "https://autoembed.to/movie/tmdb/" + this.id;
       }
     },
   },
   data() {
     return {
+      showEmbed: false,
+      embedLink: "",
       ecosystem: [
         {
           text: "vuetify-loader",

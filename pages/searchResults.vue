@@ -41,6 +41,14 @@
                 Play
               </v-btn>
             </v-card-actions>
+            <!-- <iframe
+              v-if="showEmbed"
+              :src="embedLink"
+              width="1000px"
+              height="1000px"
+              frameborder="0"
+              allowfullscreen
+            ></iframe> -->
           </v-card>
         </v-col>
       </v-row>
@@ -58,6 +66,8 @@
 export default {
   data() {
     return {
+      showEmbed: false,
+      embedLink: "",
       selectedCategory: "",
       categories: [],
       noOfPages: 0,
@@ -101,6 +111,8 @@ export default {
       }
     },
     seeMovie(link) {
+      // this.showEmbed = true;
+      // this.embedLink = "https://autoembed.to/movie/tmdb/" + link;
       location.href = "https://autoembed.to/movie/tmdb/" + link;
     },
     async search(page) {
