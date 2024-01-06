@@ -16,29 +16,28 @@
       <v-carousel
         show-arrows-on-hover
         hide-delimiters
-        :height="220"
+        class="movie-grid"
         style="white-space: nowrap; display: inline-block"
         @change="nextPage()"
       >
-        <v-carousel-item v-for="(el, index) in slider" :key="index">
-          <div
-            class="d-flex align-center pa-0 ma-0"
-            style="white-space: nowrap; display: inline-block"
-          >
+        <v-carousel-item
+          v-for="(el, index) in slider"
+          :key="index"
+          class="movie"
+        >
+          <div class="d-flex align-center">
             <v-card
               v-for="(item, index) in items"
               :key="index"
-              class="elevation-0 pa-0 ma-0"
+              class="elevation-0"
               color="#e5e5e500"
             >
               <v-img
                 v-if="item.poster_path"
                 @click="handleclick(item)"
                 :src="'https://image.tmdb.org/t/p//w500' + item.poster_path"
-                height="200"
-                width="285"
                 contain
-                class="d-flex align-center mx-1 cursor-pointer imgJanela"
+                class="d-flex align-center mx-1 cursor-pointer imgJanela movie-poster"
                 @mouseover="item.isActive = true"
                 @mouseout="item.isActive = false"
               >
@@ -49,7 +48,7 @@
       </v-carousel>
     </div>
     <v-row justify="center">
-      <v-dialog v-model="dialog" max-width="1000px">
+      <!-- <v-dialog v-model="dialog" max-width="1000px">
         <v-card v-if="dialogItem">
           <v-img
             :src="'https://image.tmdb.org/t/p//w500' + dialogItem.poster_path"
@@ -112,6 +111,7 @@
                 <v-img
                   v-if="item.poster_path"
                   contain
+                  class="movie-poster"
                   :src="'https://image.tmdb.org/t/p//w500' + item.poster_path"
                   max-width="200"
                   max-height="200"
@@ -126,7 +126,7 @@
             </v-sheet>
           </v-sheet>
         </v-card>
-      </v-dialog>
+      </v-dialog> -->
     </v-row>
   </div>
 </template>
@@ -204,17 +204,19 @@ export default {
       // location.href = "https://autoembed.to/movie/tmdb/" + link;
     },
     handleclick(item) {
-      this.dialog = true;
-      this.dialogItem = item;
-      this.getSimilarMovies(item.id);
+      this.$router.push({ name: "info", params: { id: item.id } });
+
+      // this.dialog = true;
+      // this.dialogItem = item;
+      // this.getSimilarMovies(item.id);
     },
     prevPage() {
-      for (let x = 0; x <= 4; x++) {
+      for (let x = 0; x <= 3; x++) {
         this.items.unshift(this.items.pop());
       }
     },
     nextPage() {
-      for (let x = 0; x <= 4; x++) {
+      for (let x = 0; x <= 3; x++) {
         this.items.push(this.items.shift());
       }
     },

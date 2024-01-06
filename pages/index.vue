@@ -1,160 +1,136 @@
+<!-- https://getsuperembed.link/?video_id=imdbId -->
+<!-- IMDB LINK -->
+<!-- Parse the response link -->
 <template>
-  <v-container fluid class="pa-0 ma-0">
-    <v-img
-      class="imgFundoPrincipal"
-      gradient="(200deg, rgba(0, 0, 0, 0) 0.50%, #000000 71.04%)"
-    >
-      <v-btn
-        class="mt-3"
-        style="text-align: right; display: flex; justify-content: center"
-        to="searchResults"
-      >
-        Search
-      </v-btn>
-      <v-btn to="series"> Series </v-btn>
-      <titulo v-if="topMovie" class="pb-10" v-bind="topMovie" />
-      <obras
-        class="pt-10"
-        v-if="fantasyItems"
-        :obras="fantasyItems"
-        titulo="Fantasy"
+  <div v-if="movies.length > 0">
+    <section>
+      <v-img
+        :src="'https://image.tmdb.org/t/p/original' + topMovie.poster_path"
+        alt="Movie Poster"
+        class="movie-banner"
       />
-      <obras
-        class="pt-5"
-        v-if="horrorItems"
-        :obras="horrorItems"
-        titulo="Horror"
-      />
-      <obras
-        class="pt-5"
-        v-if="documentaryItems"
-        :obras="documentaryItems"
-        titulo="Documentary"
-      />
-      <obras
-        class="pt-5"
-        v-if="animationItems"
-        :obras="animationItems"
-        titulo="Animation"
-      />
-      <!-- <obras
-        class="pt-5"
-        :obras="itemsCinco"
-        titulo="Séries aclamadas pela crítica"
-      /> -->
-    </v-img>
-    <v-footer padless color="black" class="d-flex justify-center">
-      <v-card
-        flat
-        tile
-        color="black"
-        width="60%"
-        class="secondary--text text-start"
-      >
-        <v-card-text>
-          <v-btn
-            v-for="icon in icons"
-            :key="icon"
-            class="mx-4 white--text"
-            icon
-          >
-            <v-icon size="24px">
-              {{ icon }}
-            </v-icon>
-          </v-btn>
-        </v-card-text>
+      <div style="z-index: 1">
+        <h1>{{ topMovie.original_title }}</h1>
+        <p class="synopsis">{{ topMovie.overview }}</p>
+        <v-form class="button-container">
+          <v-btn @click="watchMovie(topMovie.imdb_id)">Watch</v-btn>
+          <button class="cta-transparent">📖 More information</button>
+        </v-form>
+        <div class="gradient"></div>
+      </div>
+    </section>
+    <obras class="pt-10" v-if="movies" :obras="movies" titulo="Top Rated" />
 
-        <v-row class="caption font-weight-light pa-0 ma-0">
-          <v-col cols="3"> Audidescrição </v-col>
-          <v-col cols="3"> Central de ajuda </v-col>
-          <v-col cols="3"> Cartão pré-pago </v-col>
-          <v-col cols="3"> Imprensa </v-col>
-          <v-col cols="3"> Relação com investidores </v-col>
-          <v-col cols="3"> Carreiras </v-col>
-          <v-col cols="3"> Termos de uso </v-col>
-          <v-col cols="3"> Privacidade </v-col>
-          <v-col cols="3"> Avisos legais </v-col>
-          <v-col cols="3"> Preferência de cookies </v-col>
-          <v-col cols="3"> Informações corporativas </v-col>
-          <v-col cols="3"> Entre em contato </v-col>
-          <v-col class="pa-2 ml-2 mt-5" cols="2" style="border: 1px solid #ccc">
-            Código do serviço
-          </v-col>
-          <v-col cols="12"> &copy; 1997-2023 Freflix, Inc. </v-col>
-        </v-row>
-      </v-card>
-    </v-footer>
-  </v-container>
+    <obras
+      class="pt-10"
+      v-if="horrorItems"
+      :obras="horrorItems"
+      titulo="Horror"
+    />
+
+    <obras
+      class="pt-10"
+      v-if="fantasyItems"
+      :obras="fantasyItems"
+      titulo="Fantasy"
+    />
+
+    <obras
+      class="pt-5"
+      v-if="documentaryItems"
+      :obras="documentaryItems"
+      titulo="Documentary"
+    />
+    <obras
+      class="pt-5"
+      v-if="animationItems"
+      :obras="animationItems"
+      titulo="Animation"
+    />
+  </div>
 </template>
 
 <script>
-import titulo from "../components/titulo";
-import obras from "../components/obras";
-
 export default {
-  name: "Home",
-
-  components: {
-    titulo,
-    obras,
+  transition: {
+    name: "layout",
+    mode: "out-in",
   },
 
   data() {
     return {
-      movieTitles: [],
-      moviesFromDB: [],
       topMovie: null,
-      topTitle: "",
-      topOverview: "",
-      topID: "",
-      topImage: "https://image.tmdb.org/t/p//w500",
-      fantasyItems: [
-        {
-          title: "Test",
-          image:
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/A_black_image.jpg/640px-A_black_image.jpg",
-          class: "test",
-          isActive: "true",
-          id: "0",
-        },
-      ],
-      horrorItems: [
-        {
-          title: "Test",
-          image:
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/A_black_image.jpg/640px-A_black_image.jpg",
-          class: "test",
-          isActive: "true",
-          id: "0",
-        },
-      ],
-      documentaryItems: [
-        {
-          title: "Test",
-          image:
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/A_black_image.jpg/640px-A_black_image.jpg",
-          class: "test",
-          isActive: "true",
-          id: "0",
-        },
-      ],
-      animationItems: [
-        {
-          title: "Test",
-          image:
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/A_black_image.jpg/640px-A_black_image.jpg",
-          class: "test",
-          isActive: "true",
-          id: "0",
-        },
-      ],
-      itemsCinco: [],
-      icons: ["mdi-facebook", "mdi-twitter", "mdi-linkedin", "mdi-instagram"],
+      movies: [],
+      horrorItems: [],
+      fantasyItems: [],
+      documentaryItems: [],
+      animationItems: [],
+      randomMovies: [],
+      upcomingMovies: [],
+      series: [],
     };
   },
+  created() {
+    this.initialize();
+    this.getTopMovie("movie");
+    // this.getMoviesperGerne("27", this.horrorItems, "movie");
+  },
+
   methods: {
+    async initialize() {
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+        },
+      };
+
+      this.horrorItems = await fetch(
+        "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=27",
+        options
+      )
+        .then((res) => res.json())
+        .then((data) => data.results);
+
+      this.fantasyItems = await fetch(
+        "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=14",
+        options
+      )
+        .then((res) => res.json())
+        .then((data) => data.results);
+
+      this.documentaryItems = await fetch(
+        "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=99",
+        options
+      )
+        .then((res) => res.json())
+        .then((data) => data.results);
+
+      this.animationItems = await fetch(
+        "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=16",
+        options
+      )
+        .then((res) => res.json())
+        .then((data) => data.results);
+
+      this.movies = await fetch(
+        "https://api.themoviedb.org/3/movie/top_rated?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc",
+        options
+      )
+        .then((res) => res.json())
+        .then((data) => data.results);
+    },
+
+    handleMovieClick(movie) {
+      this.$router.push({
+        name: "movies-movieid",
+        params: { movieid: movie.id },
+      });
+    },
     async getTopMovie(movie) {
-      const url =
+      var url =
         "https://api.themoviedb.org/3/discover/" +
         movie +
         "?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc";
@@ -177,159 +153,177 @@ export default {
           this.topMovie.isSerie = "movie";
         })
         .catch((err) => console.error("error:" + err));
-    },
-    getNewAddedMovies(movie) {
-      const url =
-        "https://api.themoviedb.org/3/discover/" +
-        movie +
-        "?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc";
-      const options = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-        },
-      };
-
-      fetch(url, options)
-        .then((res) => res.json())
-        .then(async (json) => {
-          this.fantasyItems.pop();
-          for (let index = 0; index < 10; index++) {
-            this.fantasyItems.push(json.results[index]);
-          }
-        })
-        .catch((err) => console.error("error:" + err));
-    },
-    getNowPlaying(movie) {
-      const url =
-        "https://api.themoviedb.org/3/" +
-        movie +
-        "/now_playing?language=en-US&page=1";
-      const options = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-        },
-      };
+      url =
+        "https://api.themoviedb.org/3/movie/" +
+        this.topMovie.id +
+        "?language=en-US";
 
       fetch(url, options)
         .then((res) => res.json())
         .then((json) => {
-          this.horrorItems.pop();
-          for (let index = 0; index < 10; index++) {
-            this.horrorItems.push(json.results[index]);
-          }
+          this.topMovie.imdb_id = json.imdb_id;
         })
         .catch((err) => console.error("error:" + err));
     },
-    getPopular(movie) {
-      const url =
-        "https://api.themoviedb.org/3/" +
-        movie +
-        "/popular?language=en-US&page=1";
+    async watchMovie(id) {
+      // const link = "https://www.getsuperembed.link/?video_id=" + id; // Replace with the link you want to fetch
+      // console.log(link);
       const options = {
         method: "GET",
         headers: {
           accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
         },
       };
-
-      fetch(url, options)
-        .then((res) => res.json())
-        .then((json) => {
-          this.documentaryItems.pop();
-          for (let index = 0; index < 10; index++) {
-            this.documentaryItems.push(json.results[index]);
-          }
-        })
-        .catch((err) => console.error("error:" + err));
+      let link = await fetch(
+        "https://getsuperembed.link/?video_id=" + id,
+        options
+      );
+      console.log(link);
     },
-    getMoviesperGerne(gerne, itemList, movie) {
-      const url =
-        "https://api.themoviedb.org/3/discover/" +
-        movie +
-        "?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=" +
-        gerne;
-      const options = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-        },
-      };
-
-      fetch(url, options)
-        .then((res) => res.json())
-        .then(async (json) => {
-          if (movie === "movie") {
-            itemList.pop();
-            for (let index = 0; index < 10; index++) {
-              itemList.push(json.results[index]);
-            }
-          } else if (movie === "tv") {
-            for (let index = 0; index < itemList.length; index++) {
-              itemList[index] = json.results[index];
-            }
-            console.log(itemList);
-          }
-        })
-        .catch((err) => console.error("error:" + err));
-    },
-    getTopRated(movie) {
-      const url =
-        "https://api.themoviedb.org/3/" +
-        movie +
-        "/top_rated?language=en-US&page=1";
-      const options = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-        },
-      };
-
-      fetch(url, options)
-        .then((res) => res.json())
-        .then((json) => {
-          this.animationItems.pop();
-          for (let index = 0; index < 10; index++) {
-            this.animationItems.push(json.results[index]);
-          }
-        })
-        .catch((err) => console.error("error:" + err));
-    },
-    // async getSeries() {
-    //   this.getTopMovie("tv");
-    //   this.getMoviesperGerne("10765", this.fantasyItems, "tv"); //Fantasy
-    //   this.getMoviesperGerne("80", this.horrorItems, "tv"); //Horror
-    //   this.getMoviesperGerne("99", this.documentaryItems, "tv"); //documentary
-    //   this.getMoviesperGerne("16", this.animationItems, "tv"); //Animation
-    // },
-  },
-  created() {
-    this.getTopMovie("movie");
-    this.getMoviesperGerne("14", this.fantasyItems, "movie"); //Fantasy
-    this.getMoviesperGerne("27", this.horrorItems, "movie"); //Horror
-    this.getMoviesperGerne("99", this.documentaryItems, "movie"); //documentary
-    this.getMoviesperGerne("16", this.animationItems, "movie"); //Animation
   },
 };
 </script>
 
 <style>
-.imgFundoPrincipal {
-  background: #000;
-  background-repeat: no-repeat;
-  background-size: cover;
-  height: 100%;
+section:first-child {
+  height: 100vh;
+  padding: 0 2.5em;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  object-fit: cover;
+  position: relative;
+}
+
+section:first-child::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 0;
+  padding-bottom: calc(33.5% - 92px + 30px);
   width: 100%;
+  background-image: linear-gradient(
+    transparent,
+    rgba(25, 26, 26, 0.4) 10%,
+    rgba(25, 26, 26, 0.6) 20%,
+    rgba(25, 26, 26, 0.8) 60%,
+    var(--dark-grey)
+  );
+  z-index: -1;
+}
+
+section:not(first-child) {
+  padding: 3em 2.5em 0;
+}
+
+.movie-banner {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  position: absolute;
+  left: 0;
+  z-index: 0;
+  opacity: 0.8;
+}
+
+h1,
+p {
+  padding: 0;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgb(0 0 0 / 45%);
+}
+
+h1 {
+  font-size: 3rem;
+  max-width: 20em;
+}
+
+.synopsis {
+  font-size: 1.4vw;
+  width: 100%;
+  max-width: 30em;
+  padding-top: 0.5rem;
+  padding-bottom: 1rem;
+}
+
+button {
+  all: unset;
+  padding: 0.7rem 1.7rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.more-info-button {
+  background-color: var(--red);
+  color: var(--white);
+  border-radius: 0.5em;
+  padding: 0.7em 2em;
+}
+
+.more-info-button:hover {
+  opacity: 0.9;
+}
+
+.cta-white {
+  border-radius: 0.5em;
+  color: var(--black);
+  background-color: var(--white);
+}
+
+.cta-white:hover,
+.cta-transparent:hover {
+  opacity: 0.8;
+}
+
+.movie-grid {
+  display: flex;
+  gap: 1em;
+  overflow-x: auto;
+  height: 30em;
+}
+
+.movie-grid::-webkit-scrollbar {
+  height: 5px;
+}
+
+.movie-poster {
+  max-width: 15em;
+  border-radius: 0.5em;
+  margin-bottom: 1.5em;
+}
+
+.movie {
+  position: relative;
+}
+
+.cta-transparent {
+  border-radius: 0.5em;
+  color: var(--white);
+  background-color: var(--transparent);
+}
+
+@media (max-width: 50em) {
+  section:first-child {
+    padding: 10em 1em;
+  }
+
+  section:not(first-child) {
+    padding: 0 1em;
+  }
+
+  h1 {
+    margin-top: 4em;
+    font-size: 2.5rem;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+  }
+
+  .synopsis {
+    font-size: 1.2rem;
+  }
 }
 </style>
