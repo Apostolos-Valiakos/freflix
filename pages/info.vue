@@ -35,7 +35,7 @@
                 alt="Poster Image"
                 class="movie-poster"
               />
-              <v-btn @click="popup = true">play</v-btn>
+              <v-btn @click="watchMovie(movie.imdb_id)"> play </v-btn>
             </figure>
           </v-col>
           <v-col>
@@ -100,18 +100,24 @@ export default {
   },
   async created() {
     this.params = this.$route.params.id;
-    console.log(this.params);
-
-    this.movie = await fetch(
-      `https://api.themoviedb.org/3/movie/${this.params}?api_key=5b75818e63dfdb396cadedf77425b334&language=en-US&page=1`
-    ).then((res) => res.json());
+    this.getTopMovie(this.params);
     this.getSimilarMovies(this.params);
   },
   methods: {
+    async getTopMovie(id) {
+      this.movie = await fetch(
+        `https://api.themoviedb.org/3/movie/${id}?api_key=5b75818e63dfdb396cadedf77425b334&language=en-US&page=1`
+      ).then((res) => res.json());
+    },
+    watchMovie(id) {
+      location.href = "https://vidsrc.xyz/embed/movie?imdb=" + id;
+    },
     handleClick(item) {
-      this.$router.push({ name: "info", params: { id: item.id } });
+      this.getTopMovie(item.id);
+      this.getSimilarMovies(item.id);
     },
     async getSimilarMovies(ID) {
+      this.similarMovies = [];
       const url =
         "https://api.themoviedb.org/3/movie/" +
         ID +
@@ -128,7 +134,6 @@ export default {
       await fetch(url, options)
         .then((res) => res.json())
         .then(async (json) => {
-          console.log(json);
           for (let index = 0; index < json.results.length; index++) {
             const element = json.results[index];
             if (element !== undefined) {

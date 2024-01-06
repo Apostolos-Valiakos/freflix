@@ -13,7 +13,7 @@
         <h1>{{ topMovie.original_title }}</h1>
         <p class="synopsis">{{ topMovie.overview }}</p>
         <v-form class="button-container">
-          <v-btn @click="watchMovie(topMovie.imdb_id)">Watch</v-btn>
+          <v-btn @click="watchMovie(topMovie.id)">Watch</v-btn>
           <button class="cta-transparent">📖 More information</button>
         </v-form>
         <div class="gradient"></div>
@@ -165,17 +165,8 @@ export default {
         })
         .catch((err) => console.error("error:" + err));
     },
-    async watchMovie(id) {
-      // location.href = "https://vidsrc.me/embed/" + id;
-      const options = {
-        method: "GET",
-        headers: {
-          accept: "opaque",
-        },
-      };
-      fetch("https://getsuperembed.link/?video_id=tt17351924", options).then(
-        (res) => console.log(res)
-      );
+    watchMovie(id) {
+      location.href = "https://vidsrc.me/embed/" + id;
     },
   },
 };
