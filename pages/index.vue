@@ -166,19 +166,16 @@ export default {
         .catch((err) => console.error("error:" + err));
     },
     async watchMovie(id) {
-      // const link = "https://www.getsuperembed.link/?video_id=" + id; // Replace with the link you want to fetch
-      // console.log(link);
+      // location.href = "https://vidsrc.me/embed/" + id;
       const options = {
         method: "GET",
         headers: {
-          accept: "application/json",
+          accept: "opaque",
         },
       };
-      let link = await fetch(
-        "https://getsuperembed.link/?video_id=" + id,
-        options
+      fetch("https://getsuperembed.link/?video_id=tt17351924", options).then(
+        (res) => console.log(res)
       );
-      console.log(link);
     },
   },
 };
