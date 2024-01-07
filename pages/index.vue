@@ -8,45 +8,71 @@
         :src="'https://image.tmdb.org/t/p/original' + topMovie.poster_path"
         alt="Movie Poster"
         class="movie-banner"
+        gradient="to bottom, rgba(0,0,0,0.2), rgba(0,0,0,1)"
       />
       <div style="z-index: 1">
         <h1>{{ topMovie.original_title }}</h1>
         <p class="synopsis">{{ topMovie.overview }}</p>
         <v-form class="button-container">
-          <v-btn @click="watchMovie(topMovie.id)">Watch</v-btn>
-          <button class="cta-transparent">📖 More information</button>
+          <v-btn
+            @click="watchMovie(topMovie.id)"
+            style="color: black"
+            color="white"
+          >
+            Watch
+          </v-btn>
+          <!-- class="cta-transparent" -->
+          <v-btn
+            @click="handleMovieClick(topMovie.id)"
+            style="color: white"
+            color="black"
+          >
+            More information
+          </v-btn>
         </v-form>
         <div class="gradient"></div>
       </div>
     </section>
-    <obras class="pt-10" v-if="movies" :obras="movies" titulo="Top Rated" />
+    <div style="background-color: black">
+      <obras
+        class="pt-10"
+        v-if="movies"
+        :obras="movies"
+        titulo="Top Rated"
+        type="movie"
+      />
 
-    <obras
-      class="pt-10"
-      v-if="horrorItems"
-      :obras="horrorItems"
-      titulo="Horror"
-    />
+      <obras
+        class="pt-10"
+        v-if="horrorItems"
+        :obras="horrorItems"
+        titulo="Horror"
+        type="movie"
+      />
 
-    <obras
-      class="pt-10"
-      v-if="fantasyItems"
-      :obras="fantasyItems"
-      titulo="Fantasy"
-    />
+      <obras
+        class="pt-10"
+        v-if="fantasyItems"
+        :obras="fantasyItems"
+        titulo="Fantasy"
+        type="movie"
+      />
 
-    <obras
-      class="pt-5"
-      v-if="documentaryItems"
-      :obras="documentaryItems"
-      titulo="Documentary"
-    />
-    <obras
-      class="pt-5"
-      v-if="animationItems"
-      :obras="animationItems"
-      titulo="Animation"
-    />
+      <obras
+        class="pt-5"
+        v-if="documentaryItems"
+        :obras="documentaryItems"
+        titulo="Documentary"
+        type="movie"
+      />
+      <obras
+        class="pt-5"
+        v-if="animationItems"
+        :obras="animationItems"
+        titulo="Animation"
+        type="movie"
+      />
+    </div>
   </div>
 </template>
 
@@ -123,11 +149,8 @@ export default {
         .then((data) => data.results);
     },
 
-    handleMovieClick(movie) {
-      this.$router.push({
-        name: "movies-movieid",
-        params: { movieid: movie.id },
-      });
+    handleMovieClick(id) {
+      this.$router.push({ name: "info", params: { id: id } });
     },
     async getTopMovie(movie) {
       var url =

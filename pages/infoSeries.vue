@@ -3,18 +3,18 @@
     <section v-if="movie">
       <!-- {{ movie }} -->
       <!-- <v-img
-        :src="'https://image.tmdb.org/t/p/original' + movie.poster_path"
-        alt="Movie Poster"
-        class="movie-banner"
-      />
-    </section>
-    <section>
-      <figure>
-        <img
-          :src="`https://image.tmdb.org/t/p/w500/${movie.poster_path}`"
-          alt="Poster Image"
+          :src="'https://image.tmdb.org/t/p/original' + movie.poster_path"
+          alt="Movie Poster"
+          class="movie-banner"
         />
-      </figure> -->
+      </section>
+      <section>
+        <figure>
+          <img
+            :src="`https://image.tmdb.org/t/p/w500/${movie.poster_path}`"
+            alt="Poster Image"
+          />
+        </figure> -->
       <v-img
         :src="'https://image.tmdb.org/t/p/original' + movie.poster_path"
         alt="Movie Poster"
@@ -35,7 +35,7 @@
                 alt="Poster Image"
                 class="movie-poster"
               />
-              <v-btn @click="watchMovie(movie.imdb_id)"> play </v-btn>
+              <v-btn @click="watchMovie(movie.id)"> play </v-btn>
             </figure>
           </v-col>
           <v-col>
@@ -63,6 +63,7 @@
         class="ma-2 pa-2"
       >
         <!-- Στο κλικ να ενημερώνεται το topMovie και το SimilarMovies -->
+        <!-- {{ item }} -->
         <v-card
           class="ma-2 pa-2 mx-auto"
           @click="handleClick(item)"
@@ -72,7 +73,7 @@
         >
           <v-card-text
             style="text-align: center; justify-content: center; display: flex"
-            >{{ item.title }}</v-card-text
+            >{{ item.name }}</v-card-text
           >
           <v-img
             v-if="item.poster_path"
@@ -108,11 +109,12 @@ export default {
   methods: {
     async getTopMovie(id) {
       this.movie = await fetch(
-        `https://api.themoviedb.org/3/movie/${id}?api_key=5b75818e63dfdb396cadedf77425b334&language=en-US&page=1`
+        `https://api.themoviedb.org/3/tv/${id}?api_key=5b75818e63dfdb396cadedf77425b334&language=en-US&page=1`
       ).then((res) => res.json());
+      console.log(this.movie);
     },
     watchMovie(id) {
-      location.href = "https://vidsrc.xyz/embed/movie?imdb=" + id;
+      location.href = "https://vidsrc.xyz/embed/tv/" + id;
     },
     handleClick(item) {
       this.getTopMovie(item.id);
@@ -121,7 +123,7 @@ export default {
     async getSimilarMovies(ID) {
       this.similarMovies = [];
       const url =
-        "https://api.themoviedb.org/3/movie/" +
+        "https://api.themoviedb.org/3/tv/" +
         ID +
         "/similar?language=en-US&page=1";
       const options = {

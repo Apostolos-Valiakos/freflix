@@ -1,16 +1,26 @@
 <template>
   <header>
     <NuxtLink to="/"
-      ><img src="~assets/netflix-logo.png" class="logo" alt="Netflix Logo"
+      ><img src="~assets/Freflix-logo.png" class="logo" alt="Netflix Logo"
     /></NuxtLink>
     <nav>
-      <ul>
-        <li><NuxtLink to="/">Home</NuxtLink></li>
-        <li><NuxtLink to="/Series">Series</NuxtLink></li>
-        <li><NuxtLink to="/Movies">Movies</NuxtLink></li>
+      <ul style="list-style-type: none">
+        <li><NuxtLink style="text-decoration: none" to="/">Home</NuxtLink></li>
+        <li>
+          <NuxtLink style="text-decoration: none" to="/Series">Series</NuxtLink>
+        </li>
+        <li>
+          <NuxtLink style="text-decoration: none" to="/Movies">Movies</NuxtLink>
+        </li>
       </ul>
     </nav>
-    <input type="search" class="search" placeholder="🍿 Search Movie..." />
+    <ul style="list-style-type: none">
+      <li>
+        <NuxtLink style="text-decoration: none" to="/searchResults">
+          Search
+        </NuxtLink>
+      </li>
+    </ul>
   </header>
 </template>
 <script>

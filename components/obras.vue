@@ -142,6 +142,9 @@ export default {
       required: true,
       type: String,
     },
+    type: {
+      type: String,
+    },
   },
   data() {
     return {
@@ -201,11 +204,13 @@ export default {
     seeMovie(link) {
       this.showEmbed = true;
       this.embedLink = "https://autoembed.to/movie/tmdb/" + link;
-      // location.href = "https://autoembed.to/movie/tmdb/" + link;
     },
     handleclick(item) {
-      this.$router.push({ name: "info", params: { id: item.id } });
-
+      if (this.type === "movie") {
+        this.$router.push({ name: "info", params: { id: item.id } });
+      } else {
+        this.$router.push({ name: "infoSeries", params: { id: item.id } });
+      }
       // this.dialog = true;
       // this.dialogItem = item;
       // this.getSimilarMovies(item.id);
