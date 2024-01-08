@@ -112,7 +112,7 @@ export default {
       ).then((res) => res.json());
     },
     watchMovie(id) {
-      location.href = "https://vidsrc.xyz/embed/movie?imdb=" + id;
+      location.href = "https://multiembed.mov/?video_id=" + id;
     },
     handleClick(item) {
       this.getTopMovie(item.id);
