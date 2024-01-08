@@ -36,6 +36,22 @@
                 class="movie-poster"
               />
               <v-btn @click="watchMovie(movie.id)"> play </v-btn>
+              <!-- <v-select
+              class="mx-2"
+              v-if="details"
+              v-model="selectedSeason"
+              label="Season"
+              :items="details"
+              :item-text="'season'"
+              :item-value="'season_number'"
+              @change="getNoOfEpisodesForSelectedSeason(selectedSeason)"
+            ></v-select>
+            <v-select
+              v-if="episodes"
+              label="Episode"
+              v-model="episode"
+              :items="episodes"
+            ></v-select> -->
             </figure>
           </v-col>
           <v-col>
@@ -94,6 +110,9 @@ export default {
   name: "single-movie",
   data() {
     return {
+      season: 1,
+      episode: 1,
+      selectedSeriesInfo: null,
       params: null,
       popup: false,
       movie: null,
@@ -148,6 +167,39 @@ export default {
         })
         .catch((err) => console.error("error:" + err));
     },
+    // getNoOfEpisodesForSelectedSeason(selectedSeason) {
+    //   console.log(selectedSeason);
+    //   this.selectedSeriesInfo.seasons.forEach((element) => {
+    //     if (element.name === selectedSeason) {
+    //       this.season = element.season_number;
+    //       for (let index = 0; index < element.episode_count; index++) {
+    //         this.episodes.push(index);
+    //       }
+    //     }
+    //   });
+    // },
+    // async getDetails(id) {
+    //   const url = "https://api.themoviedb.org/3/tv/" + id + "?language=en-US";
+    //   const options = {
+    //     method: "GET",
+    //     headers: {
+    //       accept: "application/json",
+    //       Authorization:
+    //         "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+    //     },
+    //   };
+
+    //   await fetch(url, options)
+    //     .then((res) => res.json())
+    //     .then((json) => {
+    //       json.seasons.forEach((element) => {
+    //         this.details.push({ season: element.name });
+    //       });
+    //       this.selectedSeriesInfo = json;
+    //       console.log(json);
+    //     })
+    //     .catch((err) => console.error("error:" + err));
+    // },
   },
 };
 </script>
