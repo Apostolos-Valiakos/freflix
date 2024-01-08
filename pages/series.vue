@@ -170,12 +170,17 @@ export default {
       fetch(url, options)
         .then((res) => res.json())
         .then((json) => {
+          console.log(json);
           this.topMovie.imdb_id = json.imdb_id;
+          // console.log(this.topMovie);
         })
         .catch((err) => console.error("error:" + err));
     },
     watchSeries(id) {
-      location.href = "https://vidsrc.me/embed/tv/" + id;
+      console.log(id);
+      // console.log("https://multiembed.mov/?video_id=" + id + "&tmdb=1&s=1&e=1");
+      location.href =
+        "https://multiembed.mov/?video_id=" + id + "&tmdb=1&s=1&e=1";
     },
   },
 };

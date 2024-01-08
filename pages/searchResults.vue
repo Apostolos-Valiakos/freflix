@@ -140,9 +140,10 @@ export default {
     },
     seeMovie(link) {
       if (this.isSerie) {
-        location.href = "https://vidsrc.xyz/embed/tv/" + link;
+        location.href =
+          "https://multiembed.mov/?video_id=" + link + "&tmdb=1&s=1&e=1";
       } else {
-        location.href = "https://vidsrc.me/embed/" + link;
+        location.href = "https://multiembed.mov/?video_id=" + link + "&tmdb=1";
       }
     },
     async search(page) {

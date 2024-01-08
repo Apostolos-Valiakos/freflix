@@ -15,7 +15,7 @@
         <p class="synopsis">{{ topMovie.overview }}</p>
         <v-form class="button-container">
           <v-btn
-            @click="watchMovie(topMovie.id)"
+            @click="watchMovie(topMovie.imdb_id)"
             style="color: black"
             color="white"
           >
@@ -189,7 +189,7 @@ export default {
         .catch((err) => console.error("error:" + err));
     },
     watchMovie(id) {
-      location.href = "https://vidsrc.me/embed/" + id;
+      location.href = "https://multiembed.mov/?video_id=" + id;
     },
   },
 };
