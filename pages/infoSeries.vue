@@ -36,22 +36,22 @@
                 class="movie-poster"
               />
               <v-btn @click="watchMovie(movie.id)"> play </v-btn>
-              <!-- <v-select
-              class="mx-2"
-              v-if="details"
-              v-model="selectedSeason"
-              label="Season"
-              :items="details"
-              :item-text="'season'"
-              :item-value="'season_number'"
-              @change="getNoOfEpisodesForSelectedSeason(selectedSeason)"
-            ></v-select>
-            <v-select
-              v-if="episodes"
-              label="Episode"
-              v-model="episode"
-              :items="episodes"
-            ></v-select> -->
+              <v-select
+                class="mx-2"
+                v-if="details"
+                v-model="selectedSeason"
+                label="Season"
+                :items="details"
+                :item-text="'season'"
+                :item-value="'season_number'"
+                @change="getNoOfEpisodesForSelectedSeason(selectedSeason)"
+              ></v-select>
+              <v-select
+                v-if="episodes"
+                label="Episode"
+                v-model="episode"
+                :items="episodes"
+              ></v-select>
             </figure>
           </v-col>
           <v-col>
@@ -110,8 +110,11 @@ export default {
   name: "single-movie",
   data() {
     return {
+      selectedSeason: 1,
+      details: [],
       season: 1,
       episode: 1,
+      episodes: [],
       selectedSeriesInfo: null,
       params: null,
       popup: false,
@@ -124,6 +127,7 @@ export default {
     console.log(this.params);
     this.getTopMovie(this.params);
     this.getSimilarMovies(this.params);
+    this.getDetails(this.params);
   },
   methods: {
     async getTopMovie(id) {
@@ -133,7 +137,13 @@ export default {
       console.log(this.movie);
     },
     watchMovie(id) {
-      location.href = "https://vidsrc.xyz/embed/tv/" + id;
+      location.href =
+        "https://multiembed.mov/?video_id=" +
+        id +
+        "&tmdb=1&s=" +
+        this.season +
+        "&e=" +
+        this.episode;
     },
     handleClick(item) {
       this.getTopMovie(item.id);
@@ -167,39 +177,39 @@ export default {
         })
         .catch((err) => console.error("error:" + err));
     },
-    // getNoOfEpisodesForSelectedSeason(selectedSeason) {
-    //   console.log(selectedSeason);
-    //   this.selectedSeriesInfo.seasons.forEach((element) => {
-    //     if (element.name === selectedSeason) {
-    //       this.season = element.season_number;
-    //       for (let index = 0; index < element.episode_count; index++) {
-    //         this.episodes.push(index);
-    //       }
-    //     }
-    //   });
-    // },
-    // async getDetails(id) {
-    //   const url = "https://api.themoviedb.org/3/tv/" + id + "?language=en-US";
-    //   const options = {
-    //     method: "GET",
-    //     headers: {
-    //       accept: "application/json",
-    //       Authorization:
-    //         "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-    //     },
-    //   };
+    getNoOfEpisodesForSelectedSeason(selectedSeason) {
+      console.log(selectedSeason);
+      this.selectedSeriesInfo.seasons.forEach((element) => {
+        if (element.name === selectedSeason) {
+          this.season = element.season_number;
+          for (let index = 0; index < element.episode_count; index++) {
+            this.episodes.push(index);
+          }
+        }
+      });
+    },
+    async getDetails(id) {
+      const url = "https://api.themoviedb.org/3/tv/" + id + "?language=en-US";
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+        },
+      };
 
-    //   await fetch(url, options)
-    //     .then((res) => res.json())
-    //     .then((json) => {
-    //       json.seasons.forEach((element) => {
-    //         this.details.push({ season: element.name });
-    //       });
-    //       this.selectedSeriesInfo = json;
-    //       console.log(json);
-    //     })
-    //     .catch((err) => console.error("error:" + err));
-    // },
+      await fetch(url, options)
+        .then((res) => res.json())
+        .then((json) => {
+          json.seasons.forEach((element) => {
+            this.details.push({ season: element.name });
+          });
+          this.selectedSeriesInfo = json;
+          console.log(json);
+        })
+        .catch((err) => console.error("error:" + err));
+    },
   },
 };
 </script>

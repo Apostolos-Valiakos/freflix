@@ -46,7 +46,7 @@
 
             <div v-for="genre in movie.genres" :key="genre.id">
               <p>
-                {{ genre.name }}
+                <v-chip>{{ genre.name }}</v-chip>
               </p>
             </div>
           </v-col>
