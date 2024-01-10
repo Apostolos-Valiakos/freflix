@@ -8,7 +8,7 @@
         class="movie-banner"
       />
       <div style="z-index: 1">
-        <h1>{{ topMovie.original_title }}</h1>
+        <h1>{{ topMovie.name }}</h1>
         <p class="synopsis">{{ topMovie.overview }}</p>
         <v-form class="button-container">
           <v-btn @click="watchSeries(topMovie.id)">Watch</v-btn>

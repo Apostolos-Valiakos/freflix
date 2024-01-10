@@ -43,11 +43,15 @@
             <h2>{{ movie.original_title }}</h2>
             <p>{{ movie.overview }}</p>
             <p class="genre">Genre:</p>
-
-            <div v-for="genre in movie.genres" :key="genre.id">
-              <p>
-                <v-chip>{{ genre.name }}</v-chip>
-              </p>
+            <div
+              class="in-row"
+              style="display: flex; flex-direction: row; flex-wrap: nowrap"
+            >
+              <div v-for="genre in movie.genres" :key="genre.id">
+                <p>
+                  <v-chip>{{ genre.name }}</v-chip>
+                </p>
+              </div>
             </div>
           </v-col>
         </v-row>

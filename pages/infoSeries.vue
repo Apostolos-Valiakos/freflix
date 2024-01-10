@@ -36,8 +36,10 @@
                 class="movie-poster"
               />
               <v-btn @click="watchMovie(movie.id)"> play </v-btn>
+
               <v-select
-                class="mx-2"
+                filled
+                class="mt-10"
                 v-if="details"
                 v-model="selectedSeason"
                 label="Season"
@@ -47,6 +49,7 @@
                 @change="getNoOfEpisodesForSelectedSeason(selectedSeason)"
               ></v-select>
               <v-select
+                filled
                 v-if="episodes"
                 label="Episode"
                 v-model="episode"
@@ -56,14 +59,19 @@
           </v-col>
           <v-col>
             <p class="popularity-text">⭐ Rating: {{ movie.vote_average }}</p>
-            <h2>{{ movie.original_title }}</h2>
+            <h2>{{ movie.name }}</h2>
             <p>{{ movie.overview }}</p>
             <p class="genre">Genre:</p>
 
-            <div v-for="genre in movie.genres" :key="genre.id">
-              <p>
-                {{ genre.name }}
-              </p>
+            <div
+              class="in-row"
+              style="display: flex; flex-direction: row; flex-wrap: nowrap"
+            >
+              <div v-for="genre in movie.genres" :key="genre.id">
+                <v-chip class="ma-2 pa-2">
+                  {{ genre.name }}
+                </v-chip>
+              </div>
             </div>
           </v-col>
         </v-row>

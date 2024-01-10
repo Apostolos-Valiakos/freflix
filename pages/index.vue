@@ -36,11 +36,19 @@
     <div style="background-color: black">
       <obras
         class="pt-10"
-        v-if="movies"
-        :obras="movies"
-        titulo="Top Rated"
+        v-if="newMovies"
+        :obras="newMovies"
+        titulo="Newely Added"
         type="movie"
       />
+
+      <!-- <obras
+        class="pt-10"
+        v-if="movies"
+        :obras="movies"
+        titulo="Popular"
+        type="movie"
+      /> -->
 
       <obras
         class="pt-10"
@@ -86,6 +94,7 @@ export default {
   data() {
     return {
       topMovie: null,
+      newMovies: [],
       movies: [],
       horrorItems: [],
       fantasyItems: [],
@@ -112,6 +121,14 @@ export default {
             "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
         },
       };
+      //  "https://api.themoviedb.org/3/discover/movie?include_adult=false?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc",
+
+      this.newMovies = await fetch(
+        "https://api.themoviedb.org/3/movie/popular?language=en-US&page=1",
+        options
+      )
+        .then((res) => res.json())
+        .then((data) => data.results);
 
       this.horrorItems = await fetch(
         "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=27",
