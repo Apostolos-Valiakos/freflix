@@ -1,7 +1,7 @@
 <template>
   <div>
     <div
-      class="ml-16 horizontal-scroll"
+      class="ml-8 horizontal-scroll"
       @keyup.right="nextPage"
       @keyup.left="prevPage"
       @mousewheel.right="nextPage"
