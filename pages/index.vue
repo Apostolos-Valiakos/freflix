@@ -12,6 +12,10 @@
       />
       <div style="z-index: 1">
         <h1>{{ topMovie.original_title }}</h1>
+        <v-btn text color="white" disabled>
+          {{ topMovie.vote_average }}
+          According to IMDB Rating out of {{ topMovie.vote_count }} votes
+        </v-btn>
         <p class="synopsis">{{ topMovie.overview }}</p>
         <v-form class="button-container">
           <v-btn
@@ -167,7 +171,7 @@ export default {
     },
 
     handleMovieClick(id) {
-      this.$router.push({ name: "info", params: { id: id } });
+      this.$router.push({ name: "info", query: { id: id } });
     },
     async getTopMovie(movie) {
       var url =

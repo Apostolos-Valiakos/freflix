@@ -207,9 +207,9 @@ export default {
     },
     handleclick(item) {
       if (this.type === "movie") {
-        this.$router.push({ name: "info", params: { id: item.id } });
+        this.$router.push({ name: "info", query: { id: item.id } });
       } else {
-        this.$router.push({ name: "infoSeries", params: { id: item.id } });
+        this.$router.push({ name: "infoSeries", query: { id: item.id } });
       }
       // this.dialog = true;
       // this.dialogItem = item;

@@ -1,27 +1,12 @@
 <template>
   <div>
     <section v-if="movie">
-      <!-- {{ movie }} -->
-      <!-- <v-img
-        :src="'https://image.tmdb.org/t/p/original' + movie.poster_path"
-        alt="Movie Poster"
-        class="movie-banner"
-      />
-    </section>
-    <section>
-      <figure>
-        <img
-          :src="`https://image.tmdb.org/t/p/w500/${movie.poster_path}`"
-          alt="Poster Image"
-        />
-      </figure> -->
       <v-img
         :src="'https://image.tmdb.org/t/p/original' + movie.poster_path"
         alt="Movie Poster"
         class="movie-banner"
-        style="z-index: 1"
       />
-      <div style="z-index: 2">
+      <div style="z-index: 1">
         <v-row>
           <v-col>
             <figure>
@@ -39,8 +24,13 @@
             </figure>
           </v-col>
           <v-col>
-            <p class="popularity-text">⭐ Rating: {{ movie.vote_average }}</p>
+            <p class="popularity-text">
+              ⭐ Rating: {{ movie.vote_average }} out of
+              {{ movie.vote_count }} votes on IMDB
+            </p>
             <h2>{{ movie.original_title }}</h2>
+            <h3>{{ movie.release_date }}</h3>
+            <h3>{{ movie.runtime }} mins</h3>
             <p>{{ movie.overview }}</p>
             <p class="genre">Genre:</p>
             <div
@@ -97,22 +87,22 @@ export default {
   name: "single-movie",
   data() {
     return {
-      params: null,
+      query: null,
       popup: false,
       movie: null,
       similarMovies: [],
     };
   },
   async created() {
-    if (this.$route.params.id) {
-      this.params = this.$route.params.id;
-      this.setCookie("id", this.params, 1);
+    if (this.$route.query.id) {
+      this.query = this.$route.query.id;
+      this.setCookie("id", this.query, 1);
     } else {
-      this.params = this.getCookie("id");
+      this.query = this.getCookie("id");
     }
-    // console.log(this.params);
-    this.getTopMovie(this.params);
-    this.getSimilarMovies(this.params);
+    // console.log(this.query);
+    this.getTopMovie(this.query);
+    this.getSimilarMovies(this.query);
   },
   methods: {
     setCookie(name, value, days) {
@@ -142,6 +132,7 @@ export default {
       this.movie = await fetch(
         `https://api.themoviedb.org/3/movie/${id}?api_key=5b75818e63dfdb396cadedf77425b334&language=en-US&page=1`
       ).then((res) => res.json());
+      console.log(this.movie);
     },
     watchMovie(id) {
       location.href = "https://multiembed.mov/?video_id=" + id;
@@ -191,7 +182,6 @@ p {
 }
 
 section:first-child {
-  height: 70vh;
   object-fit: cover;
   position: relative;
 }
@@ -250,7 +240,7 @@ p {
   object-position: center;
   position: absolute;
   left: 0;
-  z-index: -1;
+  z-index: 0;
   opacity: 0.8;
 }
 

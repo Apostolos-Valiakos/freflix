@@ -1,16 +1,25 @@
 <template>
   <div style="margin-top: 100px">
-    <v-text-field label="Search" v-model="searchTerm" @change="search(1)" />
-    <v-select
-      v-if="categories"
-      @change="searchPerCategory(selectedCategory, 1)"
-      :item-text="'name'"
-      :item-value="'id'"
-      v-model="selectedCategory"
-      label="Search by Category"
-      :items="categories"
-    ></v-select>
-    <v-checkbox label="Looking for Serie" v-model="isSerie"></v-checkbox>
+    <div class="d-flex justify-space-around mb-6 bg-surface-variant">
+      <v-text-field class="ma-2 pa-2" label="Search" v-model="searchTerm" />
+      <!-- @change="autocomplete" -->
+      <v-select
+        class="ma-2 pa-2"
+        v-if="categories"
+        @change="searchPerCategory(selectedCategory, 1)"
+        :item-text="'name'"
+        :item-value="'id'"
+        v-model="selectedCategory"
+        label="Search by Category"
+        :items="categories"
+      ></v-select>
+      <v-checkbox
+        class="ma-2 pa-2"
+        label="Looking for Serie"
+        v-model="isSerie"
+      ></v-checkbox>
+    </div>
+    <v-btn class="mx-8" @click="search(1)">Search</v-btn>
     <h2 class="page-title" v-if="searchTerm">
       Search Results for "{{ searchTerm }}"
     </h2>
@@ -65,6 +74,7 @@ export default {
     return {
       showEmbed: false,
       isSerie: false,
+      autocompleteItems: [],
       embedLink: "",
       selectedCategory: "",
       categories: [],
@@ -74,14 +84,36 @@ export default {
     };
   },
   methods: {
+    // autocomplete() {
+    //   const url =
+    //     "https://api.themoviedb.org/3/search/keyword?query=" +
+    //     this.searchTerm +
+    //     "&page=1";
+    //   const options = {
+    //     method: "GET",
+    //     headers: {
+    //       accept: "application/json",
+    //       Authorization:
+    //         "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+    //     },
+    //   };
+
+    //   fetch(url, options)
+    //     .then((res) => res.json())
+    //     .then((json) => {
+    //       console.log(json);
+    //       this.autocompleteItems = json.results;
+    //     })
+    //     .catch((err) => console.error("error:" + err));
+    // },
     seeInfo(id) {
       if (this.isSerie) {
         this.$router.push({
           name: "infoSeries",
-          params: { id: id },
+          query: { id: id },
         });
       } else {
-        this.$router.push({ name: "info", params: { id: id } });
+        this.$router.push({ name: "info", query: { id: id } });
       }
     },
     searchPerCategory(selectedCategory, pagination) {

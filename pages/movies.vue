@@ -167,7 +167,7 @@ export default {
     },
 
     handleMovieClick(id) {
-      this.$router.push({ name: "info", params: { id: id } });
+      this.$router.push({ name: "info", query: { id: id } });
     },
     async getTopMovie(movie) {
       var url =
