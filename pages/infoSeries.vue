@@ -38,6 +38,7 @@
               <v-btn @click="watchMovie(movie.id)"> play </v-btn>
 
               <v-select
+                style="width: 300px"
                 filled
                 class="mt-10"
                 v-if="details"
@@ -49,6 +50,7 @@
                 @change="getNoOfEpisodesForSelectedSeason(selectedSeason)"
               ></v-select>
               <v-select
+                style="width: 300px"
                 filled
                 v-if="episodes"
                 label="Episode"
@@ -131,13 +133,41 @@ export default {
     };
   },
   async created() {
-    this.params = this.$route.params.id;
-    console.log(this.params);
+    if (this.$route.params.id) {
+      this.params = this.$route.params.id;
+      this.setCookie("id", this.params, 1);
+    } else {
+      this.params = this.getCookie("id");
+    }
+    // console.log(this.params);
     this.getTopMovie(this.params);
     this.getSimilarMovies(this.params);
     this.getDetails(this.params);
   },
   methods: {
+    setCookie(name, value, days) {
+      var expires = "";
+      if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+        expires = "; expires=" + date.toUTCString();
+      }
+      document.cookie = name + "=" + (value || "") + expires + "; path=/";
+    },
+    getCookie(name) {
+      var nameEQ = name + "=";
+      var ca = document.cookie.split(";");
+      for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == " ") c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+      }
+      return null;
+    },
+    eraseCookie(name) {
+      document.cookie =
+        name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+    },
     async getTopMovie(id) {
       this.movie = await fetch(
         `https://api.themoviedb.org/3/tv/${id}?api_key=5b75818e63dfdb396cadedf77425b334&language=en-US&page=1`
@@ -154,8 +184,12 @@ export default {
         this.episode;
     },
     handleClick(item) {
+      console.log(item.id);
       this.getTopMovie(item.id);
       this.getSimilarMovies(item.id);
+      this.getDetails(item.id);
+      this.eraseCookie("id");
+      this.setCookie("id", item.id, 1);
     },
     async getSimilarMovies(ID) {
       this.similarMovies = [];

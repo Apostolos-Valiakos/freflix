@@ -46,8 +46,13 @@
     </v-row>
     <v-pagination
       v-if="noOfPages"
-      style="text-align: center; justify-content: center; display: flex"
-      rounded
+      style="
+        text-align: center;
+        justify-content: center;
+        display: flex;
+        margin-left: 10px;
+        margin-right: 10px;
+      "
       :length="noOfPages"
       @input="updatePagination"
     ></v-pagination>
@@ -104,6 +109,7 @@ export default {
             console.log(json);
             this.noOfPages = json.total_pages;
             this.searchResults = json.results;
+            console.log(json.results);
           })
           .catch((err) => console.error("error:" + err));
       } else {
