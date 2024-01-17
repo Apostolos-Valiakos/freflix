@@ -20,7 +20,13 @@
                 alt="Poster Image"
                 class="movie-poster"
               />
-              <v-btn @click="watchMovie(movie.imdb_id)"> play </v-btn>
+              <v-btn
+                @click="watchMovie(movie.imdb_id)"
+                style="color: white"
+                color="red"
+              >
+                play
+              </v-btn>
             </figure>
           </v-col>
           <v-col>

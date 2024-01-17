@@ -20,16 +20,16 @@
         <v-form class="button-container">
           <v-btn
             @click="watchMovie(topMovie.imdb_id)"
-            style="color: black"
-            color="white"
+            style="color: white"
+            color="red"
           >
             Watch
           </v-btn>
           <!-- class="cta-transparent" -->
           <v-btn
             @click="handleMovieClick(topMovie.id)"
-            style="color: white"
-            color="black"
+            style="color: red"
+            color="white"
           >
             More information
           </v-btn>

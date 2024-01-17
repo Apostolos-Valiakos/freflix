@@ -20,7 +20,13 @@
                 alt="Poster Image"
                 class="movie-poster"
               />
-              <v-btn @click="watchMovie(movie.id)"> play </v-btn>
+              <v-btn
+                @click="watchMovie(movie.id)"
+                style="color: white"
+                color="red"
+              >
+                play
+              </v-btn>
 
               <v-select
                 style="width: 300px"
