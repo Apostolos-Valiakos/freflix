@@ -1,5 +1,45 @@
 <template>
-  <header>
+  <div v-if="mobile">
+    <div class="d-flex justify-center mb-6 bg-surface-variant">
+      <NuxtLink to="/"
+        ><img src="~assets/Freflix-logo.png" class="logo" alt="Netflix Logo"
+      /></NuxtLink>
+    </div>
+
+    <div class="d-flex justify-start mb-6 bg-surface-variant">
+      <nav>
+        <ul style="list-style-type: none">
+          <li>
+            <NuxtLink style="text-decoration: none" to="/">Home</NuxtLink>
+          </li>
+          <li>
+            <NuxtLink style="text-decoration: none" to="/Series"
+              >Series</NuxtLink
+            >
+          </li>
+          <li>
+            <NuxtLink style="text-decoration: none" to="/Movies"
+              >Movies</NuxtLink
+            >
+          </li>
+        </ul>
+      </nav>
+      <div class="d-flex justify-end mb-6 bg-surface-variant">
+        <ul style="list-style-type: none">
+          <li>
+            <NuxtLink
+              style="text-decoration: none"
+              class="mr-4"
+              to="/searchResults"
+            >
+              Search
+            </NuxtLink>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <header v-else>
     <NuxtLink to="/"
       ><img src="~assets/Freflix-logo.png" class="logo" alt="Netflix Logo"
     /></NuxtLink>
@@ -24,7 +64,16 @@
   </header>
 </template>
 <script>
-export default {};
+export default {
+  data() {
+    return {
+      mobile: false,
+    };
+  },
+  created() {
+    this.mobile = screen.width < 450;
+  },
+};
 </script>
 <style scoped>
 header {

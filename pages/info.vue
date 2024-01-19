@@ -34,7 +34,7 @@
               ⭐ Rating: {{ movie.vote_average }} out of
               {{ movie.vote_count }} votes on IMDB
             </p>
-            <h2>{{ movie.original_title }}</h2>
+            <h2>{{ movie.title }}</h2>
             <h3>{{ movie.release_date }}</h3>
             <h3>{{ movie.runtime }} mins</h3>
             <p>{{ movie.overview }}</p>
