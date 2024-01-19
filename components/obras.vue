@@ -14,8 +14,8 @@
       </v-card-title>
 
       <v-carousel
-        show-arrows-on-hover
         hide-delimiters
+        show-arrows-on-hover
         class="movie-grid"
         style="white-space: nowrap; display: inline-block"
         @change="nextPage()"
@@ -33,9 +33,19 @@
               color="#e5e5e500"
             >
               <v-img
-                v-if="item.poster_path"
+                v-if="item.poster_path && !isMobile"
                 @click="handleclick(item)"
                 :src="'https://image.tmdb.org/t/p//w500' + item.poster_path"
+                contain
+                class="d-flex align-center mx-1 cursor-pointer imgJanela movie-poster"
+                @mouseover="item.isActive = true"
+                @mouseout="item.isActive = false"
+              >
+              </v-img>
+              <v-img
+                v-else
+                @click="handleclick(item)"
+                :src="'https://image.tmdb.org/t/p/w200' + item.poster_path"
                 contain
                 class="d-flex align-center mx-1 cursor-pointer imgJanela movie-poster"
                 @mouseover="item.isActive = true"
@@ -149,6 +159,7 @@ export default {
   data() {
     return {
       showEmbed: false,
+      isMobile: false,
       embedLink: "",
       similarMovies: [],
       dialogItem: "",
@@ -166,6 +177,7 @@ export default {
   },
   mounted() {
     if (this.obras && this.obras.length) this.items = this.obras;
+    this.isMobile = screen.width < 450;
   },
 
   methods: {
@@ -216,25 +228,25 @@ export default {
       // this.getSimilarMovies(item.id);
     },
     prevPage() {
-      for (let x = 0; x <= 3; x++) {
+      for (let x = 0; x <= 2; x++) {
         this.items.unshift(this.items.pop());
       }
     },
     nextPage() {
-      for (let x = 0; x <= 3; x++) {
+      for (let x = 0; x <= 2; x++) {
         this.items.push(this.items.shift());
       }
     },
-    prevPageDialogCarousel() {
-      for (let x = 0; x <= 3; x++) {
-        this.similarMovies.unshift(this.similarMovies.pop());
-      }
-    },
-    nextPageDialogCarousel() {
-      for (let x = 0; x <= 3; x++) {
-        this.similarMovies.push(this.similarMovies.shift());
-      }
-    },
+    // prevPageDialogCarousel() {
+    //   for (let x = 0; x <= this.columns; x++) {
+    //     this.similarMovies.unshift(this.similarMovies.pop());
+    //   }
+    // },
+    // nextPageDialogCarousel() {
+    //   for (let x = 0; x <= this.columns; x++) {
+    //     this.similarMovies.push(this.similarMovies.shift());
+    //   }
+    // },
   },
   computed: {
     columns() {
