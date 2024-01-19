@@ -43,10 +43,10 @@
             {{ movie.overview }}
           </v-card-subtitle>
           <v-card-actions>
-            <v-btn color="green darken-1" @click="seeMovie(movie.id)">
+            <v-btn color="red" @click="seeMovie(movie.id)" style="color: white">
               Play
             </v-btn>
-            <v-btn color="grey darken-1" @click="seeInfo(movie.id)">
+            <v-btn color="white" @click="seeInfo(movie.id)" style="color: red">
               Info
             </v-btn>
           </v-card-actions>
