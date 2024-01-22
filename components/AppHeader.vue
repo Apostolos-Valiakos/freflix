@@ -13,14 +13,14 @@
             <NuxtLink style="text-decoration: none" to="/">Home</NuxtLink>
           </li>
           <li>
-            <NuxtLink style="text-decoration: none" to="/Series"
-              >Series</NuxtLink
-            >
+            <NuxtLink style="text-decoration: none" to="/Series">
+              Series
+            </NuxtLink>
           </li>
           <li>
-            <NuxtLink style="text-decoration: none" to="/Movies"
-              >Movies</NuxtLink
-            >
+            <NuxtLink style="text-decoration: none" to="/Movies">
+              Movies
+            </NuxtLink>
           </li>
         </ul>
       </nav>
