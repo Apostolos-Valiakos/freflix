@@ -233,7 +233,7 @@ export default {
       }
     },
     nextPage() {
-      for (let x = 0; x <= 2; x++) {
+      for (let x = 0; x <= this.columns; x++) {
         this.items.push(this.items.shift());
       }
     },
