@@ -1,5 +1,5 @@
 <template>
-  <div v-if="mobile">
+  <div class="mobile-header" v-if="mobile">
     <div class="d-flex justify-center mb-6 bg-surface-variant">
       <NuxtLink to="/"
         ><img src="~assets/Freflix-logo.png" class="logo" alt="Netflix Logo"
@@ -78,6 +78,15 @@ export default {
 <style scoped>
 header {
   display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1em 2.5em;
+  position: fixed;
+  z-index: 99;
+  width: 100%;
+}
+.mobile-header {
+  /* display: flex; */
   justify-content: center;
   align-items: center;
   padding: 1em 2.5em;
