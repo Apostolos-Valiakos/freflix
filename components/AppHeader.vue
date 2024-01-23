@@ -1,5 +1,5 @@
 <template>
-  <div class="mobile-header" v-if="mobile">
+  <div v-if="mobile" style="background-color: black">
     <div class="d-flex justify-center mb-6 bg-surface-variant">
       <NuxtLink to="/"
         ><img src="~assets/Freflix-logo.png" class="logo" alt="Netflix Logo"

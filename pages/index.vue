@@ -1,20 +1,19 @@
-<!-- https://getsuperembed.link/?video_id=imdbId -->
-<!-- IMDB LINK -->
-<!-- Parse the response link -->
 <template>
   <div v-if="movies.length > 0">
     <section>
       <v-img
         :src="'https://image.tmdb.org/t/p/original' + topMovie.poster_path"
+        :lazy-src="'https://image.tmdb.org/t/p/original' + topMovie.poster_path"
         alt="Movie Poster"
-        class="movie-banner"
+        class="movie-banner grad"
         gradient="to bottom, rgba(0,0,0,0.2), rgba(0,0,0,1)"
       />
       <div style="z-index: 1">
         <h1>{{ topMovie.title }}</h1>
         <v-btn text color="white" disabled>
           {{ topMovie.vote_average }}
-          According to IMDB Rating out of {{ topMovie.vote_count }} votes
+          According to IMDB Rating <br />
+          out of {{ topMovie.vote_count }} votes
         </v-btn>
         <p class="synopsis">{{ topMovie.overview }}</p>
         <v-form class="button-container">
@@ -39,23 +38,14 @@
     </section>
     <div style="background-color: black">
       <obras
-        class="pt-10"
         v-if="newMovies"
         :obras="newMovies"
         titulo="Newely Added"
         type="movie"
       />
 
-      <!-- <obras
-        class="pt-10"
-        v-if="movies"
-        :obras="movies"
-        titulo="Popular"
-        type="movie"
-      /> -->
-
       <obras
-        class="pt-10"
+        class="mt-n10"
         v-if="horrorItems"
         :obras="horrorItems"
         titulo="Horror"
@@ -63,7 +53,6 @@
       />
 
       <obras
-        class="pt-10"
         v-if="fantasyItems"
         :obras="fantasyItems"
         titulo="Fantasy"
@@ -71,14 +60,12 @@
       />
 
       <obras
-        class="pt-5"
         v-if="documentaryItems"
         :obras="documentaryItems"
         titulo="Documentary"
         type="movie"
       />
       <obras
-        class="pt-5"
         v-if="animationItems"
         :obras="animationItems"
         titulo="Animation"
@@ -357,5 +344,11 @@ button {
   .synopsis {
     font-size: 1.2rem;
   }
+}
+.v-window.v-item-group.theme--dark.v-window--show-arrows-on-hover.v-carousel {
+  height: 400px !important;
+}
+.grad {
+  background: linear-gradient(to top, transparent, black);
 }
 </style>
