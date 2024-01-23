@@ -1,7 +1,7 @@
 <template>
   <div>
     <div
-      class="ml-8 horizontal-scroll"
+      class="ml-8"
       @keyup.right="nextPage"
       @keyup.left="prevPage"
       @mousewheel.right="nextPage"
@@ -16,7 +16,6 @@
       <v-carousel
         hide-delimiters
         show-arrows-on-hover
-        class="movie-grid"
         style="white-space: nowrap; display: inline-block"
         @change="nextPage()"
       >
@@ -36,6 +35,9 @@
                 v-if="item.poster_path && !isMobile"
                 @click="handleclick(item)"
                 :src="'https://image.tmdb.org/t/p//w500' + item.poster_path"
+                :lazy-src="
+                  'https://image.tmdb.org/t/p//w500' + item.poster_path
+                "
                 contain
                 class="d-flex align-center mx-1 cursor-pointer imgJanela movie-poster"
                 @mouseover="item.isActive = true"
@@ -46,6 +48,7 @@
                 v-else
                 @click="handleclick(item)"
                 :src="'https://image.tmdb.org/t/p/w200' + item.poster_path"
+                :lazy-src="'https://image.tmdb.org/t/p/w200' + item.poster_path"
                 contain
                 class="d-flex align-center mx-1 cursor-pointer imgJanela movie-poster"
                 @mouseover="item.isActive = true"
@@ -57,8 +60,8 @@
         </v-carousel-item>
       </v-carousel>
     </div>
-    <v-row justify="center">
-      <!-- <v-dialog v-model="dialog" max-width="1000px">
+    <!-- <v-row justify="center">
+      <v-dialog v-model="dialog" max-width="1000px">
         <v-card v-if="dialogItem">
           <v-img
             :src="'https://image.tmdb.org/t/p//w500' + dialogItem.poster_path"
@@ -136,8 +139,8 @@
             </v-sheet>
           </v-sheet>
         </v-card>
-      </v-dialog> -->
-    </v-row>
+      </v-dialog> 
+    </v-row> -->
   </div>
 </template>
 

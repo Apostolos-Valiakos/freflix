@@ -8,9 +8,9 @@
       />
       <div style="z-index: 1">
         <v-row>
-          <v-col>
+          <v-col v-if="!isMobile">
             <figure>
-              <img
+              <v-img
                 style="
                   text-align: right;
                   display: flex;
@@ -35,6 +35,14 @@
               {{ movie.vote_count }} votes on IMDB
             </p>
             <h2>{{ movie.title }}</h2>
+            <v-btn
+              v-if="isMobile"
+              @click="watchMovie(movie.imdb_id)"
+              style="color: white"
+              color="red"
+            >
+              play
+            </v-btn>
             <h3>{{ movie.release_date }}</h3>
             <h3>{{ movie.runtime }} mins</h3>
             <p>{{ movie.overview }}</p>
@@ -57,14 +65,9 @@
     <v-sheet class="d-flex align-content-center flex-wrap bg-surface-variant">
       <!-- <h4 class="text-h5 font-weight-bold mb-4">Similar Movies</h4> -->
 
-      <div
-        v-for="(item, index) in similarMovies"
-        :key="index"
-        class="ma-2 pa-2"
-      >
+      <div v-for="(item, index) in similarMovies" :key="index">
         <!-- Στο κλικ να ενημερώνεται το topMovie και το SimilarMovies -->
         <v-card
-          class="ma-2 pa-2 mx-auto"
           @click="handleClick(item)"
           v-if="item !== undefined"
           width="200"
@@ -93,6 +96,7 @@ export default {
   name: "single-movie",
   data() {
     return {
+      isMobile: false,
       query: null,
       popup: false,
       movie: null,
@@ -100,6 +104,7 @@ export default {
     };
   },
   async created() {
+    this.isMobile = screen.width < 450;
     if (this.$route.query.id) {
       this.query = this.$route.query.id;
       this.setCookie("id", this.query, 1);

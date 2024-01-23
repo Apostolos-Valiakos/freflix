@@ -83,15 +83,10 @@
     <v-sheet class="d-flex align-content-center flex-wrap bg-surface-variant">
       <!-- <h4 class="text-h5 font-weight-bold mb-4">Similar Movies</h4> -->
 
-      <div
-        v-for="(item, index) in similarMovies"
-        :key="index"
-        class="ma-2 pa-2"
-      >
+      <div v-for="(item, index) in similarMovies" :key="index">
         <!-- Στο κλικ να ενημερώνεται το topMovie και το SimilarMovies -->
         <!-- {{ item }} -->
         <v-card
-          class="ma-2 pa-2 mx-auto"
           @click="handleClick(item)"
           v-if="item !== undefined"
           width="200"

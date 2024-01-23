@@ -279,7 +279,7 @@ export default {
   },
   created() {
     if (screen.width < 450) {
-      this.marginFromTop = "margin-top: 10px";
+      this.marginFromTop = "margin-top: 0px";
     }
     const url = "https://api.themoviedb.org/3/genre/movie/list?language=en";
     const options = {
