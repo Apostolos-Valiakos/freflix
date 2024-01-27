@@ -1,0 +1,7 @@
+{
+  "name": "freflix",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "custom"
+}

@@ -18,7 +18,7 @@
         <p class="synopsis">{{ topMovie.overview }}</p>
         <v-form class="button-container">
           <v-btn
-            @click="watchMovie(topMovie.imdb_id)"
+            @click="watchMovie(topMovie.id)"
             style="color: white"
             color="red"
           >
@@ -197,7 +197,8 @@ export default {
         .catch((err) => console.error("error:" + err));
     },
     watchMovie(id) {
-      location.href = "https://multiembed.mov/?video_id=" + id;
+      // location.href = "https://multiembed.mov/?video_id=" + id;
+      this.$router.push({ name: "watch", query: { id: id } });
     },
   },
 };

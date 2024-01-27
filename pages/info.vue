@@ -146,7 +146,8 @@ export default {
       console.log(this.movie);
     },
     watchMovie(id) {
-      location.href = "https://multiembed.mov/?video_id=" + id;
+      // location.href = "https://multiembed.mov/?video_id=" + id;
+      this.$router.push({ name: "watch", query: { id: id } });
     },
     handleClick(item) {
       this.getTopMovie(item.id);
