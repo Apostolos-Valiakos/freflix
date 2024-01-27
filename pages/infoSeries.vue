@@ -71,7 +71,7 @@
               style="display: flex; flex-direction: row; flex-wrap: nowrap"
             >
               <div v-for="genre in movie.genres" :key="genre.id">
-                <v-chip class="ma-2 pa-2">
+                <v-chip class="mx-1">
                   {{ genre.name }}
                 </v-chip>
               </div>
