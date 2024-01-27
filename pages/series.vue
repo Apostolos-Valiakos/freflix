@@ -30,24 +30,11 @@
         <div class="gradient"></div>
       </div>
     </section>
-    <obras
-      class="pt-10"
-      v-if="movies"
-      :obras="movies"
-      titulo="Top Rated"
-      type="series"
-    />
+    <obras v-if="movies" :obras="movies" titulo="Top Rated" type="series" />
+
+    <obras v-if="crimeItems" :obras="crimeItems" titulo="Crime" type="series" />
 
     <obras
-      class="pt-10"
-      v-if="crimeItems"
-      :obras="crimeItems"
-      titulo="Crime"
-      type="series"
-    />
-
-    <obras
-      class="pt-10"
       v-if="fantasyItems"
       :obras="fantasyItems"
       titulo="Fantasy"
@@ -55,14 +42,12 @@
     />
 
     <obras
-      class="pt-5"
       v-if="documentaryItems"
       :obras="documentaryItems"
       titulo="Documentary"
       type="series"
     />
     <obras
-      class="pt-5"
       v-if="animationItems"
       :obras="animationItems"
       titulo="Animation"
@@ -338,5 +323,8 @@ button {
   .synopsis {
     font-size: 1.2rem;
   }
+}
+.v-window.v-item-group.theme--dark.v-window--show-arrows-on-hover.v-carousel {
+  height: 400px !important;
 }
 </style>

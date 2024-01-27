@@ -11,6 +11,7 @@
           <v-col>
             <figure>
               <img
+                v-if="!isMobile"
                 style="
                   text-align: right;
                   display: flex;
@@ -115,6 +116,7 @@ export default {
   name: "single-movie",
   data() {
     return {
+      isMobile: false,
       selectedSeason: 1,
       details: [],
       season: 1,
@@ -128,6 +130,8 @@ export default {
     };
   },
   async created() {
+    this.isMobile = screen.width < 450;
+
     if (this.$route.query.id) {
       this.query = this.$route.query.id;
       this.setCookie("id", this.query, 1);
