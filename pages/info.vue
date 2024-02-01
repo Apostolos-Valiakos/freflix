@@ -10,23 +10,23 @@
         <v-row>
           <v-col v-if="!isMobile">
             <figure>
-              <v-img
-                style="
-                  text-align: right;
-                  display: flex;
-                  justify-content: center;
-                "
-                :src="`https://image.tmdb.org/t/p/w500/${movie.poster_path}`"
-                alt="Poster Image"
-                class="movie-poster"
-              />
-              <v-btn
-                @click="watchMovie(movie.imdb_id)"
-                style="color: white"
-                color="red"
-              >
-                play
-              </v-btn>
+              <v-row style="justify-content: center">
+                <v-img
+                  style="display: flex; justify-content: center"
+                  :src="`https://image.tmdb.org/t/p/w500/${movie.poster_path}`"
+                  alt="Poster Image"
+                  class="movie-poster"
+                />
+              </v-row>
+              <v-row style="justify-content: center">
+                <v-btn
+                  @click="watchMovie(movie.imdb_id)"
+                  style="color: white"
+                  color="red"
+                >
+                  play
+                </v-btn>
+              </v-row>
             </figure>
           </v-col>
           <v-col>
@@ -71,7 +71,6 @@
       <div v-for="(item, index) in similarMovies" :key="index">
         <!-- Στο κλικ να ενημερώνεται το topMovie και το SimilarMovies -->
         <v-card
-          style="background-color: black"
           @click="handleClick(item)"
           v-if="item !== undefined"
           width="200"
@@ -155,7 +154,8 @@ export default {
       console.log(this.movie);
     },
     watchMovie(id) {
-      location.href = "https://multiembed.mov/?video_id=" + id;
+      // location.href = "https://multiembed.mov/?video_id=" + id;
+      this.$router.push({ name: "watch", query: { id: id } });
     },
     handleClick(item) {
       this.getTopMovie(item.id);

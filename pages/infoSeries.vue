@@ -10,25 +10,28 @@
         <v-row>
           <v-col>
             <figure>
-              <img
-                v-if="!isMobile"
-                style="
-                  text-align: right;
-                  display: flex;
-                  justify-content: center;
-                "
-                :src="`https://image.tmdb.org/t/p/w500/${movie.poster_path}`"
-                alt="Poster Image"
-                class="movie-poster"
-              />
-              <v-btn
-                @click="watchMovie(movie.id)"
-                style="color: white"
-                color="red"
-              >
-                play
-              </v-btn>
-
+              <v-row style="justify-content: center">
+                <img
+                  v-if="!isMobile"
+                  style="
+                    text-align: right;
+                    display: flex;
+                    justify-content: center;
+                  "
+                  :src="`https://image.tmdb.org/t/p/w500/${movie.poster_path}`"
+                  alt="Poster Image"
+                  class="movie-poster"
+                />
+              </v-row>
+              <v-row style="justify-content: center">
+                <v-btn
+                  @click="watchMovie(movie.id)"
+                  style="color: white"
+                  color="red"
+                >
+                  play
+                </v-btn>
+              </v-row>
               <v-select
                 style="width: 300px"
                 filled
@@ -91,7 +94,6 @@
         <!-- Στο κλικ να ενημερώνεται το topMovie και το SimilarMovies -->
         <!-- {{ item }} -->
         <v-card
-          style="background-color: black"
           @click="handleClick(item)"
           v-if="item !== undefined"
           width="200"
