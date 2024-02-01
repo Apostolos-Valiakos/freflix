@@ -10,23 +10,23 @@
         <v-row>
           <v-col v-if="!isMobile">
             <figure>
-              <v-img
-                style="
-                  text-align: right;
-                  display: flex;
-                  justify-content: center;
-                "
-                :src="`https://image.tmdb.org/t/p/w500/${movie.poster_path}`"
-                alt="Poster Image"
-                class="movie-poster"
-              />
-              <v-btn
-                @click="watchMovie(movie.imdb_id)"
-                style="color: white"
-                color="red"
-              >
-                play
-              </v-btn>
+              <v-row style="justify-content: center">
+                <v-img
+                  style="display: flex; justify-content: center"
+                  :src="`https://image.tmdb.org/t/p/w500/${movie.poster_path}`"
+                  alt="Poster Image"
+                  class="movie-poster"
+                />
+              </v-row>
+              <v-row style="justify-content: center">
+                <v-btn
+                  @click="watchMovie(movie.imdb_id)"
+                  style="color: white"
+                  color="red"
+                >
+                  play
+                </v-btn>
+              </v-row>
             </figure>
           </v-col>
           <v-col>
