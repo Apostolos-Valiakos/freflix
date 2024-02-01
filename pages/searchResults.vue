@@ -214,8 +214,8 @@ export default {
         location.href =
           "https://multiembed.mov/?video_id=" + link + "&tmdb=1&s=1&e=1";
       } else {
-        // location.href = "https://multiembed.mov/?video_id=" + link + "&tmdb=1";
-        this.$router.push({ name: "watch", query: { id: link } });
+        location.href = "https://multiembed.mov/?video_id=" + link + "&tmdb=1";
+        // this.$router.push({ name: "watch", query: { id: link } });
       }
     },
     async search(page) {

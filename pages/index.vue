@@ -197,8 +197,8 @@ export default {
         .catch((err) => console.error("error:" + err));
     },
     watchMovie(id) {
-      // location.href = "https://multiembed.mov/?video_id=" + id;
-      this.$router.push({ name: "watch", query: { id: id } });
+      location.href = "https://multiembed.mov/?video_id=" + id;
+      // this.$router.push({ name: "watch", query: { id: id } });
     },
   },
 };
