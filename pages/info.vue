@@ -63,7 +63,12 @@
     </section>
     <div
       v-if="movie"
-      style="display: flex; justify-content: center; text-align: center"
+      style="
+        display: flex;
+        justify-content: center;
+        text-align: center;
+        background-color: black;
+      "
       class="mt-10"
     >
       <iframe
@@ -74,43 +79,41 @@
         allowfullscreen
       ></iframe>
     </div>
-
-    <v-sheet
-      style="background-color: black"
-      class="d-flex align-content-center flex-wrap bg-surface-variant"
-    >
-      <!-- <h4 class="text-h5 font-weight-bold mb-4">Similar Movies</h4> -->
-
-      <div v-for="(item, index) in similarMovies" :key="index">
-        <!-- Στο κλικ να ενημερώνεται το topMovie και το SimilarMovies -->
-        <v-card
-          class="pa-2"
-          @click="handleClick(item)"
-          v-if="item !== undefined"
-          width="200"
-          height="300"
-        >
-          <v-img
-            v-if="item.poster_path"
-            contain
-            class="mt-2 movie-poster"
-            :src="'https://image.tmdb.org/t/p//w500' + item.poster_path"
-            max-width="200"
-            max-height="200"
-          />
-          <v-sheet v-else max-height="200" width="200" color="grey"></v-sheet>
-          <v-card-text
-            style="
-              text-align: center;
-              justify-content: center;
-              display: flex;
-              color: white;
-            "
-            >{{ item.title }}
-          </v-card-text>
-        </v-card>
-      </div>
-    </v-sheet>
+    <div style="display: flex; justify-content: center; text-align: center">
+      <v-sheet
+        style="background-color: black"
+        class="d-flex align-content-center flex-wrap bg-surface-variant"
+      >
+        <div v-for="(item, index) in similarMovies" :key="index">
+          <!-- Στο κλικ να ενημερώνεται το topMovie και το SimilarMovies -->
+          <v-card
+            class="pa-2"
+            @click="handleClick(item)"
+            v-if="item !== undefined && item.poster_path"
+            style="background-color: black"
+            width="200"
+            height="300"
+          >
+            <v-img
+              contain
+              class="mt-2 movie-poster"
+              :src="'https://image.tmdb.org/t/p//w500' + item.poster_path"
+              max-width="200"
+              max-height="200"
+            />
+            <v-card-text
+              style="
+                text-align: center;
+                justify-content: center;
+                display: flex;
+                color: white;
+              "
+              >{{ item.title }}
+            </v-card-text>
+          </v-card>
+        </div>
+      </v-sheet>
+    </div>
   </div>
 </template>
 <script>
