@@ -105,7 +105,11 @@
     <div style="display: flex; justify-content: center; text-align: center">
       <v-sheet
         class="d-flex align-content-center flex-wrap bg-surface-variant"
-        style="background-color: black"
+        style="
+          background-color: black;
+          text-align: center;
+          justify-content: center;
+        "
       >
         <!-- <h4 class="text-h5 font-weight-bold mb-4">Similar Movies</h4> -->
 

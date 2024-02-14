@@ -81,7 +81,11 @@
     </div>
     <div style="display: flex; justify-content: center; text-align: center">
       <v-sheet
-        style="background-color: black"
+        style="
+          background-color: black;
+          text-align: center;
+          justify-content: center;
+        "
         class="d-flex align-content-center flex-wrap bg-surface-variant"
       >
         <div v-for="(item, index) in similarMovies" :key="index">

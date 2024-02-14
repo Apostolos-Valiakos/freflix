@@ -41,7 +41,7 @@
         md="4"
         lg="3"
       >
-        <v-card class="mb-4">
+        <v-card class="mb-4" @click="seeInfo(movie.id)">
           <v-img
             :src="'https://image.tmdb.org/t/p//w500' + movie.backdrop_path"
           />

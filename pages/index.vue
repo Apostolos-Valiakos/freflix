@@ -100,8 +100,8 @@ export default {
     };
   },
   created() {
-    this.initialize();
     this.getTopMovie("movie");
+    this.initialize();
     // this.getMoviesperGerne("27", this.horrorItems, "movie");
   },
 

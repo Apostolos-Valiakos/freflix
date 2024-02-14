@@ -77,8 +77,8 @@ export default {
     };
   },
   created() {
-    this.initialize();
     this.getTopMovie("tv");
+    this.initialize();
   },
 
   methods: {
