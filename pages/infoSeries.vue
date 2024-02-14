@@ -24,15 +24,15 @@
                 />
               </v-row>
               <v-row style="justify-content: center">
-                <v-btn
+                <!-- <v-btn
                   @click="watchMovie(movie.id)"
                   style="color: white"
                   color="red"
                 >
                   play
-                </v-btn>
+                </v-btn> -->
               </v-row>
-              <v-select
+              <!-- <v-select
                 style="width: 300px"
                 filled
                 class="mt-10"
@@ -51,7 +51,7 @@
                 label="Episode"
                 v-model="episode"
                 :items="episodes"
-              ></v-select>
+              ></v-select> -->
             </figure>
           </v-col>
           <v-col>
@@ -83,6 +83,19 @@
         </v-row>
       </div>
     </section>
+
+    <div
+      v-if="movie"
+      style="display: flex; justify-content: center; text-align: center"
+      class="mt-10"
+    >
+      <iframe
+        :src="'https://coverapi.store/embed/' + imdb_id"
+        width="800"
+        height="600"
+        frameBorder="0"
+      ></iframe>
+    </div>
 
     <v-sheet
       class="d-flex align-content-center flex-wrap bg-surface-variant"
@@ -133,6 +146,7 @@ export default {
       query: null,
       popup: false,
       movie: null,
+      imdb_id: null,
       similarMovies: [],
     };
   },
@@ -149,6 +163,7 @@ export default {
     this.getTopMovie(this.query);
     this.getSimilarMovies(this.query);
     this.getDetails(this.query);
+    this.getIMDBID(this.query);
   },
   methods: {
     setCookie(name, value, days) {
@@ -178,7 +193,7 @@ export default {
       this.movie = await fetch(
         `https://api.themoviedb.org/3/tv/${id}?api_key=5b75818e63dfdb396cadedf77425b334&language=en-US&page=1`
       ).then((res) => res.json());
-      console.log(this.movie);
+      // console.log(this.movie);
     },
     watchMovie(id) {
       location.href =
@@ -237,6 +252,24 @@ export default {
         }
       });
     },
+    async getIMDBID(id) {
+      const url = "https://api.themoviedb.org/3/tv/" + id + "/external_ids";
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+        },
+      };
+
+      fetch(url, options)
+        .then((res) => res.json())
+        .then((json) => {
+          this.imdb_id = json.imdb_id;
+        })
+        .catch((err) => console.error("error:" + err));
+    },
     async getDetails(id) {
       this.details = [];
       const url = "https://api.themoviedb.org/3/tv/" + id + "?language=en-US";
@@ -256,7 +289,6 @@ export default {
             this.details.push({ season: element.name });
           });
           this.selectedSeriesInfo = json;
-          console.log(json);
         })
         .catch((err) => console.error("error:" + err));
     },
