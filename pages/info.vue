@@ -71,9 +71,9 @@
         width="800"
         height="600"
         frameBorder="0"
+        allowfullscreen
       ></iframe>
     </div>
-
 
     <v-sheet
       style="background-color: black"
