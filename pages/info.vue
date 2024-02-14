@@ -19,13 +19,13 @@
                 />
               </v-row>
               <v-row style="justify-content: center">
-                <v-btn
+                <!-- <v-btn
                   @click="watchMovie(movie.imdb_id)"
                   style="color: white"
                   color="red"
                 >
                   play
-                </v-btn>
+                </v-btn> -->
               </v-row>
             </figure>
           </v-col>
@@ -35,14 +35,14 @@
               {{ movie.vote_count }} votes on IMDB
             </p>
             <h2>{{ movie.title }}</h2>
-            <v-btn
+            <!-- <v-btn
               v-if="isMobile"
               @click="watchMovie(movie.imdb_id)"
               style="color: white"
               color="red"
             >
               play
-            </v-btn>
+            </v-btn> -->
             <h3>{{ movie.release_date }}</h3>
             <h3>{{ movie.runtime }} mins</h3>
             <p>{{ movie.overview }}</p>
@@ -61,7 +61,18 @@
         </v-row>
       </div>
     </section>
-
+    <div
+      v-if="movie"
+      style="display: flex; justify-content: center; text-align: center"
+      class="mt-10"
+    >
+      <iframe
+        :src="'https://coverapi.store/embed/' + movie.imdb_id"
+        width="800"
+        height="600"
+        frameBorder="0"
+      ></iframe>
+    </div>
     <v-sheet class="d-flex align-content-center flex-wrap bg-surface-variant">
       <!-- <h4 class="text-h5 font-weight-bold mb-4">Similar Movies</h4> -->
 

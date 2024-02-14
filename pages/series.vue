@@ -11,13 +11,13 @@
         <h1>{{ topMovie.name }}</h1>
         <p class="synopsis">{{ topMovie.overview }}</p>
         <v-form class="button-container">
-          <v-btn
+          <!-- <v-btn
             @click="watchSeries(topMovie.id)"
             style="color: white"
             color="red"
           >
             Watch
-          </v-btn>
+          </v-btn> -->
           <v-btn
             @click="handleMovieClick(topMovie)"
             class="cta-transparent"
