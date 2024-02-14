@@ -68,6 +68,7 @@
       <div v-for="(item, index) in similarMovies" :key="index">
         <!-- Στο κλικ να ενημερώνεται το topMovie και το SimilarMovies -->
         <v-card
+          class="pa-2"
           @click="handleClick(item)"
           v-if="item !== undefined"
           width="200"
