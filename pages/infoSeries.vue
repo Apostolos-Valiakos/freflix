@@ -97,7 +97,10 @@
       ></iframe>
     </div>
 
-    <v-sheet class="d-flex align-content-center flex-wrap bg-surface-variant">
+    <v-sheet
+      class="d-flex align-content-center flex-wrap bg-surface-variant"
+      style="background-color: black"
+    >
       <!-- <h4 class="text-h5 font-weight-bold mb-4">Similar Movies</h4> -->
 
       <div v-for="(item, index) in similarMovies" :key="index">
@@ -109,19 +112,20 @@
           width="200"
           height="300"
         >
-          <v-card-text
-            style="text-align: center; justify-content: center; display: flex"
-            >{{ item.name }}</v-card-text
-          >
           <v-img
             v-if="item.poster_path"
             contain
-            class="movie-poster"
+            class="mt-2 movie-poster"
             :src="'https://image.tmdb.org/t/p//w500' + item.poster_path"
             max-width="200"
             max-height="200"
           />
           <v-sheet v-else max-height="200" width="200" color="grey"></v-sheet>
+          <v-card-text
+            style="text-align: center; justify-content: center; display: flex"
+          >
+            {{ item.name }}
+          </v-card-text>
         </v-card>
       </div>
     </v-sheet>
