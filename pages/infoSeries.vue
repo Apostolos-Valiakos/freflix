@@ -24,13 +24,13 @@
                 />
               </v-row>
               <v-row style="justify-content: center">
-                <!-- <v-btn
-                  @click="watchMovie(movie.id)"
+                <v-btn
+                  @click="addToWatchlist(movie)"
                   style="color: white"
                   color="red"
                 >
-                  play
-                </v-btn> -->
+                  Add to watchlist
+                </v-btn>
               </v-row>
               <!-- <v-select
                 style="width: 300px"
@@ -177,6 +177,16 @@ export default {
     this.getIMDBID(this.query);
   },
   methods: {
+    addToWatchlist(movie) {
+      var watchlistFromLocalStorage = JSON.parse(
+        localStorage.getItem("watchlist") || "[]"
+      );
+      watchlistFromLocalStorage.push(movie);
+      localStorage.setItem(
+        "watchlist",
+        JSON.stringify(watchlistFromLocalStorage)
+      );
+    },
     setCookie(name, value, days) {
       var expires = "";
       if (days) {

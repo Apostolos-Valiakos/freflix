@@ -35,6 +35,13 @@
           >
             More information
           </v-btn>
+          <v-btn
+            @click="addToWatchlist(topMovie)"
+            style="color: white"
+            color="red"
+          >
+            Add to Watchlist
+          </v-btn>
         </v-form>
         <div class="gradient"></div>
       </div>
@@ -87,6 +94,7 @@ export default {
 
   data() {
     return {
+      watchlist: [],
       topMovie: null,
       newMovies: [],
       movies: [],
@@ -100,12 +108,27 @@ export default {
     };
   },
   created() {
+    if (localStorage.watchlist) {
+      this.watchlist = localStorage.watchlist;
+    } else {
+      localStorage.watchlist = [];
+    }
     this.getTopMovie("movie");
     this.initialize();
     // this.getMoviesperGerne("27", this.horrorItems, "movie");
   },
 
   methods: {
+    addToWatchlist(movie) {
+      var watchlistFromLocalStorage = JSON.parse(
+        localStorage.getItem("watchlist") || "[]"
+      );
+      watchlistFromLocalStorage.push(movie);
+      localStorage.setItem(
+        "watchlist",
+        JSON.stringify(watchlistFromLocalStorage)
+      );
+    },
     async initialize() {
       const options = {
         method: "GET",

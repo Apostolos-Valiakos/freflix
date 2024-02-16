@@ -1,3 +1,4 @@
+<!-- 20854276 -->
 <template>
   <div v-if="mobile" style="background-color: black">
     <div class="d-flex justify-center mb-6 bg-surface-variant">
@@ -27,12 +28,17 @@
       <div class="d-flex justify-end mb-6 bg-surface-variant">
         <ul style="list-style-type: none">
           <li>
+            <NuxtLink style="text-decoration: none" to="/searchResults">
+              Search
+            </NuxtLink>
+          </li>
+          <li>
             <NuxtLink
               style="text-decoration: none"
+              to="/watchlist"
               class="mr-4"
-              to="/searchResults"
             >
-              Search
+              Watchlist
             </NuxtLink>
           </li>
         </ul>
@@ -60,18 +66,58 @@
           Search
         </NuxtLink>
       </li>
+      <li>
+        <NuxtLink style="text-decoration: none" to="/watchlist">
+          Watchlist
+        </NuxtLink>
+      </li>
     </ul>
   </header>
 </template>
 <script>
 export default {
   data() {
+    sessionID: "";
+    watchlist: [];
     return {
       mobile: false,
     };
   },
   created() {
     this.mobile = screen.width < 450;
+    this.createSession();
+    if (localStorage.sessionID) {
+      this.sessionID = localStorage.sessionID;
+    }
+    if (localStorage.watchlist) {
+      this.watchlist = localStorage.watchlist;
+    }
+  },
+  methods: {
+    createSession() {
+      if (!localStorage.sessionID) {
+        const url =
+          "https://api.themoviedb.org/3/authentication/guest_session/new";
+        const options = {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+            Authorization:
+              "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+          },
+        };
+
+        fetch(url, options)
+          .then((res) => res.json())
+          .then((json) => {
+            localStorage.sessionID = json.guest_session_id;
+            console.log(localStorage.sessionID);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+    },
   },
 };
 </script>

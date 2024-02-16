@@ -26,6 +26,13 @@
           >
             More information
           </v-btn>
+          <v-btn
+            @click="addToWatchlist(topMovie)"
+            style="color: white"
+            color="red"
+          >
+            Add to Watchlist
+          </v-btn>
         </v-form>
         <div class="gradient"></div>
       </div>
@@ -82,6 +89,16 @@ export default {
   },
 
   methods: {
+    addToWatchlist(movie) {
+      var watchlistFromLocalStorage = JSON.parse(
+        localStorage.getItem("watchlist") || "[]"
+      );
+      watchlistFromLocalStorage.push(movie);
+      localStorage.setItem(
+        "watchlist",
+        JSON.stringify(watchlistFromLocalStorage)
+      );
+    },
     async initialize() {
       const options = {
         method: "GET",

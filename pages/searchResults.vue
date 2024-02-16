@@ -41,8 +41,9 @@
         md="4"
         lg="3"
       >
-        <v-card class="mb-4" @click="seeInfo(movie.id)">
+        <v-card class="mb-4">
           <v-img
+            @click="seeInfo(movie.id)"
             :src="'https://image.tmdb.org/t/p//w500' + movie.backdrop_path"
           />
           <v-card-title v-if="isSerie">{{ movie.name }}</v-card-title>
@@ -57,6 +58,13 @@
             </v-btn> -->
             <v-btn color="white" @click="seeInfo(movie.id)" style="color: red">
               Info
+            </v-btn>
+            <v-btn
+              @click="addToWatchlist(movie)"
+              style="color: white"
+              color="red"
+            >
+              Add to watchlist
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -94,6 +102,16 @@ export default {
     };
   },
   methods: {
+    addToWatchlist(movie) {
+      var watchlistFromLocalStorage = JSON.parse(
+        localStorage.getItem("watchlist") || "[]"
+      );
+      watchlistFromLocalStorage.push(movie);
+      localStorage.setItem(
+        "watchlist",
+        JSON.stringify(watchlistFromLocalStorage)
+      );
+    },
     searchFromChip(item) {
       this.searchTerm = item.name;
       const url =
