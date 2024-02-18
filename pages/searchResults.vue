@@ -103,6 +103,12 @@ export default {
   },
   methods: {
     addToWatchlist(movie) {
+      if (this.isSerie) {
+        movie.isSerie = "tv";
+      } else {
+        movie.isSerie = "movie";
+      }
+
       var watchlistFromLocalStorage = JSON.parse(
         localStorage.getItem("watchlist") || "[]"
       );
@@ -162,6 +168,7 @@ export default {
         this.$router.push({
           name: "infoSeries",
           query: { id: id },
+          isSerie,
         });
       } else {
         this.$router.push({ name: "info", query: { id: id } });

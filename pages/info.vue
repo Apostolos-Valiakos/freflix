@@ -148,6 +148,7 @@ export default {
   },
   methods: {
     addToWatchlist(movie) {
+      movie.isSerie = "movie";
       var watchlistFromLocalStorage = JSON.parse(
         localStorage.getItem("watchlist") || "[]"
       );

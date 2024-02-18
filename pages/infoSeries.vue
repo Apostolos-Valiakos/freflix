@@ -180,6 +180,8 @@ export default {
   },
   methods: {
     addToWatchlist(movie) {
+      movie.isSerie = "tv";
+
       var watchlistFromLocalStorage = JSON.parse(
         localStorage.getItem("watchlist") || "[]"
       );

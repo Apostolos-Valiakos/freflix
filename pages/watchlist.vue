@@ -52,6 +52,7 @@ export default {
   created() {
     this.results = window.localStorage.getItem("watchlist");
     this.results = JSON.parse(this.results);
+    console.log(this.results);
   },
   methods: {
     addToWatchlist(movie) {
