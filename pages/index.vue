@@ -39,6 +39,7 @@
             @click="addToWatchlist(topMovie)"
             style="color: white"
             color="red"
+            :disabled="isAdded"
           >
             Add to Watchlist
           </v-btn>
@@ -95,6 +96,7 @@ export default {
   data() {
     return {
       watchlist: [],
+      isAdded: false,
       topMovie: null,
       newMovies: [],
       movies: [],
@@ -128,6 +130,7 @@ export default {
         "watchlist",
         JSON.stringify(watchlistFromLocalStorage)
       );
+      this.isAdded = true;
     },
     async initialize() {
       const options = {
