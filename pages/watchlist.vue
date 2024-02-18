@@ -13,7 +13,7 @@
         <v-card>
           <v-img
             :src="'https://image.tmdb.org/t/p//w500' + movie.backdrop_path"
-            @click="seeInfo(movie.id)"
+            @click="seeInfo(movie)"
           />
 
           <!-- <v-card-title v-if="isSerie">{{ movie.name }}</v-card-title>
@@ -64,14 +64,14 @@ export default {
         JSON.stringify(watchlistFromLocalStorage)
       );
     },
-    seeInfo(id) {
-      if (this.isSerie) {
+    seeInfo(movie) {
+      if (movie.isSerie === "tv") {
         this.$router.push({
           name: "infoSeries",
-          query: { id: id },
+          query: { id: movie.id },
         });
       } else {
-        this.$router.push({ name: "info", query: { id: id } });
+        this.$router.push({ name: "info", query: { id: movie.id } });
       }
     },
     removeFromWatchList(index) {

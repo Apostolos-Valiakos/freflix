@@ -23,6 +23,7 @@
                   @click="addToWatchlist(movie)"
                   style="color: white"
                   color="red"
+                  :disabled="isAdded"
                 >
                   Add to watchlist
                 </v-btn>
@@ -126,6 +127,7 @@ export default {
   data() {
     return {
       isMobile: false,
+      isAdded: false,
       query: null,
       popup: false,
       movie: null,
@@ -154,6 +156,7 @@ export default {
         "watchlist",
         JSON.stringify(watchlistFromLocalStorage)
       );
+      this.isAdded = true;
     },
     setCookie(name, value, days) {
       var expires = "";
