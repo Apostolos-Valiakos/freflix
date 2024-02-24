@@ -168,7 +168,6 @@ export default {
         this.$router.push({
           name: "infoSeries",
           query: { id: id },
-          isSerie,
         });
       } else {
         this.$router.push({ name: "info", query: { id: id } });
