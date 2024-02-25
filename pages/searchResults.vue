@@ -164,6 +164,7 @@ export default {
         .catch((err) => console.error("error:" + err));
     },
     seeInfo(id) {
+      console.log(this.isSerie);
       if (this.isSerie) {
         this.$router.push({
           name: "infoSeries",
