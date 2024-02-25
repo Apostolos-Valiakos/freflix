@@ -164,11 +164,11 @@ export default {
         .catch((err) => console.error("error:" + err));
     },
     seeInfo(id) {
+      console.log(this.isSerie);
       if (this.isSerie) {
         this.$router.push({
           name: "infoSeries",
           query: { id: id },
-          isSerie,
         });
       } else {
         this.$router.push({ name: "info", query: { id: id } });
