@@ -16,7 +16,9 @@
             @click="seeInfo(movie)"
           />
 
-          <v-card-title v-if="isSerie">{{ movie.name }}</v-card-title>
+          <v-card-title v-if="movie.isSerie == 'tv'">{{
+            movie.name
+          }}</v-card-title>
           <v-card-title v-else>{{ movie.title }}</v-card-title>
           <v-card-subtitle>
             {{ movie.overview }}
