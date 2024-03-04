@@ -62,24 +62,75 @@
         </v-row>
       </div>
     </section>
-    <div
-      v-if="movie"
-      style="
-        display: flex;
-        justify-content: center;
-        text-align: center;
-        background-color: black;
-      "
-      class="mt-10"
-    >
-      <iframe
-        :src="'https://coverapi.store/embed/' + movie.imdb_id"
-        width="800"
-        height="600"
-        frameBorder="0"
-        allowfullscreen
-      ></iframe>
+    <div>
+      <v-card>
+        <template>
+          <v-card>
+            <v-tabs
+              v-model="tab"
+              background-color="black"
+              centered
+              dark
+              icons-and-text
+            >
+              <v-tabs-slider></v-tabs-slider>
+
+              <v-tab href="#tab-1"> Greek subs </v-tab>
+
+              <v-tab href="#tab-2"> No subs </v-tab>
+            </v-tabs>
+
+            <v-tabs-items v-model="tab">
+              <v-tab-item value="tab-1">
+                <v-card flat>
+                  <div
+                    v-if="movie"
+                    style="
+                      display: flex;
+                      justify-content: center;
+                      text-align: center;
+                      background-color: black;
+                    "
+                    class="mt-10"
+                  >
+                    <iframe
+                      :src="'https://coverapi.store/embed/' + movie.imdb_id"
+                      width="800"
+                      height="600"
+                      frameBorder="0"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
+                </v-card>
+              </v-tab-item>
+              <v-tab-item value="tab-2">
+                <v-card>
+                  <div
+                    v-if="movie"
+                    style="
+                      display: flex;
+                      justify-content: center;
+                      text-align: center;
+                      background-color: black;
+                    "
+                    class="mt-10"
+                  >
+                    <iframe
+                      :src="'https://multiembed.mov/?video_id=' + movie.imdb_id"
+                      width="800"
+                      height="600"
+                      frameBorder="0"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
+                </v-card>
+              </v-tab-item>
+            </v-tabs-items>
+          </v-card>
+        </template>
+      </v-card>
     </div>
+
     <div style="display: flex; justify-content: center; text-align: center">
       <v-sheet
         style="
@@ -126,6 +177,8 @@ export default {
   name: "single-movie",
   data() {
     return {
+      tab: null,
+      text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
       isMobile: false,
       isAdded: false,
       query: null,
