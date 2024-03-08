@@ -8,11 +8,10 @@
       />
       <div style="z-index: 1">
         <v-row>
-          <v-col>
+          <v-col v-if="!isMobile">
             <figure>
               <v-row style="justify-content: center">
                 <img
-                  v-if="!isMobile"
                   style="
                     text-align: right;
                     display: flex;
