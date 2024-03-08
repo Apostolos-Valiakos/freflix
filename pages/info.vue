@@ -67,6 +67,7 @@
         <template>
           <v-card>
             <v-tabs
+              color="red"
               v-model="tab"
               background-color="black"
               centered
@@ -91,7 +92,6 @@
                       text-align: center;
                       background-color: black;
                     "
-                    class="mt-10"
                   >
                     <iframe
                       :src="'https://coverapi.store/embed/' + movie.imdb_id"
@@ -111,17 +111,22 @@
                       display: flex;
                       justify-content: center;
                       text-align: center;
+
                       background-color: black;
                     "
-                    class="mt-10"
                   >
-                    <iframe
-                      :src="'https://multiembed.mov/?video_id=' + movie.imdb_id"
-                      width="800"
-                      height="600"
-                      frameBorder="0"
-                      allowfullscreen
-                    ></iframe>
+                    <div style="width: 800px; height: 600px">
+                      <v-btn
+                        class="mt-14"
+                        color="red"
+                        style="color: white"
+                        @click="
+                          location.href = `https://multiembed.mov/?video_id=${id}`
+                        "
+                      >
+                        Watch the Movie in an external player
+                      </v-btn>
+                    </div>
                   </div>
                 </v-card>
               </v-tab-item>
