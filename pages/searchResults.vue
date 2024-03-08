@@ -1,9 +1,15 @@
 <template>
   <div :style="marginFromTop">
     <div class="d-flex justify-space-around mb-6 bg-surface-variant">
-      <v-text-field class="ma-2 pa-2" label="Search" v-model="searchTerm" />
+      <v-text-field
+        color="red"
+        class="ma-2 pa-2"
+        label="Search"
+        v-model="searchTerm"
+      />
       <!-- @change="autocomplete" -->
       <v-select
+        color="red"
         class="ma-2 pa-2"
         v-if="categories"
         @change="searchPerCategory(selectedCategory, 1)"
@@ -17,6 +23,7 @@
     </div>
     <v-checkbox
       class="ma-2 pa-2"
+      color="red"
       label="Looking for Series"
       v-model="isSerie"
     ></v-checkbox>
@@ -302,8 +309,29 @@ export default {
       }
       this.autocomplete();
     },
+    getPopularMovies() {
+      const url =
+        "https://api.themoviedb.org/3/movie/popular?language=en-US&page=1";
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+        },
+      };
+
+      fetch(url, options)
+        .then((res) => res.json())
+        .then((json) => {
+          this.noOfPages = json.total_pages;
+          this.searchResults = json.results;
+        })
+        .catch((err) => console.error("error:" + err));
+    },
   },
   created() {
+    this.getPopularMovies();
     if (screen.width < 450) {
       this.marginFromTop = "margin-top: 0px";
     }
