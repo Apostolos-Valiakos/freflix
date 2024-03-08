@@ -13,7 +13,7 @@
       />
       <div style="z-index: 1">
         <h1>{{ topMovie.title }}</h1>
-        <v-btn text color="white" disabled>
+        <v-btn text color="white">
           {{ topMovie.vote_average }}
           According to IMDB Rating <br />
           out of {{ topMovie.vote_count }} votes

@@ -120,9 +120,7 @@
                         class="mt-14"
                         color="red"
                         style="color: white"
-                        @click="
-                          location.href = `https://multiembed.mov/?video_id=${id}`
-                        "
+                        @click="watchMovie(movie.imdb_id)"
                       >
                         Watch the Movie in an external player
                       </v-btn>
@@ -178,12 +176,14 @@
   </div>
 </template>
 <script>
+import { watch } from "vue";
+
 export default {
   name: "single-movie",
   data() {
     return {
       tab: null,
-      text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+      text: "",
       isMobile: false,
       isAdded: false,
       query: null,
@@ -205,6 +205,9 @@ export default {
     this.getSimilarMovies(this.query);
   },
   methods: {
+    watchMovie(id) {
+      location.href = `https://multiembed.mov/?video_id=${id}`;
+    },
     addToWatchlist(movie) {
       movie.isSerie = "movie";
       var watchlistFromLocalStorage = JSON.parse(
