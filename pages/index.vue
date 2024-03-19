@@ -56,7 +56,6 @@
       />
 
       <obras
-        class="mt-n10"
         v-if="horrorItems"
         :obras="horrorItems"
         titulo="Horror"
