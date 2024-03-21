@@ -31,11 +31,7 @@
             </NuxtLink>
           </li>
           <li>
-            <NuxtLink
-              style="text-decoration: none"
-              to="/watchlist"
-              class="mr-4"
-            >
+            <NuxtLink style="text-decoration: none" to="/watchlist">
               Watchlist
             </NuxtLink>
           </li>
