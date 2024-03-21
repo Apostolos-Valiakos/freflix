@@ -189,7 +189,7 @@ export default {
     handleMovieClick(id) {
       this.$router.push({ name: "info", query: { id: id } });
     },
-    async getTopMovie(movie) {
+    getTopMovie(movie) {
       var url =
         "https://api.themoviedb.org/3/discover/" +
         movie +
@@ -203,9 +203,9 @@ export default {
         },
       };
 
-      await fetch(url, options)
+      fetch(url, options)
         .then((res) => res.json())
-        .then(async (json) => {
+        .then((json) => {
           let randMovieFromList = Math.floor(
             Math.random() * (json.results.length - 0 + 1) + 0
           );
