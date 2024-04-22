@@ -6,18 +6,12 @@
         :src="'https://image.tmdb.org/t/p/original' + topMovie.poster_path"
         alt="Movie Poster"
         class="movie-banner"
+        gradient="to bottom, rgba(0,0,0,0.2), rgba(0,0,0,1)"
       />
       <div style="z-index: 1">
         <h1>{{ topMovie.name }}</h1>
         <p class="synopsis">{{ topMovie.overview }}</p>
         <v-form class="button-container">
-          <!-- <v-btn
-            @click="watchSeries(topMovie.id)"
-            style="color: white"
-            color="red"
-          >
-            Watch
-          </v-btn> -->
           <v-btn
             @click="handleMovieClick(topMovie)"
             class="cta-transparent"
@@ -37,29 +31,40 @@
         <div class="gradient"></div>
       </div>
     </section>
-    <obras v-if="movies" :obras="movies" titulo="Top Rated" type="series" />
+    <div style="background-color: black">
+      <obras v-if="movies" :obras="movies" titulo="Top Rated" type="series" />
 
-    <obras v-if="crimeItems" :obras="crimeItems" titulo="Crime" type="series" />
+      <obras
+        class="mt-n12"
+        v-if="crimeItems"
+        :obras="crimeItems"
+        titulo="Action & Adventure"
+        type="series"
+      />
 
-    <obras
-      v-if="fantasyItems"
-      :obras="fantasyItems"
-      titulo="Fantasy"
-      type="series"
-    />
+      <obras
+        class="mt-n12"
+        v-if="fantasyItems"
+        :obras="fantasyItems"
+        titulo="Comedy"
+        type="series"
+      />
 
-    <obras
-      v-if="documentaryItems"
-      :obras="documentaryItems"
-      titulo="Documentary"
-      type="series"
-    />
-    <obras
-      v-if="animationItems"
-      :obras="animationItems"
-      titulo="Animation"
-      type="series"
-    />
+      <obras
+        class="mt-n12"
+        v-if="documentaryItems"
+        :obras="documentaryItems"
+        titulo="Documentary"
+        type="series"
+      />
+      <obras
+        class="mt-n12"
+        v-if="animationItems"
+        :obras="animationItems"
+        titulo="Animation"
+        type="series"
+      />
+    </div>
   </div>
 </template>
 
@@ -81,6 +86,7 @@ export default {
       randomMovies: [],
       upcomingMovies: [],
       series: [],
+      watchlist: [],
     };
   },
   created() {
@@ -111,14 +117,14 @@ export default {
       };
 
       this.crimeItems = await fetch(
-        "https://api.themoviedb.org/3/discover/tv?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=80",
+        "https://api.themoviedb.org/3/discover/tv?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=10759",
         options
       )
         .then((res) => res.json())
         .then((data) => data.results);
 
       this.fantasyItems = await fetch(
-        "https://api.themoviedb.org/3/discover/tv?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=10765",
+        "https://api.themoviedb.org/3/discover/tv?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=35",
         options
       )
         .then((res) => res.json())
@@ -189,12 +195,6 @@ export default {
           // console.log(this.topMovie);
         })
         .catch((err) => console.error("error:" + err));
-    },
-    watchSeries(id) {
-      console.log(id);
-      // console.log("https://multiembed.mov/?video_id=" + id + "&tmdb=1&s=1&e=1");
-      location.href =
-        "https://multiembed.mov/?video_id=" + id + "&tmdb=1&s=1&e=1";
     },
   },
 };

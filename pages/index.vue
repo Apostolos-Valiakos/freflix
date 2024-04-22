@@ -49,13 +49,21 @@
     </section>
     <div style="background-color: black">
       <obras
-        v-if="newMovies"
-        :obras="newMovies"
-        titulo="Newely Added"
+        v-if="watchlist"
+        :obras="watchlist"
+        titulo="Watchlist"
         type="movie"
       />
 
       <obras
+        v-if="newMovies"
+        :obras="newMovies"
+        titulo="Top Rated"
+        type="movie"
+      />
+
+      <obras
+        class="mt-n12"
         v-if="horrorItems"
         :obras="horrorItems"
         titulo="Horror"
@@ -63,6 +71,7 @@
       />
 
       <obras
+        class="mt-n12"
         v-if="fantasyItems"
         :obras="fantasyItems"
         titulo="Fantasy"
@@ -70,12 +79,14 @@
       />
 
       <obras
+        class="mt-n12"
         v-if="documentaryItems"
         :obras="documentaryItems"
         titulo="Documentary"
         type="movie"
       />
       <obras
+        class="mt-n12"
         v-if="animationItems"
         :obras="animationItems"
         titulo="Animation"
@@ -106,6 +117,7 @@ export default {
       randomMovies: [],
       upcomingMovies: [],
       series: [],
+      watchlist: [],
     };
   },
   created() {
@@ -142,8 +154,11 @@ export default {
       };
       //  "https://api.themoviedb.org/3/discover/movie?include_adult=false?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc",
 
+      this.watchlist = JSON.parse(localStorage.getItem("watchlist") || "[]");
+      this.watchlist = this.watchlist.filter((obj) => obj.isSerie === "movie");
+
       this.newMovies = await fetch(
-        "https://api.themoviedb.org/3/movie/popular?language=en-US&page=1",
+        "https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=1",
         options
       )
         .then((res) => res.json())

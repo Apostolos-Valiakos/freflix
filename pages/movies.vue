@@ -1,33 +1,47 @@
-<!-- https://getsuperembed.link/?video_id=imdbId -->
-<!-- IMDB LINK -->
-<!-- Parse the response link -->
+<!-- https://coverapi.store/embed/tt3032476/ -->
+<!-- IMDB ID -->
+
 <template>
   <div v-if="movies.length > 0">
     <section>
       <v-img
         :src="'https://image.tmdb.org/t/p/original' + topMovie.poster_path"
+        :lazy-src="'https://image.tmdb.org/t/p/original' + topMovie.poster_path"
         alt="Movie Poster"
-        class="movie-banner"
+        class="movie-banner grad"
         gradient="to bottom, rgba(0,0,0,0.2), rgba(0,0,0,1)"
       />
       <div style="z-index: 1">
-        <h1>{{ topMovie.original_title }}</h1>
+        <h1>{{ topMovie.title }}</h1>
+        <v-btn text color="white">
+          {{ topMovie.vote_average }}
+          According to IMDB Rating <br />
+          out of {{ topMovie.vote_count }} votes
+        </v-btn>
         <p class="synopsis">{{ topMovie.overview }}</p>
         <v-form class="button-container">
-          <v-btn
-            @click="watchMovie(topMovie.imdb_id)"
-            style="color: black"
-            color="white"
+          <!-- <v-btn
+            @click="watchMovie(topMovie.id)"
+            style="color: white"
+            color="red"
           >
             Watch
-          </v-btn>
+          </v-btn> -->
           <!-- class="cta-transparent" -->
           <v-btn
             @click="handleMovieClick(topMovie.id)"
-            style="color: white"
-            color="black"
+            style="color: red"
+            color="white"
           >
             More information
+          </v-btn>
+          <v-btn
+            @click="addToWatchlist(topMovie)"
+            style="color: white"
+            color="red"
+            :disabled="isAdded"
+          >
+            Add to Watchlist
           </v-btn>
         </v-form>
         <div class="gradient"></div>
@@ -35,23 +49,21 @@
     </section>
     <div style="background-color: black">
       <obras
-        class="pt-10"
-        v-if="newMovies"
-        :obras="newMovies"
-        titulo="Newely Added"
+        v-if="watchlist"
+        :obras="watchlist"
+        titulo="Watchlist"
         type="movie"
       />
 
-      <!-- <obras
-          class="pt-10"
-          v-if="movies"
-          :obras="movies"
-          titulo="Popular"
-          type="movie"
-        /> -->
+      <obras
+        v-if="newMovies"
+        :obras="newMovies"
+        titulo="Top Rated"
+        type="movie"
+      />
 
       <obras
-        class="pt-10"
+        class="mt-n12"
         v-if="horrorItems"
         :obras="horrorItems"
         titulo="Horror"
@@ -59,7 +71,7 @@
       />
 
       <obras
-        class="pt-10"
+        class="mt-n12"
         v-if="fantasyItems"
         :obras="fantasyItems"
         titulo="Fantasy"
@@ -67,14 +79,14 @@
       />
 
       <obras
-        class="pt-5"
+        class="mt-n12"
         v-if="documentaryItems"
         :obras="documentaryItems"
         titulo="Documentary"
         type="movie"
       />
       <obras
-        class="pt-5"
+        class="mt-n12"
         v-if="animationItems"
         :obras="animationItems"
         titulo="Animation"
@@ -93,6 +105,8 @@ export default {
 
   data() {
     return {
+      watchlist: [],
+      isAdded: false,
       topMovie: null,
       newMovies: [],
       movies: [],
@@ -103,15 +117,32 @@ export default {
       randomMovies: [],
       upcomingMovies: [],
       series: [],
+      watchlist: [],
     };
   },
   created() {
-    this.initialize();
+    if (localStorage.watchlist) {
+      this.watchlist = localStorage.watchlist;
+    } else {
+      localStorage.watchlist = [];
+    }
     this.getTopMovie("movie");
+    this.initialize();
     // this.getMoviesperGerne("27", this.horrorItems, "movie");
   },
 
   methods: {
+    addToWatchlist(movie) {
+      var watchlistFromLocalStorage = JSON.parse(
+        localStorage.getItem("watchlist") || "[]"
+      );
+      watchlistFromLocalStorage.push(movie);
+      localStorage.setItem(
+        "watchlist",
+        JSON.stringify(watchlistFromLocalStorage)
+      );
+      this.isAdded = true;
+    },
     async initialize() {
       const options = {
         method: "GET",
@@ -123,8 +154,11 @@ export default {
       };
       //  "https://api.themoviedb.org/3/discover/movie?include_adult=false?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc",
 
+      this.watchlist = JSON.parse(localStorage.getItem("watchlist") || "[]");
+      this.watchlist = this.watchlist.filter((obj) => obj.isSerie === "movie");
+
       this.newMovies = await fetch(
-        "https://api.themoviedb.org/3/movie/popular?language=en-US&page=1",
+        "https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=1",
         options
       )
         .then((res) => res.json())
@@ -207,6 +241,7 @@ export default {
     },
     watchMovie(id) {
       location.href = "https://multiembed.mov/?video_id=" + id;
+      // this.$router.push({ name: "watch", query: { id: id } });
     },
   },
 };
@@ -353,5 +388,11 @@ button {
   .synopsis {
     font-size: 1.2rem;
   }
+}
+.v-window.v-item-group.theme--dark.v-window--show-arrows-on-hover.v-carousel {
+  height: 400px !important;
+}
+.grad {
+  background: linear-gradient(to top, transparent, black);
 }
 </style>

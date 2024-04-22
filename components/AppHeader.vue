@@ -19,7 +19,9 @@
             </NuxtLink>
           </li>
           <li>
-            <NuxtLink style="text-decoration: none" to="/"> Movies </NuxtLink>
+            <NuxtLink style="text-decoration: none" to="/movies">
+              Movies
+            </NuxtLink>
           </li>
         </ul>
       </nav>
@@ -50,7 +52,7 @@
           <NuxtLink style="text-decoration: none" to="/Series">Series</NuxtLink>
         </li>
         <li>
-          <NuxtLink style="text-decoration: none" to="/">Movies</NuxtLink>
+          <NuxtLink style="text-decoration: none" to="/movies">Movies</NuxtLink>
         </li>
       </ul>
     </nav>

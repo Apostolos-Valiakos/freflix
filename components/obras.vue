@@ -60,87 +60,6 @@
         </v-carousel-item>
       </v-carousel>
     </div>
-    <!-- <v-row justify="center">
-      <v-dialog v-model="dialog" max-width="1000px">
-        <v-card v-if="dialogItem">
-          <v-img
-            :src="'https://image.tmdb.org/t/p//w500' + dialogItem.poster_path"
-            max-height="350px"
-            contain
-          />
-          <v-card-title class="text-h5">
-            {{ dialogItem.title }}
-          </v-card-title>
-          <v-chip class="mt-2 mb-0 ml-3" small>
-            {{ dialogItem.vote_average }} / 10
-          </v-chip>
-          <v-chip class="ml-3 mt-2 mb-0" small>
-            {{ dialogItem.vote_count }} total reviews
-          </v-chip>
-          <v-card-text class="mt-4">
-            {{ dialogItem.overview }}
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="green darken-1" @click="seeMovie(dialogItem.id)">
-              Play
-            </v-btn>
-            <v-btn color="red darken-1" @click="handleClose"> Close </v-btn>
-          </v-card-actions>
-          <iframe
-            id="iframe"
-            v-if="showEmbed"
-            :src="embedLink"
-            width="1000px"
-            height="1000px"
-            frameborder="0"
-            allowfullscreen
-          ></iframe>
-          <label class="ml-10 text-h5">Similar Movies</label>
-          <v-sheet
-            class="d-flex align-content-center flex-wrap bg-surface-variant"
-            min-height="200"
-          >
-            <v-sheet
-              v-for="(item, index) in similarMovies"
-              :key="index"
-              class="ma-2 pa-2"
-            >
-              <v-card
-                class="ma-2 pa-2 mx-auto"
-                @click="handleclick(item)"
-                v-if="item !== undefined"
-                width="200"
-                height="300"
-              >
-                <v-card-text
-                  style="
-                    text-align: center;
-                    justify-content: center;
-                    display: flex;
-                  "
-                  >{{ item.title }}</v-card-text
-                >
-                <v-img
-                  v-if="item.poster_path"
-                  contain
-                  class="movie-poster"
-                  :src="'https://image.tmdb.org/t/p//w500' + item.poster_path"
-                  max-width="200"
-                  max-height="200"
-                />
-                <v-sheet
-                  v-else
-                  max-height="200"
-                  width="200"
-                  color="grey"
-                ></v-sheet>
-              </v-card>
-            </v-sheet>
-          </v-sheet>
-        </v-card>
-      </v-dialog> 
-    </v-row> -->
   </div>
 </template>
 
@@ -175,7 +94,7 @@ export default {
       currentIndex: 0,
       itemsPerPage: 6,
       clicado: 0,
-      slider: [1, 2, 3],
+      slider: [1, 2, 3, 4],
     };
   },
   mounted() {

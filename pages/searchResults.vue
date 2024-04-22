@@ -79,13 +79,7 @@
     </v-row>
     <v-pagination
       v-if="noOfPages"
-      style="
-        text-align: center;
-        justify-content: center;
-        display: flex;
-        margin-left: 10px;
-        margin-right: 10px;
-      "
+      style="text-align: center; justify-content: center; display: flex"
       :length="noOfPages"
       @input="updatePagination"
     ></v-pagination>
@@ -98,6 +92,7 @@ export default {
     return {
       marginFromTop: "margin-top: 100px",
       showEmbed: false,
+      page: 1,
       isSerie: false,
       autocompleteItems: [],
       embedLink: "",
@@ -144,6 +139,9 @@ export default {
         .then((res) => res.json())
         .then((json) => {
           this.noOfPages = json.total_pages;
+          if (this.noOfPages > 100) {
+            this.noOfPages = 50;
+          }
           this.searchResults = json.results;
         })
         .catch((err) => console.error("error:" + err));
@@ -205,6 +203,9 @@ export default {
           .then((json) => {
             console.log(json);
             this.noOfPages = json.total_pages;
+            if (this.noOfPages > 100) {
+              this.noOfPages = 50;
+            }
             this.searchResults = json.results;
             console.log(json.results);
           })
@@ -229,6 +230,9 @@ export default {
           .then((json) => {
             console.log(json);
             this.noOfPages = json.total_pages;
+            if (this.noOfPages > 100) {
+              this.noOfPages = 50;
+            }
             this.searchResults = json.results;
           })
           .catch((err) => console.error("error:" + err));
@@ -272,6 +276,9 @@ export default {
             .then((res) => res.json())
             .then((json) => {
               this.noOfPages = json.total_pages;
+              if (this.noOfPages > 100) {
+                this.noOfPages = 50;
+              }
               this.searchResults = json.results;
             })
             .catch((err) => console.error("error:" + err));
@@ -299,6 +306,9 @@ export default {
             .then((res) => res.json())
             .then((json) => {
               this.noOfPages = json.total_pages;
+              if (this.noOfPages > 100) {
+                this.noOfPages = 50;
+              }
               this.searchResults = json.results;
             })
             .catch((err) => console.error("error:" + err));
@@ -325,6 +335,9 @@ export default {
         .then((res) => res.json())
         .then((json) => {
           this.noOfPages = json.total_pages;
+          if (this.noOfPages > 100) {
+            this.noOfPages = 50;
+          }
           this.searchResults = json.results;
         })
         .catch((err) => console.error("error:" + err));
@@ -367,5 +380,15 @@ export default {
   background-size: cover;
   height: 100%;
   width: 100%;
+}
+.pagination .v-pagination {
+  width: 100%; /* Allow the pagination container to adjust according to the screen size */
+  display: flex;
+  justify-content: center; /* Center the pagination component */
+  padding: 0;
+  margin: 0;
+}
+.v-pagination {
+  flex-wrap: wrap !important; /* Allow the buttons to wrap onto multiple lines if necessary */
 }
 </style>
