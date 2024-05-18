@@ -145,9 +145,6 @@ export default {
       } else {
         this.$router.push({ name: "infoSeries", query: { id: item.id } });
       }
-      // this.dialog = true;
-      // this.dialogItem = item;
-      // this.getSimilarMovies(item.id);
     },
     prevPage() {
       for (let x = 0; x <= 2; x++) {
@@ -159,16 +156,6 @@ export default {
         this.items.push(this.items.shift());
       }
     },
-    // prevPageDialogCarousel() {
-    //   for (let x = 0; x <= this.columns; x++) {
-    //     this.similarMovies.unshift(this.similarMovies.pop());
-    //   }
-    // },
-    // nextPageDialogCarousel() {
-    //   for (let x = 0; x <= this.columns; x++) {
-    //     this.similarMovies.push(this.similarMovies.shift());
-    //   }
-    // },
   },
   computed: {
     columns() {

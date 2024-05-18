@@ -5,8 +5,10 @@
   <div v-if="movies.length > 0">
     <section>
       <v-img
-        :src="'https://image.tmdb.org/t/p/original' + topMovie.poster_path"
-        :lazy-src="'https://image.tmdb.org/t/p/original' + topMovie.poster_path"
+        :src="'https://image.tmdb.org/t/p/original' + topMovie.backdrop_path"
+        :lazy-src="
+          'https://image.tmdb.org/t/p/original' + topMovie.backdrop_path
+        "
         alt="Movie Poster"
         class="movie-banner grad"
         gradient="to bottom, rgba(0,0,0,0.2), rgba(0,0,0,1)"
@@ -117,7 +119,7 @@ export default {
       randomMovies: [],
       upcomingMovies: [],
       series: [],
-      watchlist: [],
+      watchlist: null,
     };
   },
   created() {
@@ -132,16 +134,35 @@ export default {
   },
 
   methods: {
+    changeThePoster(list) {
+      list.forEach((movie) => {
+        if (!movie.hasOwnProperty("backdrop_path")) {
+          movie.backdrop_path = movie.poster_path;
+        }
+      });
+    },
     addToWatchlist(movie) {
+      movie.isSerie = "movie";
       var watchlistFromLocalStorage = JSON.parse(
         localStorage.getItem("watchlist") || "[]"
       );
-      watchlistFromLocalStorage.push(movie);
-      localStorage.setItem(
-        "watchlist",
-        JSON.stringify(watchlistFromLocalStorage)
+
+      // Check if the movie already exists in the watchlist by isSerie and id
+      var movieExists = watchlistFromLocalStorage.some(
+        (item) => item.id === movie.id && item.isSerie === movie.isSerie
       );
-      this.isAdded = true;
+
+      if (!movieExists) {
+        watchlistFromLocalStorage.push(movie);
+        localStorage.setItem(
+          "watchlist",
+          JSON.stringify(watchlistFromLocalStorage)
+        );
+        this.isAdded = true;
+      } else {
+        console.log("Movie already exists in the watchlist");
+        this.isAdded = false;
+      }
     },
     async initialize() {
       const options = {
@@ -154,8 +175,16 @@ export default {
       };
       //  "https://api.themoviedb.org/3/discover/movie?include_adult=false?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc",
 
-      this.watchlist = JSON.parse(localStorage.getItem("watchlist") || "[]");
-      this.watchlist = this.watchlist.filter((obj) => obj.isSerie === "movie");
+      this.watchlist = JSON.parse(localStorage.getItem("watchlist") || "[]"); // Parse the watchlist from localStorage
+
+      if (this.watchlist.length === 0) {
+        // Check if the watchlist is empty
+        this.watchlist = null; // Set watchlist to null if it is empty
+      } else {
+        if (!this.watchlist.poster_path) {
+          this.watchlist.poster_path = this.watchlist.backdrop_path;
+        } // Call changeThePoster if watchlist is not empty
+      }
 
       this.newMovies = await fetch(
         "https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=1",
@@ -163,6 +192,7 @@ export default {
       )
         .then((res) => res.json())
         .then((data) => data.results);
+      this.changeThePoster(this.newMovies);
 
       this.horrorItems = await fetch(
         "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=27",
@@ -170,6 +200,7 @@ export default {
       )
         .then((res) => res.json())
         .then((data) => data.results);
+      this.changeThePoster(this.horrorItems);
 
       this.fantasyItems = await fetch(
         "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=14",
@@ -177,6 +208,7 @@ export default {
       )
         .then((res) => res.json())
         .then((data) => data.results);
+      this.changeThePoster(this.fantasyItems);
 
       this.documentaryItems = await fetch(
         "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=99",
@@ -184,6 +216,7 @@ export default {
       )
         .then((res) => res.json())
         .then((data) => data.results);
+      this.changeThePoster(this.documentaryItems);
 
       this.animationItems = await fetch(
         "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=16",
@@ -191,6 +224,7 @@ export default {
       )
         .then((res) => res.json())
         .then((data) => data.results);
+      this.changeThePoster(this.animationItems);
 
       this.movies = await fetch(
         "https://api.themoviedb.org/3/movie/top_rated?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc",
@@ -198,8 +232,8 @@ export default {
       )
         .then((res) => res.json())
         .then((data) => data.results);
+      this.changeThePoster(this.movies);
     },
-
     handleMovieClick(id) {
       this.$router.push({ name: "info", query: { id: id } });
     },
@@ -238,6 +272,7 @@ export default {
           this.topMovie.imdb_id = json.imdb_id;
         })
         .catch((err) => console.error("error:" + err));
+      console.log(this.topMovie);
     },
     watchMovie(id) {
       location.href = "https://multiembed.mov/?video_id=" + id;

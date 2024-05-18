@@ -49,7 +49,7 @@
     </section>
     <div style="background-color: black">
       <obras
-        v-if="watchlist"
+        v-if="watchlist && watchlist != []"
         :obras="watchlist"
         titulo="Watchlist"
         type="movie"
@@ -105,7 +105,6 @@ export default {
 
   data() {
     return {
-      watchlist: [],
       isAdded: false,
       topMovie: null,
       newMovies: [],
@@ -117,7 +116,7 @@ export default {
       randomMovies: [],
       upcomingMovies: [],
       series: [],
-      watchlist: [],
+      watchlist: null,
     };
   },
   created() {
@@ -133,15 +132,28 @@ export default {
 
   methods: {
     addToWatchlist(movie) {
+      movie.isSerie = "movie";
+
       var watchlistFromLocalStorage = JSON.parse(
         localStorage.getItem("watchlist") || "[]"
       );
-      watchlistFromLocalStorage.push(movie);
-      localStorage.setItem(
-        "watchlist",
-        JSON.stringify(watchlistFromLocalStorage)
+
+      // Check if the movie already exists in the watchlist by isSerie and id
+      var movieExists = watchlistFromLocalStorage.some(
+        (item) => item.id === movie.id && item.isSerie === movie.isSerie
       );
-      this.isAdded = true;
+
+      if (!movieExists) {
+        watchlistFromLocalStorage.push(movie);
+        localStorage.setItem(
+          "watchlist",
+          JSON.stringify(watchlistFromLocalStorage)
+        );
+        this.isAdded = true;
+      } else {
+        console.log("Movie already exists in the watchlist");
+        this.isAdded = false;
+      }
     },
     async initialize() {
       const options = {
@@ -199,7 +211,6 @@ export default {
         .then((res) => res.json())
         .then((data) => data.results);
     },
-
     handleMovieClick(id) {
       this.$router.push({ name: "info", query: { id: id } });
     },

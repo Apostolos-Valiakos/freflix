@@ -100,11 +100,23 @@ export default {
       var watchlistFromLocalStorage = JSON.parse(
         localStorage.getItem("watchlist") || "[]"
       );
-      watchlistFromLocalStorage.push(movie);
-      localStorage.setItem(
-        "watchlist",
-        JSON.stringify(watchlistFromLocalStorage)
+
+      // Check if the movie already exists in the watchlist by isSerie and id
+      var movieExists = watchlistFromLocalStorage.some(
+        (item) => item.id === movie.id && item.isSerie === movie.isSerie
       );
+
+      if (!movieExists) {
+        watchlistFromLocalStorage.push(movie);
+        localStorage.setItem(
+          "watchlist",
+          JSON.stringify(watchlistFromLocalStorage)
+        );
+        this.isAdded = true;
+      } else {
+        console.log("Movie already exists in the watchlist");
+        this.isAdded = false;
+      }
     },
     async initialize() {
       const options = {
@@ -151,7 +163,6 @@ export default {
         .then((res) => res.json())
         .then((data) => data.results);
     },
-
     handleMovieClick(movie) {
       this.$router.push({
         name: "infoSeries",
