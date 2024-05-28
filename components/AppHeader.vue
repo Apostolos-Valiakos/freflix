@@ -37,6 +37,11 @@
               Watchlist
             </NuxtLink>
           </li>
+          <li>
+            <NuxtLink style="text-decoration: none" to="/history">
+              History
+            </NuxtLink>
+          </li>
         </ul>
       </div>
     </div>
@@ -65,6 +70,11 @@
       <li>
         <NuxtLink style="text-decoration: none" to="/watchlist">
           Watchlist
+        </NuxtLink>
+      </li>
+      <li>
+        <NuxtLink style="text-decoration: none" to="/history">
+          History
         </NuxtLink>
       </li>
     </ul>

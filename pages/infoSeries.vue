@@ -178,6 +178,29 @@ export default {
     this.getIMDBID(this.query);
   },
   methods: {
+    addToHistory(movie) {
+      movie.isSerie = "tv";
+      var historyFromLocalStorage = JSON.parse(
+        localStorage.getItem("history") || "[]"
+      );
+
+      // Check if the movie already exists in the history by isSerie and id
+      var movieExists = historyFromLocalStorage.some(
+        (item) => item.id === movie.id && item.isSerie === movie.isSerie
+      );
+
+      if (!movieExists) {
+        historyFromLocalStorage.push(movie);
+        localStorage.setItem(
+          "history",
+          JSON.stringify(historyFromLocalStorage)
+        );
+        this.isAdded = true;
+      } else {
+        console.log("Movie already exists in the history");
+        this.isAdded = false;
+      }
+    },
     addToWatchlist(movie) {
       movie.isSerie = "tv";
 
@@ -218,7 +241,7 @@ export default {
       this.movie = await fetch(
         `https://api.themoviedb.org/3/tv/${id}?api_key=5b75818e63dfdb396cadedf77425b334&language=en-US&page=1`
       ).then((res) => res.json());
-      // console.log(this.movie);
+      this.addToHistory(this.movie);
     },
     watchMovie(id) {
       location.href =
