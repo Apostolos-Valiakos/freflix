@@ -135,15 +135,19 @@ export default {
         })
         .catch((err) => console.error("error:" + err));
     },
-    seeMovie(link) {
-      this.showEmbed = true;
-      this.embedLink = "https://autoembed.to/movie/tmdb/" + link;
-    },
     handleclick(item) {
-      if (this.type === "movie") {
-        this.$router.push({ name: "info", query: { id: item.id } });
+      if (item.isSerie) {
+        if (item.isSerie === "movie") {
+          this.$router.push({ name: "info", query: { id: item.id } });
+        } else if (item.isSerie === "tv") {
+          this.$router.push({ name: "infoSeries", query: { id: item.id } });
+        }
       } else {
-        this.$router.push({ name: "infoSeries", query: { id: item.id } });
+        if (this.type === "movie") {
+          this.$router.push({ name: "info", query: { id: item.id } });
+        } else {
+          this.$router.push({ name: "infoSeries", query: { id: item.id } });
+        }
       }
     },
     prevPage() {

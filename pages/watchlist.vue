@@ -60,7 +60,6 @@ export default {
     if (window.localStorage.getItem("watchlist")) {
       this.results = window.localStorage.getItem("watchlist");
       this.results = JSON.parse(this.results);
-      console.log(this.results);
     } else {
       this.isEmpty = true;
     }

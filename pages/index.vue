@@ -22,14 +22,6 @@
         </v-btn>
         <p class="synopsis">{{ topMovie.overview }}</p>
         <v-form class="button-container">
-          <!-- <v-btn
-            @click="watchMovie(topMovie.id)"
-            style="color: white"
-            color="red"
-          >
-            Watch
-          </v-btn> -->
-          <!-- class="cta-transparent" -->
           <v-btn
             @click="handleMovieClick(topMovie.id)"
             style="color: red"
@@ -130,7 +122,6 @@ export default {
     }
     this.getTopMovie("movie");
     this.initialize();
-    // this.getMoviesperGerne("27", this.horrorItems, "movie");
   },
 
   methods: {
