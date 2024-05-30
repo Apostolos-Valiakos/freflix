@@ -95,6 +95,7 @@
       class="mt-10"
     >
       <iframe
+        sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"
         :src="'https://coverapi.store/embed/' + imdb_id"
         width="800"
         height="600"
