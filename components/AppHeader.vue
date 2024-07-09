@@ -6,9 +6,9 @@
         ><img src="~assets/Freflix-logo.png" class="logo" alt="Netflix Logo"
       /></NuxtLink>
     </div>
-
-    <div class="d-flex justify-start mb-6 bg-surface-variant">
-      <nav>
+    <br />
+    <div class="justify-center mb-6 bg-surface-variant">
+      <nav style="text-align: center; justify-content: center; display: flex">
         <ul style="list-style-type: none">
           <li>
             <NuxtLink style="text-decoration: none" to="/">Home</NuxtLink>
@@ -25,24 +25,26 @@
           </li>
         </ul>
       </nav>
-      <div class="d-flex justify-end mb-6 bg-surface-variant">
-        <ul style="list-style-type: none">
-          <li>
-            <NuxtLink style="text-decoration: none" to="/searchResults">
-              Search
-            </NuxtLink>
-          </li>
-          <li>
-            <NuxtLink style="text-decoration: none" to="/watchlist">
-              Watchlist
-            </NuxtLink>
-          </li>
-          <li>
-            <NuxtLink style="text-decoration: none" to="/history">
-              History
-            </NuxtLink>
-          </li>
-        </ul>
+      <div class="justify-center mb-6 bg-surface-variant">
+        <nav style="text-align: center; justify-content: center; display: flex">
+          <ul style="list-style-type: none">
+            <li>
+              <NuxtLink style="text-decoration: none" to="/searchResults">
+                Search
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink style="text-decoration: none" to="/watchlist">
+                Watchlist
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink style="text-decoration: none" to="/history">
+                History
+              </NuxtLink>
+            </li>
+          </ul>
+        </nav>
       </div>
     </div>
   </div>
