@@ -223,7 +223,6 @@ export default {
           "history",
           JSON.stringify(historyFromLocalStorage)
         );
-        this.isAdded = true;
       } else {
         console.log("Movie already exists in the history");
         this.isAdded = false;

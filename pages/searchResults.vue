@@ -53,8 +53,14 @@
             @click="seeInfo(movie.id)"
             :src="'https://image.tmdb.org/t/p//w500' + movie.backdrop_path"
           />
-          <v-card-title v-if="isSerie">{{ movie.name }}</v-card-title>
-          <v-card-title v-else>{{ movie.title }}</v-card-title>
+          <v-card-title v-if="isSerie">
+            {{ movie.name }}
+            <h5 class="mx-2">({{ movie.first_air_date }})</h5>
+          </v-card-title>
+          <v-card-title v-else>
+            {{ movie.title }}
+            <h5 class="mx-2">({{ movie.release_date }})</h5>
+          </v-card-title>
           <!-- Add more movie details or actions -->
           <v-card-subtitle>
             {{ movie.overview }}
@@ -169,7 +175,6 @@ export default {
         .catch((err) => console.error("error:" + err));
     },
     seeInfo(id) {
-      console.log(this.isSerie);
       if (this.isSerie) {
         this.$router.push({
           name: "infoSeries",
