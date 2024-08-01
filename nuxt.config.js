@@ -37,7 +37,9 @@ export default {
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
-  modules: [],
+  modules: [
+    '@nuxtjs/google-analytics'
+  ],
   googleAnalytics: {
     id: "G-XMRB0HFGVK",
   },
