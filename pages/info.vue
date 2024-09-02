@@ -186,7 +186,7 @@ export default {
       tab: null,
       text: "",
       isMobile: false,
-      isAdded: false,
+      isAdded: false, // This will be initialized in the created hook
       query: null,
       popup: false,
       movie: null,
@@ -201,23 +201,28 @@ export default {
     } else {
       this.query = this.getCookie("id");
     }
-    // console.log(this.query);
-    this.getTopMovie(this.query);
-    this.getSimilarMovies(this.query);
+
+    await this.getTopMovie(this.query);
+
+    // Initialize isAdded here
+    this.isAdded = this.movieExistsInArray(
+      this.movie,
+      JSON.parse(localStorage.getItem("watchlist") || "[]")
+    );
   },
   methods: {
+    movieExistsInArray(movie, array) {
+      return array.some(
+        (item) => item.id === movie.id && item.isSerie === movie.isSerie
+      );
+    },
     addToHistory(movie) {
       movie.isSerie = "movie";
       var historyFromLocalStorage = JSON.parse(
         localStorage.getItem("history") || "[]"
       );
 
-      // Check if the movie already exists in the history by isSerie and id
-      var movieExists = historyFromLocalStorage.some(
-        (item) => item.id === movie.id && item.isSerie === movie.isSerie
-      );
-
-      if (!movieExists) {
+      if (!this.movieExistsInArray(movie, historyFromLocalStorage)) {
         historyFromLocalStorage.push(movie);
         localStorage.setItem(
           "history",
@@ -225,7 +230,6 @@ export default {
         );
       } else {
         console.log("Movie already exists in the history");
-        this.isAdded = false;
       }
     },
     watchMovie(id) {
@@ -237,23 +241,27 @@ export default {
         localStorage.getItem("watchlist") || "[]"
       );
 
-      // Check if the movie already exists in the watchlist by isSerie and id
-      var movieExists = watchlistFromLocalStorage.some(
+      // Find the index of the movie in the watchlist
+      var movieIndex = watchlistFromLocalStorage.findIndex(
         (item) => item.id === movie.id && item.isSerie === movie.isSerie
       );
 
-      if (!movieExists) {
+      if (movieIndex === -1) {
+        // If the movie doesn't exist, add it to the watchlist
         watchlistFromLocalStorage.push(movie);
-        localStorage.setItem(
-          "watchlist",
-          JSON.stringify(watchlistFromLocalStorage)
-        );
-        this.isAdded = true;
       } else {
-        console.log("Movie already exists in the watchlist");
-        this.isAdded = false;
+        // If the movie exists, remove it from its current position and add to the first position
+        watchlistFromLocalStorage.splice(movieIndex, 1);
+        watchlistFromLocalStorage.unshift(movie);
       }
+
+      localStorage.setItem(
+        "watchlist",
+        JSON.stringify(watchlistFromLocalStorage)
+      );
+      this.isAdded = true;
     },
+
     setCookie(name, value, days) {
       var expires = "";
       if (days) {
@@ -283,10 +291,6 @@ export default {
       ).then((res) => res.json());
       console.log(this.movie);
       this.addToHistory(this.movie);
-    },
-    watchMovie(id) {
-      location.href = "https://multiembed.mov/?video_id=" + id;
-      // this.$router.push({ name: "watch", query: { id: id } });
     },
     handleClick(item) {
       this.getTopMovie(item.id);
@@ -325,6 +329,7 @@ export default {
   },
 };
 </script>
+
 <style scoped>
 h1,
 p {

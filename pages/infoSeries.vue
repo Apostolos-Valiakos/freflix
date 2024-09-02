@@ -151,7 +151,7 @@ export default {
       isMobile: false,
       selectedSeason: 1,
       details: [],
-      isAdded: false,
+      isAdded: false, // Initialize the variable here
       season: 1,
       episode: 1,
       episodes: [],
@@ -172,25 +172,31 @@ export default {
     } else {
       this.query = this.getCookie("id");
     }
-    // console.log(this.query);
-    this.getTopMovie(this.query);
+
+    await this.getTopMovie(this.query);
     this.getSimilarMovies(this.query);
     this.getDetails(this.query);
     this.getIMDBID(this.query);
+
+    // Initialize isAdded here
+    this.isAdded = this.movieExistsInArray(
+      this.movie,
+      JSON.parse(localStorage.getItem("watchlist") || "[]")
+    );
   },
   methods: {
+    movieExistsInArray(movie, array) {
+      return array.some(
+        (item) => item.id === movie.id && item.isSerie === movie.isSerie
+      );
+    },
     addToHistory(movie) {
       movie.isSerie = "tv";
       var historyFromLocalStorage = JSON.parse(
         localStorage.getItem("history") || "[]"
       );
 
-      // Check if the movie already exists in the history by isSerie and id
-      var movieExists = historyFromLocalStorage.some(
-        (item) => item.id === movie.id && item.isSerie === movie.isSerie
-      );
-
-      if (!movieExists) {
+      if (!this.movieExistsInArray(movie, historyFromLocalStorage)) {
         historyFromLocalStorage.push(movie);
         localStorage.setItem(
           "history",
@@ -204,17 +210,31 @@ export default {
     },
     addToWatchlist(movie) {
       movie.isSerie = "tv";
-
       var watchlistFromLocalStorage = JSON.parse(
         localStorage.getItem("watchlist") || "[]"
       );
-      watchlistFromLocalStorage.push(movie);
+
+      // Find the index of the movie in the watchlist
+      var movieIndex = watchlistFromLocalStorage.findIndex(
+        (item) => item.id === movie.id && item.isSerie === movie.isSerie
+      );
+
+      if (movieIndex === -1) {
+        // If the movie doesn't exist, add it to the watchlist
+        watchlistFromLocalStorage.push(movie);
+      } else {
+        // If the movie exists, remove it from its current position and add to the first position
+        watchlistFromLocalStorage.splice(movieIndex, 1);
+        watchlistFromLocalStorage.unshift(movie);
+      }
+
       localStorage.setItem(
         "watchlist",
         JSON.stringify(watchlistFromLocalStorage)
       );
       this.isAdded = true;
     },
+
     setCookie(name, value, days) {
       var expires = "";
       if (days) {

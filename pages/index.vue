@@ -150,23 +150,27 @@ export default {
         localStorage.getItem("watchlist") || "[]"
       );
 
-      // Check if the movie already exists in the watchlist by isSerie and id
-      var movieExists = watchlistFromLocalStorage.some(
+      // Find the index of the movie in the watchlist
+      var movieIndex = watchlistFromLocalStorage.findIndex(
         (item) => item.id === movie.id && item.isSerie === movie.isSerie
       );
 
-      if (!movieExists) {
+      if (movieIndex === -1) {
+        // If the movie doesn't exist, add it to the watchlist
         watchlistFromLocalStorage.push(movie);
-        localStorage.setItem(
-          "watchlist",
-          JSON.stringify(watchlistFromLocalStorage)
-        );
-        this.isAdded = true;
       } else {
-        console.log("Movie already exists in the watchlist");
-        this.isAdded = false;
+        // If the movie exists, remove it from its current position and add to the first position
+        watchlistFromLocalStorage.splice(movieIndex, 1);
+        watchlistFromLocalStorage.unshift(movie);
       }
+
+      localStorage.setItem(
+        "watchlist",
+        JSON.stringify(watchlistFromLocalStorage)
+      );
+      this.isAdded = true;
     },
+
     async initialize() {
       const options = {
         method: "GET",

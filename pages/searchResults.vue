@@ -123,12 +123,27 @@ export default {
       var watchlistFromLocalStorage = JSON.parse(
         localStorage.getItem("watchlist") || "[]"
       );
-      watchlistFromLocalStorage.push(movie);
+
+      // Find the index of the movie in the watchlist
+      var movieIndex = watchlistFromLocalStorage.findIndex(
+        (item) => item.id === movie.id && item.isSerie === movie.isSerie
+      );
+
+      if (movieIndex === -1) {
+        // If the movie doesn't exist, add it to the watchlist
+        watchlistFromLocalStorage.push(movie);
+      } else {
+        // If the movie exists, remove it from its current position and add to the first position
+        watchlistFromLocalStorage.splice(movieIndex, 1);
+        watchlistFromLocalStorage.unshift(movie);
+      }
+
       localStorage.setItem(
         "watchlist",
         JSON.stringify(watchlistFromLocalStorage)
       );
     },
+
     searchFromChip(item) {
       this.searchTerm = item.name;
       const url =
