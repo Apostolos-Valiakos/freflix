@@ -83,12 +83,15 @@
         </v-card>
       </v-col>
     </v-row>
-    <v-pagination
-      v-if="noOfPages"
-      style="text-align: center; justify-content: center; display: flex"
-      :length="noOfPages"
-      @input="updatePagination"
-    ></v-pagination>
+    <div class="text-center">
+      <v-pagination
+        v-if="noOfPages"
+        :length="noOfPages"
+        color="#f44336"
+        v-model="page"
+        @input="updatePagination"
+      ></v-pagination>
+    </div>
   </div>
 </template>
 
@@ -249,6 +252,7 @@ export default {
       } else {
         this.searchPerCategory(this.selectedCategory, pagination);
       }
+      window.scrollTo(0, 0);
     },
     seeMovie(link) {
       if (this.isSerie) {
