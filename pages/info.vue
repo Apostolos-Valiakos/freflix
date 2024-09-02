@@ -222,15 +222,21 @@ export default {
         localStorage.getItem("history") || "[]"
       );
 
-      if (!this.movieExistsInArray(movie, historyFromLocalStorage)) {
+      // Find the index of the movie in the history
+      var movieIndex = historyFromLocalStorage.findIndex(
+        (item) => item.id === movie.id && item.isSerie === movie.isSerie
+      );
+
+      if (movieIndex === -1) {
+        // If the movie doesn't exist, add it to the history
         historyFromLocalStorage.push(movie);
-        localStorage.setItem(
-          "history",
-          JSON.stringify(historyFromLocalStorage)
-        );
       } else {
-        console.log("Movie already exists in the history");
+        // If the movie exists, remove it from its current position and add to the end of the array
+        historyFromLocalStorage.splice(movieIndex, 1);
+        historyFromLocalStorage.push(movie);
       }
+
+      localStorage.setItem("history", JSON.stringify(historyFromLocalStorage));
     },
     watchMovie(id) {
       location.href = `https://multiembed.mov/?video_id=${id}`;

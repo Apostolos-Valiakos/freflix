@@ -196,18 +196,25 @@ export default {
         localStorage.getItem("history") || "[]"
       );
 
-      if (!this.movieExistsInArray(movie, historyFromLocalStorage)) {
+      // Find the index of the movie in the history
+      var movieIndex = historyFromLocalStorage.findIndex(
+        (item) => item.id === movie.id && item.isSerie === movie.isSerie
+      );
+
+      if (movieIndex === -1) {
+        // If the movie doesn't exist, add it to the history
         historyFromLocalStorage.push(movie);
-        localStorage.setItem(
-          "history",
-          JSON.stringify(historyFromLocalStorage)
-        );
         this.isAdded = true;
       } else {
-        console.log("Movie already exists in the history");
+        // If the movie exists, remove it from its current position and add it to the end of the array
+        historyFromLocalStorage.splice(movieIndex, 1);
+        historyFromLocalStorage.push(movie); // Change from unshift to push
         this.isAdded = false;
       }
+
+      localStorage.setItem("history", JSON.stringify(historyFromLocalStorage));
     },
+
     addToWatchlist(movie) {
       movie.isSerie = "tv";
       var watchlistFromLocalStorage = JSON.parse(
@@ -234,7 +241,6 @@ export default {
       );
       this.isAdded = true;
     },
-
     setCookie(name, value, days) {
       var expires = "";
       if (days) {
