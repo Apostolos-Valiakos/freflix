@@ -19,13 +19,20 @@
                 />
               </v-row>
               <v-row style="justify-content: center">
-                <v-btn
+                <v-btn v-if="!isAdded"
                   @click="addToWatchlist(movie)"
                   style="color: white"
                   color="red"
                   :disabled="isAdded"
                 >
                   Add to watchlist
+                </v-btn>
+                <v-btn v-if="isAdded"
+                  @click="removeFromWatchList(movie)"
+                  style="color: red"
+                  color="white"
+                >
+                  Remove from watchlist
                 </v-btn>
               </v-row>
             </figure>
@@ -36,14 +43,6 @@
               {{ movie.vote_count }} votes on IMDB
             </p>
             <h2>{{ movie.title }}</h2>
-            <!-- <v-btn
-              v-if="isMobile"
-              @click="watchMovie(movie.imdb_id)"
-              style="color: white"
-              color="red"
-            >
-              play
-            </v-btn> -->
             <h3>{{ movie.release_date }}</h3>
             <h3>{{ movie.runtime }} mins</h3>
             <p>{{ movie.overview }}</p>
@@ -54,7 +53,7 @@
             >
               <div v-for="genre in movie.genres" :key="genre.id">
                 <p>
-                  <v-chip class="mx-1">{{ genre.name }}</v-chip>
+                  <v-chip color="red" class="mx-1">{{ genre.name }}</v-chip>
                 </p>
               </div>
             </div>
@@ -168,7 +167,8 @@
                 display: flex;
                 color: white;
               "
-              >{{ item.title }}
+              >
+              {{ item.title }}
             </v-card-text>
           </v-card>
         </div>
@@ -186,7 +186,7 @@ export default {
       tab: null,
       text: "",
       isMobile: false,
-      isAdded: false, // This will be initialized in the created hook
+      isAdded: false,
       query: null,
       popup: false,
       movie: null,
@@ -203,6 +203,7 @@ export default {
     }
 
     await this.getTopMovie(this.query);
+    await this.getSimilarMovies(this.query);
 
     // Initialize isAdded here
     this.isAdded = this.movieExistsInArray(
@@ -211,6 +212,15 @@ export default {
     );
   },
   methods: {
+    removeFromWatchList(movie) {
+      var watchlistFromLocalStorage = JSON.parse(
+        localStorage.getItem("watchlist") || "[]"
+      );
+      var index = watchlistFromLocalStorage.indexOf(movie)
+      watchlistFromLocalStorage.splice(index, 1);
+      localStorage.setItem("watchlist", JSON.stringify(watchlistFromLocalStorage));
+      this.isAdded = false
+    },
     movieExistsInArray(movie, array) {
       return array.some(
         (item) => item.id === movie.id && item.isSerie === movie.isSerie
@@ -309,7 +319,7 @@ export default {
       const url =
         "https://api.themoviedb.org/3/movie/" +
         ID +
-        "/similar?language=en-US&page=1";
+        "/recommendations?language=en-US&page=1";
       const options = {
         method: "GET",
         headers: {

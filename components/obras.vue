@@ -1,11 +1,6 @@
 <template>
   <div>
-    <div
-      class="ml-8"
-      @keyup.right="nextPage"
-      @keyup.left="prevPage"
-      @mousewheel.right="nextPage"
-    >
+    <div class="ml-8" @keyup.right="nextPage" @keyup.left="prevPage">
       <v-card-title
         class="font-weight-bold pr-5 ma-0"
         style="color: #e5e5e5; font-size: 27px !important"
@@ -16,9 +11,19 @@
       <v-carousel
         hide-delimiters
         show-arrows-on-hover
-        style="white-space: nowrap; display: inline-block"
-        @change="nextPage()"
+        style="white-space: nowrap; display: inline-block; overflow: hidden"
+        class="carousel"
       >
+        <template v-slot:prev="{ on, attrs }">
+          <v-btn icon v-bind="attrs" v-on="on" @click="prevPage">
+            <v-icon>mdi-chevron-left</v-icon>
+          </v-btn>
+        </template>
+        <template v-slot:next="{ on, attrs }">
+          <v-btn icon v-bind="attrs" v-on="on" @click="nextPage">
+            <v-icon>mdi-chevron-right</v-icon>
+          </v-btn>
+        </template>
         <v-carousel-item
           v-for="(el, index) in slider"
           :key="index"
@@ -28,33 +33,35 @@
             <v-card
               v-for="(item, index) in items"
               :key="index"
-              class="elevation-0"
-              color="#e5e5e500"
+              class="movie-card elevation-2 mx-1"
+              @mouseover="item.isActive = true"
+              @mouseleave="item.isActive = false"
+              @click="handleclick(item)"
+              style="
+                min-width: 250px;
+                max-width: 250px;
+                transition: transform 0.3s;
+                overflow: hidden;
+                border: none;
+              "
             >
               <v-img
-                v-if="item.poster_path && !isMobile"
-                @click="handleclick(item)"
-                :src="'https://image.tmdb.org/t/p//w500' + item.poster_path"
+                style="
+                  min-width: 250px;
+                  max-width: 250px;
+                  transition: transform 0.3s;
+                  overflow: hidden;
+                  border: none;
+                "
+                :src="
+                  'https://image.tmdb.org/t/p/w500' + (item.poster_path || '')
+                "
                 :lazy-src="
-                  'https://image.tmdb.org/t/p//w500' + item.poster_path
+                  'https://image.tmdb.org/t/p/w500' + (item.poster_path || '')
                 "
                 contain
-                class="d-flex align-center mx-1 cursor-pointer imgJanela movie-poster"
-                @mouseover="item.isActive = true"
-                @mouseout="item.isActive = false"
-              >
-              </v-img>
-              <v-img
-                v-else
-                @click="handleclick(item)"
-                :src="'https://image.tmdb.org/t/p/w200' + item.poster_path"
-                :lazy-src="'https://image.tmdb.org/t/p/w200' + item.poster_path"
-                contain
-                class="d-flex align-center mx-1 cursor-pointer imgJanela movie-poster"
-                @mouseover="item.isActive = true"
-                @mouseout="item.isActive = false"
-              >
-              </v-img>
+                class="movie-poster"
+              ></v-img>
             </v-card>
           </div>
         </v-carousel-item>
@@ -111,7 +118,7 @@ export default {
       const url =
         "https://api.themoviedb.org/3/movie/" +
         ID +
-        "/similar?language=en-US&page=1";
+        "/recommendations?language=en-US&page=1";
       const options = {
         method: "GET",
         headers: {
@@ -151,7 +158,7 @@ export default {
       }
     },
     prevPage() {
-      for (let x = 0; x <= 2; x++) {
+      for (let x = 0; x <= this.columns; x++) {
         this.items.unshift(this.items.pop());
       }
     },
@@ -188,13 +195,18 @@ export default {
 .cursor-pointer {
   cursor: pointer;
 }
-.imgJanela {
-  padding: 0px 5px 0px 0px;
-  border-radius: 5px;
-  transition: 0.2s;
+.carousel {
+  overflow-x: auto;
 }
-
-.imgJanela:hover {
-  transform: scale(1.1);
+.movie-card {
+  border-radius: 8px;
+  overflow: hidden;
+}
+.movie-poster {
+  border-radius: 8px;
+  margin: 0; /* Remove margin to eliminate black space */
+}
+.v-carousel-item {
+  transition: transform 0.5s ease; /* Transition for smooth animation */
 }
 </style>

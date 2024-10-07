@@ -6,6 +6,7 @@
         class="ma-2 pa-2"
         label="Search"
         v-model="searchTerm"
+        @change="search(1)"
       />
       <!-- @change="autocomplete" -->
       <v-select
@@ -27,7 +28,9 @@
       label="Looking for Series"
       v-model="isSerie"
     ></v-checkbox>
-    <v-btn class="mx-8" @click="search(1)">Search</v-btn>
+
+    <v-btn class="mx-8" @click="search(1)" color="red"> Search </v-btn>
+
     <h2 class="page-title" v-if="searchTerm">
       Search Results for "{{ searchTerm }}"
     </h2>
@@ -39,7 +42,7 @@
     >
       {{ item.name }}
     </v-chip>
-    <v-row>
+    <v-row >
       <v-col
         v-for="(movie, index) in searchResults"
         :key="index"

@@ -24,12 +24,21 @@
               </v-row>
               <v-row style="justify-content: center">
                 <v-btn
+                  v-if="!isAdded"
                   @click="addToWatchlist(movie)"
                   style="color: white"
                   color="red"
                   :disabled="isAdded"
                 >
                   Add to watchlist
+                </v-btn>
+                <v-btn
+                  v-if="isAdded"
+                  @click="removeFromWatchList(movie)"
+                  style="color: red"
+                  color="white"
+                >
+                  Remove from watchlist
                 </v-btn>
               </v-row>
               <!-- <v-select
@@ -65,7 +74,7 @@
             <br />
             <h3>
               Last Episode to air:
-              <v-chip> {{ movie.last_episode_to_air.name }} </v-chip>
+              <v-chip color="red"> {{ movie.last_episode_to_air.name }} </v-chip>
             </h3>
             <p class="genre">Genre:</p>
 
@@ -74,7 +83,7 @@
               style="display: flex; flex-direction: row; flex-wrap: nowrap"
             >
               <div v-for="genre in movie.genres" :key="genre.id">
-                <v-chip class="mx-1">
+                <v-chip class="mx-1" color="red">
                   {{ genre.name }}
                 </v-chip>
               </div>
@@ -185,6 +194,18 @@ export default {
     );
   },
   methods: {
+    removeFromWatchList(movie) {
+      var watchlistFromLocalStorage = JSON.parse(
+        localStorage.getItem("watchlist") || "[]"
+      );
+      var index = watchlistFromLocalStorage.indexOf(movie);
+      watchlistFromLocalStorage.splice(index, 1);
+      localStorage.setItem(
+        "watchlist",
+        JSON.stringify(watchlistFromLocalStorage)
+      );
+      this.isAdded = false;
+    },
     movieExistsInArray(movie, array) {
       return array.some(
         (item) => item.id === movie.id && item.isSerie === movie.isSerie
@@ -292,7 +313,7 @@ export default {
       const url =
         "https://api.themoviedb.org/3/tv/" +
         ID +
-        "/similar?language=en-US&page=1";
+        "/recommendations?language=en-US&page=1";
       const options = {
         method: "GET",
         headers: {
