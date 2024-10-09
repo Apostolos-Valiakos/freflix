@@ -36,7 +36,8 @@
     </h2>
     <v-chip
       @click="searchFromChip(item)"
-      class="mr-2 mb-2"
+      class="mr-2 my-2"
+      color="red"
       v-for="item in autocompleteItems"
       :key="item.id"
     >
