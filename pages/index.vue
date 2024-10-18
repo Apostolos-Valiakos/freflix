@@ -2,7 +2,7 @@
 <!-- IMDB ID -->
 
 <template>
-  <div v-if="movies.length > 0">
+  <div v-if="movies.length > 0 && topMovie">
     <section>
       <v-img
         :src="'https://image.tmdb.org/t/p/original' + topMovie.backdrop_path"
