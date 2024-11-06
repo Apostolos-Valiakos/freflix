@@ -29,7 +29,7 @@
       v-model="isSerie"
     ></v-checkbox>
 
-    <v-btn class="mx-8" @click="search(1)" color="red"> Search </v-btn>
+    <v-btn class="mx-5 mb-8" @click="search(1)" color="red"> Search </v-btn>
 
     <h2 class="page-title" v-if="searchTerm">
       Search Results for "{{ searchTerm }}"
@@ -43,7 +43,7 @@
     >
       {{ item.name }}
     </v-chip>
-    <v-row >
+    <v-row>
       <v-col
         v-for="(movie, index) in searchResults"
         :key="index"
