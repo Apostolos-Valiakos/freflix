@@ -1,5 +1,5 @@
 <template>
-  <div v-if="movies.length > 0">
+  <div v-if="movies.length > 0 && topMovie">
     <section>
       <v-img
         v-if="topMovie.poster_path"
