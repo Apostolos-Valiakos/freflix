@@ -19,7 +19,8 @@
                 />
               </v-row>
               <v-row style="justify-content: center">
-                <v-btn v-if="!isAdded"
+                <v-btn
+                  v-if="!isAdded"
                   @click="addToWatchlist(movie)"
                   style="color: white"
                   color="red"
@@ -27,7 +28,8 @@
                 >
                   Add to watchlist
                 </v-btn>
-                <v-btn v-if="isAdded"
+                <v-btn
+                  v-if="isAdded"
                   @click="removeFromWatchList(movie)"
                   style="color: red"
                   color="white"
@@ -167,7 +169,7 @@
                 display: flex;
                 color: white;
               "
-              >
+            >
               {{ item.title }}
             </v-card-text>
           </v-card>
@@ -216,10 +218,15 @@ export default {
       var watchlistFromLocalStorage = JSON.parse(
         localStorage.getItem("watchlist") || "[]"
       );
-      var index = watchlistFromLocalStorage.indexOf(movie)
+      var index = watchlistFromLocalStorage.findIndex(
+        (item) => item.id === movie.id
+      );
       watchlistFromLocalStorage.splice(index, 1);
-      localStorage.setItem("watchlist", JSON.stringify(watchlistFromLocalStorage));
-      this.isAdded = false
+      localStorage.setItem(
+        "watchlist",
+        JSON.stringify(watchlistFromLocalStorage)
+      );
+      this.isAdded = false;
     },
     movieExistsInArray(movie, array) {
       return array.some(

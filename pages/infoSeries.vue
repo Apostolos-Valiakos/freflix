@@ -74,7 +74,9 @@
             <br />
             <h3>
               Last Episode to air:
-              <v-chip color="red"> {{ movie.last_episode_to_air.name }} </v-chip>
+              <v-chip color="red">
+                {{ movie.last_episode_to_air.name }}
+              </v-chip>
             </h3>
             <p class="genre">Genre:</p>
 
@@ -198,7 +200,9 @@ export default {
       var watchlistFromLocalStorage = JSON.parse(
         localStorage.getItem("watchlist") || "[]"
       );
-      var index = watchlistFromLocalStorage.indexOf(movie);
+      var index = watchlistFromLocalStorage.findIndex(
+        (item) => item.id === movie.id
+      );
       watchlistFromLocalStorage.splice(index, 1);
       localStorage.setItem(
         "watchlist",
