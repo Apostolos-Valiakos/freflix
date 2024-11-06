@@ -311,6 +311,7 @@ export default {
       this.getDetails(item.id);
       this.eraseCookie("id");
       this.setCookie("id", item.id, 1);
+      this.getIMDBID(item.id);
     },
     async getSimilarMovies(ID) {
       this.similarMovies = [];
