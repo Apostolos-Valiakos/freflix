@@ -94,10 +94,6 @@
   src="https://www.googletagmanager.com/gtag/js?id=G-XMRB0HFGVK"
 ></script>
 <script>
-<meta
-  name="google-site-verification"
-  content="2NXMENk8H7IDFXq7552Hyreo1Jmyb_K0DdXk83LJIMM"
-/>;
 window.dataLayer = window.dataLayer || [];
 function gtag() {
   dataLayer.push(arguments);
@@ -107,6 +103,11 @@ gtag("js", new Date());
 gtag("config", "G-XMRB0HFGVK");
 </script>
 <script>
+<meta
+  name="google-site-verification"
+  content="2NXMENk8H7IDFXq7552Hyreo1Jmyb_K0DdXk83LJIMM"
+/>;
+
 export default {
   transition: {
     name: "layout",
