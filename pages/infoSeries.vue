@@ -74,7 +74,7 @@
         </v-row>
       </div>
     </section>
-
+    <Cast :cast="credits" v-if="credits != []" />
     <div
       v-if="movie"
       style="
@@ -152,6 +152,7 @@ export default {
       movie: null,
       imdb_id: null,
       similarMovies: [],
+      credits: [],
     };
   },
   async created() {
@@ -168,6 +169,7 @@ export default {
     this.getSimilarMovies(this.query);
     this.getDetails(this.query);
     this.getIMDBID(this.query);
+    this.getCredits(this.query);
 
     // Initialize isAdded here
     this.isAdded = this.movieExistsInArray(
@@ -176,6 +178,24 @@ export default {
     );
   },
   methods: {
+    getCredits(movie) {
+      const url = `https://api.themoviedb.org/3/tv/${movie}/credits?language=en-US`;
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsIm5iZiI6MTczMDkyMDMxNC4yMzg4MjIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.6xq36kNsh7lPZGElIUB-gyelOmB2x2WQQOUXCAEfIiY",
+        },
+      };
+
+      fetch(url, options)
+        .then((res) => res.json())
+        .then((json) => {
+          this.credits = json.cast;
+        })
+        .catch((err) => console.error(err));
+    },
     removeFromWatchList(movie) {
       var watchlistFromLocalStorage = JSON.parse(
         localStorage.getItem("watchlist") || "[]"
@@ -291,6 +311,7 @@ export default {
       this.getDetails(item.id);
       this.eraseCookie("id");
       this.setCookie("id", item.id, 1);
+      this.getCredits(item.id);
       this.getIMDBID(item.id);
     },
     async getSimilarMovies(ID) {

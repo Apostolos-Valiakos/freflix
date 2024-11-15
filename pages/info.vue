@@ -63,6 +63,7 @@
         </v-row>
       </div>
     </section>
+    <Cast :cast="credits" v-if="credits != []" />
     <div>
       <v-card>
         <template>
@@ -149,7 +150,7 @@
           <!-- Στο κλικ να ενημερώνεται το topMovie και το SimilarMovies -->
           <v-card
             class="pa-2"
-            @click="handleClick(item)"
+            @click="ClickOnSimilarMovies(item)"
             v-if="item !== undefined && item.poster_path"
             style="background-color: black"
             width="200"
@@ -179,8 +180,7 @@
   </div>
 </template>
 <script>
-import { watch } from "vue";
-
+import Cast from "../components/cast.vue";
 export default {
   name: "single-movie",
   data() {
@@ -193,6 +193,7 @@ export default {
       popup: false,
       movie: null,
       similarMovies: [],
+      credits: [],
     };
   },
   async created() {
@@ -212,8 +213,27 @@ export default {
       this.movie,
       JSON.parse(localStorage.getItem("watchlist") || "[]")
     );
+    this.getCredits(this.movie);
   },
   methods: {
+    getCredits(movie) {
+      const url = `https://api.themoviedb.org/3/movie/${movie.id}/credits?language=en-US`;
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsIm5iZiI6MTczMDkyMDMxNC4yMzg4MjIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.6xq36kNsh7lPZGElIUB-gyelOmB2x2WQQOUXCAEfIiY",
+        },
+      };
+
+      fetch(url, options)
+        .then((res) => res.json())
+        .then((json) => {
+          this.credits = json.cast;
+        })
+        .catch((err) => console.error(err));
+    },
     removeFromWatchList(movie) {
       var watchlistFromLocalStorage = JSON.parse(
         localStorage.getItem("watchlist") || "[]"
@@ -284,7 +304,6 @@ export default {
       );
       this.isAdded = true;
     },
-
     setCookie(name, value, days) {
       var expires = "";
       if (days) {
@@ -315,11 +334,16 @@ export default {
       console.log(this.movie);
       this.addToHistory(this.movie);
     },
-    handleClick(item) {
+    ClickOnSimilarMovies(item) {
       this.getTopMovie(item.id);
       this.getSimilarMovies(item.id);
+      this.getCredits(item.id);
       this.eraseCookie("id");
       this.setCookie("id", item.id, 1);
+      this.isAdded = this.movieExistsInArray(
+        this.item,
+        JSON.parse(localStorage.getItem("watchlist") || "[]")
+      );
     },
     async getSimilarMovies(ID) {
       this.similarMovies = [];
