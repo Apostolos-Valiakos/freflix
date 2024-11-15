@@ -41,26 +41,6 @@
                   Remove from watchlist
                 </v-btn>
               </v-row>
-              <!-- <v-select
-                style="width: 300px"
-                filled
-                class="mt-10"
-                v-if="details"
-                v-model="selectedSeason"
-                label="Season"
-                :items="details"
-                :item-text="'season'"
-                :item-value="'season_number'"
-                @change="getNoOfEpisodesForSelectedSeason(selectedSeason)"
-              ></v-select>
-              <v-select
-                style="width: 300px"
-                filled
-                v-if="episodes"
-                label="Episode"
-                v-model="episode"
-                :items="episodes"
-              ></v-select> -->
             </figure>
           </v-col>
           <v-col>
@@ -340,18 +320,6 @@ export default {
           this.similarMovies.splice(0, 1);
         })
         .catch((err) => console.error("error:" + err));
-    },
-    getNoOfEpisodesForSelectedSeason(selectedSeason) {
-      console.log(selectedSeason);
-      this.episodes = [];
-      this.selectedSeriesInfo.seasons.forEach((element) => {
-        if (element.name === selectedSeason) {
-          this.season = element.season_number;
-          for (let index = 0; index < element.episode_count; index++) {
-            this.episodes.push(index);
-          }
-        }
-      });
     },
     async getIMDBID(id) {
       const url = "https://api.themoviedb.org/3/tv/" + id + "/external_ids";

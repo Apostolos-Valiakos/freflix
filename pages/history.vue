@@ -66,26 +66,6 @@ export default {
     }
   },
   methods: {
-    addToHistory(movie) {
-      var historyFromLocalStorage = JSON.parse(
-        localStorage.getItem("history") || "[]"
-      );
-
-      // Find the index of the movie in the history
-      var movieIndex = historyFromLocalStorage.findIndex(
-        (item) => item.id === movie.id && item.isSerie === movie.isSerie
-      );
-
-      if (movieIndex !== -1) {
-        // If the movie exists, remove it from its current position
-        historyFromLocalStorage.splice(movieIndex, 1);
-      }
-
-      // Add the movie to the last position
-      historyFromLocalStorage.push(movie);
-
-      localStorage.setItem("history", JSON.stringify(historyFromLocalStorage));
-    },
     seeInfo(movie) {
       if (movie.isSerie === "tv") {
         this.$router.push({
