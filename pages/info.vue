@@ -147,7 +147,6 @@
         class="d-flex align-content-center flex-wrap bg-surface-variant"
       >
         <div v-for="(item, index) in similarMovies" :key="index">
-          <!-- Στο κλικ να ενημερώνεται το topMovie και το SimilarMovies -->
           <v-card
             class="pa-2"
             @click="ClickOnSimilarMovies(item)"

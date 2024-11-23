@@ -4,12 +4,7 @@
       <v-carousel
         hide-delimiters
         show-arrows-on-hover
-        style="
-          max-height: 280px;
-          white-space: nowrap;
-          display: inline-block;
-          overflow: hidden;
-        "
+        style="white-space: nowrap; display: inline-block; overflow: hidden"
         class="carousel"
       >
         <template v-slot:prev="{ on, attrs }">
@@ -31,38 +26,29 @@
             <v-card
               v-for="(item, index) in cast"
               :key="index"
-              class="cast-card elevation-2 mx-1"
+              class="cast-card mx-1"
               @mouseover="item.isActive = true"
               @mouseleave="item.isActive = false"
               style="
                 height: 100%;
-                min-width: 150px;
-                max-width: 150px;
-                transition: transform 0.3s;
+                min-width: 160px;
+                max-width: 160px;
                 overflow: hidden;
                 border: none;
                 background-color: black;
               "
             >
               <v-img
-                style="
-                  height: 100%;
-                  min-width: 150px;
-                  max-width: 150px;
-                  transition: transform 0.3s;
-                  overflow: hidden;
-                  border: none;
-                "
+                style="height: 100%; transition: transform 0.3s; border: none"
                 :src="
-                  'https://image.tmdb.org/t/p/w500' + (item.profile_path || '')
-                "
-                :lazy-src="
                   'https://image.tmdb.org/t/p/w500' + (item.profile_path || '')
                 "
                 contain
                 class="cast-poster"
               ></v-img>
-              {{ item.original_name }}
+              <v-card-text style="padding: 0px !important">
+                {{ item.original_name }}
+              </v-card-text>
             </v-card>
           </div>
         </v-carousel-item>
