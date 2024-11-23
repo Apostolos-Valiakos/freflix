@@ -6,9 +6,6 @@
     <section>
       <v-img
         :src="'https://image.tmdb.org/t/p/original' + topMovie.backdrop_path"
-        :lazy-src="
-          'https://image.tmdb.org/t/p/original' + topMovie.backdrop_path
-        "
         alt="Movie Poster"
         class="movie-banner grad"
         gradient="to bottom, rgba(0,0,0,0.2), rgba(0,0,0,1)"
@@ -23,6 +20,7 @@
         <p class="synopsis">{{ topMovie.overview }}</p>
         <v-form class="button-container">
           <v-btn
+            v-if="topMovie"
             @click="handleMovieClick(topMovie.id)"
             style="color: red"
             color="white"
@@ -170,7 +168,6 @@ export default {
       );
       this.isAdded = true;
     },
-
     async initialize() {
       const options = {
         method: "GET",
