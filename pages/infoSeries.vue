@@ -115,14 +115,16 @@
             width="200"
             height="300"
           >
-            <v-img
-              style="background-color: black"
-              contain
-              class="mt-2 movie-poster"
-              :src="'https://image.tmdb.org/t/p//w500' + item.poster_path"
-              max-width="200"
-              max-height="200"
-            />
+            <a :href="'/infoSeries?id=' + item.id">
+              <v-img
+                style="background-color: black"
+                contain
+                class="mt-2 movie-poster"
+                :src="'https://image.tmdb.org/t/p//w500' + item.poster_path"
+                max-width="200"
+                max-height="200"
+              />
+            </a>
             <v-card-text
               style="text-align: center; justify-content: center; display: flex"
             >

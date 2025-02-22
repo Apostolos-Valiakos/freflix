@@ -45,23 +45,25 @@
                 border: none;
               "
             >
-              <v-img
-                style="
-                  min-width: 250px;
-                  max-width: 250px;
-                  transition: transform 0.3s;
-                  overflow: hidden;
-                  border: none;
-                "
-                :src="
-                  'https://image.tmdb.org/t/p/w500' + (item.poster_path || '')
-                "
-                :lazy-src="
-                  'https://image.tmdb.org/t/p/w500' + (item.poster_path || '')
-                "
-                contain
-                class="movie-poster"
-              ></v-img>
+              <a :href="getItemUrl(item.id)">
+                <v-img
+                  style="
+                    min-width: 250px;
+                    max-width: 250px;
+                    transition: transform 0.3s;
+                    overflow: hidden;
+                    border: none;
+                  "
+                  :src="
+                    'https://image.tmdb.org/t/p/w500' + (item.poster_path || '')
+                  "
+                  :lazy-src="
+                    'https://image.tmdb.org/t/p/w500' + (item.poster_path || '')
+                  "
+                  contain
+                  class="movie-poster"
+                ></v-img>
+              </a>
             </v-card>
           </div>
         </v-carousel-item>
@@ -110,6 +112,16 @@ export default {
   },
 
   methods: {
+    getItemUrl(item) {
+      let routeName = "";
+
+      if (item.isSerie) {
+        routeName = item.isSerie === "movie" ? "info" : "infoSeries";
+      } else {
+        routeName = this.type === "movie" ? "info" : "infoSeries";
+      }
+      return "/" + routeName + "?id=" + item;
+    },
     handleClose() {
       this.dialog = false;
       this.embedLink = "";

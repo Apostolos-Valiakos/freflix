@@ -155,13 +155,15 @@
             width="200"
             height="300"
           >
-            <v-img
-              contain
-              class="mt-2 movie-poster"
-              :src="'https://image.tmdb.org/t/p//w500' + item.poster_path"
-              max-width="200"
-              max-height="200"
-            />
+            <a :href="'/info?id=' + item.id">
+              <v-img
+                contain
+                class="mt-2 movie-poster"
+                :src="'https://image.tmdb.org/t/p//w500' + item.poster_path"
+                max-width="200"
+                max-height="200"
+              />
+            </a>
             <v-card-text
               style="
                 text-align: center;
