@@ -1,5 +1,6 @@
 <template>
   <div :style="marginFromTop">
+    <searchFilters />
     <div class="d-flex justify-space-around mb-6 bg-surface-variant">
       <v-text-field
         color="red"
@@ -100,7 +101,9 @@
 </template>
 
 <script>
+import searchFilters from "../components/searchFilters.vue";
 export default {
+  components: { searchFilters },
   data() {
     return {
       marginFromTop: "margin-top: 100px",
