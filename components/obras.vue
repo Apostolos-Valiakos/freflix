@@ -221,4 +221,25 @@ export default {
 .v-carousel-item {
   transition: transform 0.5s ease; /* Transition for smooth animation */
 }
+.movie-card {
+  position: relative;
+  min-width: 250px;
+  max-width: 250px;
+  height: 375px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  border-radius: 8px;
+  transform-origin: center; /* Ensures it scales from the center */
+}
+
+.movie-card:hover {
+  transform: scale(1.1); /* Expands the hovered card */
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3);
+  z-index: 19999;
+}
+
+.expanded-card {
+  transform: scale(1.1); /* Ensure the hovered card expands */
+  z-index: 19999;
+}
 </style>

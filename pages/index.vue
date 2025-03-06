@@ -48,6 +48,7 @@
       />
 
       <obras
+        class="mt-n8"
         v-if="newMovies"
         :obras="newMovies"
         titulo="Top Rated"
@@ -55,7 +56,7 @@
       />
 
       <obras
-        class="mt-n12"
+        class="mt-n8"
         v-if="horrorItems"
         :obras="horrorItems"
         titulo="Horror"
@@ -63,7 +64,7 @@
       />
 
       <obras
-        class="mt-n12"
+        class="mt-n8"
         v-if="fantasyItems"
         :obras="fantasyItems"
         titulo="Fantasy"
@@ -71,14 +72,14 @@
       />
 
       <obras
-        class="mt-n12"
+        class="mt-n8"
         v-if="documentaryItems"
         :obras="documentaryItems"
         titulo="Documentary"
         type="movie"
       />
       <obras
-        class="mt-n12"
+        class="mt-n8"
         v-if="animationItems"
         :obras="animationItems"
         titulo="Animation"
@@ -177,8 +178,6 @@ export default {
             "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
         },
       };
-      //  "https://api.themoviedb.org/3/discover/movie?include_adult=false?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc",
-
       this.watchlist = JSON.parse(localStorage.getItem("watchlist") || "[]"); // Parse the watchlist from localStorage
 
       if (this.watchlist.length === 0) {
@@ -242,41 +241,51 @@ export default {
       this.$router.push({ name: "info", query: { id: id } });
     },
     async getTopMovie(movie) {
-      var url =
-        "https://api.themoviedb.org/3/discover/" +
-        movie +
-        "?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc";
-      const options = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-        },
-      };
+      try {
+        const baseUrl = "https://api.themoviedb.org/3";
+        const options = {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+            Authorization:
+              "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+          },
+        };
 
-      await fetch(url, options)
-        .then((res) => res.json())
-        .then(async (json) => {
-          let randMovieFromList = Math.floor(
-            Math.random() * (json.results.length - 0 + 1) + 0
+        // Fetch top movies
+        const discoverUrl = `${baseUrl}/discover/${movie}?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc`;
+        const res = await fetch(discoverUrl, options);
+        const json = await res.json();
+
+        if (!json.results || json.results.length === 0) {
+          throw new Error("No movies found in the response.");
+        }
+
+        // Select a random movie from the list
+        const randMovieFromList = Math.floor(
+          Math.random() * json.results.length
+        );
+        this.topMovie = json.results[randMovieFromList];
+        this.topMovie.isSerie = "movie";
+
+        // Fetch IMDb ID for the selected movie
+        const movieDetailsUrl = `${baseUrl}/movie/${this.topMovie.id}?language=en-US`;
+        const movieRes = await fetch(movieDetailsUrl, options);
+        const movieJson = await movieRes.json();
+
+        // Ensure we got a valid IMDb ID
+        if (!movieJson.imdb_id) {
+          throw new Error(
+            `IMDb ID not found for movie ID: ${this.topMovie.id}`
           );
-          this.topMovie = json.results[randMovieFromList];
-          this.topMovie.isSerie = "movie";
-        })
-        .catch((err) => console.error("error:" + err));
-      url =
-        "https://api.themoviedb.org/3/movie/" +
-        this.topMovie.id +
-        "?language=en-US";
+        }
 
-      fetch(url, options)
-        .then((res) => res.json())
-        .then((json) => {
-          this.topMovie.imdb_id = json.imdb_id;
-        })
-        .catch((err) => console.error("error:" + err));
-      console.log(this.topMovie);
+        this.topMovie.imdb_id = movieJson.imdb_id;
+
+        console.log("Top Movie:", this.topMovie);
+      } catch (error) {
+        console.error("Error fetching top movie:", error);
+      }
     },
     watchMovie(id) {
       location.href = "https://multiembed.mov/?video_id=" + id;
