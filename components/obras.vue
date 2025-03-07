@@ -114,7 +114,6 @@ export default {
   methods: {
     getItemUrl(item) {
       let routeName = "";
-
       if (item.isSerie) {
         routeName = item.isSerie === "movie" ? "info" : "infoSeries";
       } else {
@@ -155,19 +154,15 @@ export default {
         .catch((err) => console.error("error:" + err));
     },
     handleclick(item) {
+      let routeName = "";
+
       if (item.isSerie) {
-        if (item.isSerie === "movie") {
-          this.$router.push({ name: "info", query: { id: item.id } });
-        } else if (item.isSerie === "tv") {
-          this.$router.push({ name: "infoSeries", query: { id: item.id } });
-        }
+        routeName = item.isSerie === "movie" ? "info" : "infoSeries";
       } else {
-        if (this.type === "movie") {
-          this.$router.push({ name: "info", query: { id: item.id } });
-        } else {
-          this.$router.push({ name: "infoSeries", query: { id: item.id } });
-        }
+        routeName = this.type === "movie" ? "info" : "infoSeries";
       }
+
+      return `/${routeName}?id=${item.id}`;
     },
     prevPage() {
       for (let x = 0; x <= this.columns; x++) {
