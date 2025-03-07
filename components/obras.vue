@@ -45,7 +45,7 @@
                 border: none;
               "
             >
-              <a :href="getItemUrl(item.id)">
+              <a :href="getItemUrl(item)">
                 <v-img
                   style="
                     min-width: 250px;
@@ -119,7 +119,7 @@ export default {
       } else {
         routeName = this.type === "movie" ? "info" : "infoSeries";
       }
-      return "/" + routeName + "?id=" + item;
+      return `/${routeName}?id=${item.id}`;
     },
     handleClose() {
       this.dialog = false;
@@ -154,15 +154,19 @@ export default {
         .catch((err) => console.error("error:" + err));
     },
     handleclick(item) {
-      let routeName = "";
-
       if (item.isSerie) {
-        routeName = item.isSerie === "movie" ? "info" : "infoSeries";
+        if (item.isSerie === "movie") {
+          this.$router.push({ name: "info", query: { id: item.id } });
+        } else if (item.isSerie === "tv") {
+          this.$router.push({ name: "infoSeries", query: { id: item.id } });
+        }
       } else {
-        routeName = this.type === "movie" ? "info" : "infoSeries";
+        if (this.type === "movie") {
+          this.$router.push({ name: "info", query: { id: item.id } });
+        } else {
+          this.$router.push({ name: "infoSeries", query: { id: item.id } });
+        }
       }
-
-      return `/${routeName}?id=${item.id}`;
     },
     prevPage() {
       for (let x = 0; x <= this.columns; x++) {
