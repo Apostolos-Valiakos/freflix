@@ -227,13 +227,11 @@ export default {
         fetch(url, options)
           .then((res) => res.json())
           .then((json) => {
-            console.log(json);
             this.noOfPages = json.total_pages;
             if (this.noOfPages > 100) {
               this.noOfPages = 50;
             }
             this.searchResults = json.results;
-            console.log(json.results);
           })
           .catch((err) => console.error("error:" + err));
       } else {
@@ -254,7 +252,6 @@ export default {
         fetch(url, options)
           .then((res) => res.json())
           .then((json) => {
-            console.log(json);
             this.noOfPages = json.total_pages;
             if (this.noOfPages > 100) {
               this.noOfPages = 50;
