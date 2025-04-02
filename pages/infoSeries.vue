@@ -241,7 +241,6 @@ export default {
 
       localStorage.setItem("history", JSON.stringify(historyFromLocalStorage));
     },
-
     addToWatchlist(movie) {
       movie.isSerie = "tv";
       var watchlistFromLocalStorage = JSON.parse(
@@ -307,7 +306,6 @@ export default {
         this.episode;
     },
     handleClick(item) {
-      console.log(item.id);
       this.getTopMovie(item.id);
       this.getSimilarMovies(item.id);
       this.getDetails(item.id);
@@ -334,13 +332,7 @@ export default {
       await fetch(url, options)
         .then((res) => res.json())
         .then(async (json) => {
-          for (let index = 0; index < json.results.length; index++) {
-            const element = json.results[index];
-            if (element !== undefined) {
-              this.similarMovies.push(element);
-            }
-          }
-          this.similarMovies.splice(0, 1);
+          this.similarMovies = json.results.slice(1);
         })
         .catch((err) => console.error("error:" + err));
     },
