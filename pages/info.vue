@@ -217,23 +217,22 @@ export default {
     this.getCredits(this.movie);
   },
   methods: {
-    getCredits(movie) {
-      const url = `https://api.themoviedb.org/3/movie/${movie.id}/credits?language=en-US`;
-      const options = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsIm5iZiI6MTczMDkyMDMxNC4yMzg4MjIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.6xq36kNsh7lPZGElIUB-gyelOmB2x2WQQOUXCAEfIiY",
-        },
-      };
-
-      fetch(url, options)
-        .then((res) => res.json())
-        .then((json) => {
-          this.credits = json.cast;
-        })
-        .catch((err) => console.error(err));
+    async getCredits(movie) {
+      try {
+        const url = `https://api.themoviedb.org/3/movie/${movie.id}/credits?language=en-US`;
+        const options = {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${this.API_KEY}`, // Store API Key in a variable
+          },
+        };
+        const res = await fetch(url, options);
+        const json = await res.json();
+        this.credits = json.cast;
+      } catch (error) {
+        console.error("Error fetching credits:", error);
+      }
     },
     removeFromWatchList(movie) {
       var watchlistFromLocalStorage = JSON.parse(
@@ -242,12 +241,14 @@ export default {
       var index = watchlistFromLocalStorage.findIndex(
         (item) => item.id === movie.id
       );
-      watchlistFromLocalStorage.splice(index, 1);
-      localStorage.setItem(
-        "watchlist",
-        JSON.stringify(watchlistFromLocalStorage)
-      );
-      this.isAdded = false;
+      if (index !== -1) {
+        watchlistFromLocalStorage.splice(index, 1);
+        localStorage.setItem(
+          "watchlist",
+          JSON.stringify(watchlistFromLocalStorage)
+        );
+        this.isAdded = false;
+      }
     },
     movieExistsInArray(movie, array) {
       return array.some(
@@ -315,14 +316,14 @@ export default {
       document.cookie = name + "=" + (value || "") + expires + "; path=/";
     },
     getCookie(name) {
-      var nameEQ = name + "=";
-      var ca = document.cookie.split(";");
-      for (var i = 0; i < ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) == " ") c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
-      }
-      return null;
+      const nameEQ = name + "=";
+      return (
+        document.cookie
+          .split(";")
+          .map((c) => c.trim())
+          .find((c) => c.startsWith(nameEQ))
+          ?.substring(nameEQ.length) || null
+      );
     },
     eraseCookie(name) {
       document.cookie =
@@ -342,7 +343,7 @@ export default {
       this.eraseCookie("id");
       this.setCookie("id", item.id, 1);
       this.isAdded = this.movieExistsInArray(
-        this.item,
+        item,
         JSON.parse(localStorage.getItem("watchlist") || "[]")
       );
     },
@@ -364,13 +365,7 @@ export default {
       await fetch(url, options)
         .then((res) => res.json())
         .then(async (json) => {
-          for (let index = 0; index < json.results.length; index++) {
-            const element = json.results[index];
-            if (element !== undefined) {
-              this.similarMovies.push(element);
-            }
-          }
-          this.similarMovies.splice(0, 1);
+          this.similarMovies = json.results.slice(1);
         })
         .catch((err) => console.error("error:" + err));
     },
