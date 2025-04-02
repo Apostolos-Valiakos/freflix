@@ -48,7 +48,7 @@
       />
 
       <obras
-        class="mt-n6"
+        class="mt-n3"
         v-if="newMovies"
         :obras="newMovies"
         titulo="Top Rated"
