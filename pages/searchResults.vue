@@ -12,15 +12,14 @@
       <v-select
         color="red"
         class="ma-2 pa-2"
-        v-if="categories"
+        v-if="categories || seriesCategories"
         @change="searchPerCategory(selectedCategory, 1)"
         :item-text="'name'"
         :item-value="'id'"
         v-model="selectedCategory"
         label="Search by Category"
-        :items="categories"
-      >
-      </v-select>
+        :items="isSerie ? seriesCategories : categories"
+      />
     </div>
     <v-checkbox
       class="ma-2 pa-2"
@@ -111,6 +110,7 @@ export default {
       embedLink: "",
       selectedCategory: "",
       categories: [],
+      seriesCategories: [],
       noOfPages: 0,
       searchTerm: "", // Search term passed to this page
       searchResults: [], // List of movies received from the search
@@ -147,7 +147,6 @@ export default {
         JSON.stringify(watchlistFromLocalStorage)
       );
     },
-
     searchFromChip(item) {
       this.searchTerm = item.name;
       const url =
@@ -370,26 +369,46 @@ export default {
         })
         .catch((err) => console.error("error:" + err));
     },
+    getSeriesCategories() {
+      const url = "https://api.themoviedb.org/3/genre/tv/list?language=en";
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsIm5iZiI6MTcwMzQwOTIzNy42MDE5OTk4LCJzdWIiOiI2NTg3ZjY1NTJkZmZkODVjZGI0NGQ5MDYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.74U2ndKrTu5lyaGDxrPDGKJNVMjCen72gWPGG75oWcs",
+        },
+      };
+
+      fetch(url, options)
+        .then((res) => res.json())
+        .then((json) => (this.seriesCategories = json.genres))
+        .catch((err) => console.error(err));
+    },
+    getCategories() {
+      const url = "https://api.themoviedb.org/3/genre/movie/list?language=en";
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+        },
+      };
+
+      fetch(url, options)
+        .then((res) => res.json())
+        .then((json) => (this.categories = json.genres))
+        .catch((err) => console.error("error:" + err));
+    },
   },
   created() {
     this.getPopularMovies();
     if (screen.width < 450) {
       this.marginFromTop = "margin-top: 0px";
     }
-    const url = "https://api.themoviedb.org/3/genre/movie/list?language=en";
-    const options = {
-      method: "GET",
-      headers: {
-        accept: "application/json",
-        Authorization:
-          "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-      },
-    };
-
-    fetch(url, options)
-      .then((res) => res.json())
-      .then((json) => (this.categories = json.genres))
-      .catch((err) => console.error("error:" + err));
+    this.getCategories();
+    this.getSeriesCategories();
   },
 };
 </script>
