@@ -81,6 +81,8 @@
               <v-tab href="#tab-1"> Greek subs </v-tab>
 
               <v-tab href="#tab-2"> No subs </v-tab>
+
+              <v-tab href="#tab-3"> Trailer </v-tab>
             </v-tabs>
 
             <v-tabs-items v-model="tab">
@@ -127,6 +129,31 @@
                       >
                         Watch the Movie in an external player
                       </v-btn>
+                    </div>
+                  </div>
+                </v-card>
+              </v-tab-item>
+              <v-tab-item value="tab-3">
+                <v-card>
+                  <div
+                    v-if="movie"
+                    style="
+                      display: flex;
+                      justify-content: center;
+                      text-align: center;
+                      background-color: black;
+                    "
+                  >
+                    <div style="width: 800px; height: 600px">
+                      <iframe
+                        width="800"
+                        height="600"
+                        :src="'https://www.youtube.com/embed/' + trailerKey"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen
+                      ></iframe>
                     </div>
                   </div>
                 </v-card>
@@ -195,6 +222,7 @@ export default {
       movie: null,
       similarMovies: [],
       credits: [],
+      trailerKey: null,
     };
   },
   async created() {
@@ -215,6 +243,7 @@ export default {
       JSON.parse(localStorage.getItem("watchlist") || "[]")
     );
     this.getCredits(this.movie);
+    this.getTrailer(this.movie);
   },
   methods: {
     async getCredits(movie) {
@@ -224,7 +253,8 @@ export default {
           method: "GET",
           headers: {
             accept: "application/json",
-            Authorization: `Bearer ${this.API_KEY}`, // Store API Key in a variable
+            Authorization:
+              "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsIm5iZiI6MTcwMzQwOTIzNy42MDE5OTk4LCJzdWIiOiI2NTg3ZjY1NTJkZmZkODVjZGI0NGQ5MDYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.74U2ndKrTu5lyaGDxrPDGKJNVMjCen72gWPGG75oWcs",
           },
         };
         const res = await fetch(url, options);
@@ -340,6 +370,7 @@ export default {
       this.getTopMovie(item.id);
       this.getSimilarMovies(item.id);
       this.getCredits(item.id);
+      this.getTrailer(item.id);
       this.eraseCookie("id");
       this.setCookie("id", item.id, 1);
       this.isAdded = this.movieExistsInArray(
@@ -368,6 +399,33 @@ export default {
           this.similarMovies = json.results.slice(1);
         })
         .catch((err) => console.error("error:" + err));
+    },
+    async getTrailer(movie) {
+      const url =
+        "https://api.themoviedb.org/3/movie/" +
+        movie.id +
+        "/videos?language=en-US";
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsIm5iZiI6MTcwMzQwOTIzNy42MDE5OTk4LCJzdWIiOiI2NTg3ZjY1NTJkZmZkODVjZGI0NGQ5MDYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.74U2ndKrTu5lyaGDxrPDGKJNVMjCen72gWPGG75oWcs",
+        },
+      };
+      await fetch(url, options)
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.results[0].site === "YouTube") {
+            this.trailerKey = json.results[0].key;
+          } else if (json.results[1].site === "YouTube") {
+            this.trailerKey = json.results[1].key;
+          } else {
+            this.trailerKey = json.results[2].key;
+          }
+        })
+
+        .catch((err) => console.error(err));
     },
   },
 };
