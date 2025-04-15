@@ -75,24 +75,77 @@
       </div>
     </section>
     <Cast :cast="credits" v-if="credits != []" />
-    <div
-      v-if="movie"
-      style="
-        display: flex;
-        justify-content: center;
-        text-align: center;
-        background-color: black;
-      "
-      class="mt-10"
-    >
-      <iframe
-        sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"
-        :src="'https://coverapi.store/embed/' + imdb_id"
-        width="800"
-        height="600"
-        frameBorder="0"
-        allowfullscreen
-      ></iframe>
+    <div>
+      <v-card>
+        <template>
+          <v-card>
+            <v-tabs
+              color="red"
+              v-model="tab"
+              background-color="black"
+              centered
+              dark
+              icons-and-text
+            >
+              <v-tabs-slider></v-tabs-slider>
+
+              <v-tab href="#tab-1"> Greek subs </v-tab>
+
+              <v-tab href="#tab-2"> Trailer </v-tab>
+            </v-tabs>
+
+            <v-tabs-items v-model="tab">
+              <v-tab-item value="tab-1">
+                <v-card flat>
+                  <div
+                    v-if="movie"
+                    style="
+                      display: flex;
+                      justify-content: center;
+                      text-align: center;
+                      background-color: black;
+                    "
+                  >
+                    <iframe
+                      sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"
+                      :src="'https://coverapi.store/embed/' + imdb_id"
+                      width="800"
+                      height="600"
+                      frameBorder="0"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
+                </v-card>
+              </v-tab-item>
+              <v-tab-item value="tab-2">
+                <v-card>
+                  <div
+                    v-if="movie"
+                    style="
+                      display: flex;
+                      justify-content: center;
+                      text-align: center;
+                      background-color: black;
+                    "
+                  >
+                    <div style="width: 800px; height: 600px">
+                      <iframe
+                        width="800"
+                        height="600"
+                        :src="'https://www.youtube.com/embed/' + trailerKey"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen
+                      ></iframe>
+                    </div>
+                  </div>
+                </v-card>
+              </v-tab-item>
+            </v-tabs-items>
+          </v-card>
+        </template>
+      </v-card>
     </div>
     <div style="display: flex; justify-content: center; text-align: center">
       <v-sheet
@@ -155,6 +208,8 @@ export default {
       imdb_id: null,
       similarMovies: [],
       credits: [],
+      trailerKey: null,
+      tab: null,
     };
   },
   async created() {
@@ -172,6 +227,7 @@ export default {
     this.getDetails(this.query);
     this.getIMDBID(this.query);
     this.getCredits(this.query);
+    this.getTrailer(this.query);
 
     // Initialize isAdded here
     this.isAdded = this.movieExistsInArray(
@@ -180,6 +236,32 @@ export default {
     );
   },
   methods: {
+    async getTrailer(movie) {
+      const url =
+        "https://api.themoviedb.org/3/tv/" +
+        movie +
+        "/videos?language=en-US";
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsIm5iZiI6MTcwMzQwOTIzNy42MDE5OTk4LCJzdWIiOiI2NTg3ZjY1NTJkZmZkODVjZGI0NGQ5MDYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.74U2ndKrTu5lyaGDxrPDGKJNVMjCen72gWPGG75oWcs",
+        },
+      };
+      await fetch(url, options)
+        .then((res) => res.json())
+        .then((json) => {
+          json.results.forEach(element => {
+            if(element.site === "YouTube" && element.type === "Trailer"){
+              this.trailerKey = element.key;
+              return;
+            }
+          });
+        })
+
+        .catch((err) => console.error(err));
+    },
     getCredits(movie) {
       const url = `https://api.themoviedb.org/3/tv/${movie}/credits?language=en-US`;
       const options = {
@@ -313,6 +395,7 @@ export default {
       this.setCookie("id", item.id, 1);
       this.getCredits(item.id);
       this.getIMDBID(item.id);
+      this.getTrailer(item.id);
     },
     async getSimilarMovies(ID) {
       this.similarMovies = [];

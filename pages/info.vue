@@ -416,13 +416,12 @@ export default {
       await fetch(url, options)
         .then((res) => res.json())
         .then((json) => {
-          if (json.results[0].site === "YouTube") {
-            this.trailerKey = json.results[0].key;
-          } else if (json.results[1].site === "YouTube") {
-            this.trailerKey = json.results[1].key;
-          } else {
-            this.trailerKey = json.results[2].key;
-          }
+          json.results.forEach(element => {
+            if(element.site === "YouTube" && element.type === "Trailer"){
+              this.trailerKey = element.key;
+              return;
+            }
+          });
         })
 
         .catch((err) => console.error(err));
