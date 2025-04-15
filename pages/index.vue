@@ -191,29 +191,26 @@ export default {
 
     async initialize() {
       const baseUrl = "https://api.themoviedb.org/3";
-      const requests = [
-        // Parallelize all API requests
-        this.fetchCategory(
-          `${baseUrl}/movie/top_rated?language=en-US&page=1`
-        ).then((data) => (this.newMovies = data)),
-        this.fetchCategory(
-          `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=27`
-        ).then((data) => (this.horrorItems = data)),
-        this.fetchCategory(
-          `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=14`
-        ).then((data) => (this.fantasyItems = data)),
-        this.fetchCategory(
-          `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=99`
-        ).then((data) => (this.documentaryItems = data)),
-        this.fetchCategory(
-          `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=16`
-        ).then((data) => (this.animationItems = data)),
-        this.fetchCategory(
-          `${baseUrl}/movie/top_rated?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc`
-        ).then((data) => (this.movies = data)),
-      ];
 
-      await Promise.all(requests);
+      // Sequential requests
+      this.newMovies = await this.fetchCategory(
+        `${baseUrl}/movie/top_rated?language=en-US&page=1`
+      );
+      this.horrorItems = await this.fetchCategory(
+        `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=27`
+      );
+      this.fantasyItems = await this.fetchCategory(
+        `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=14`
+      );
+      this.documentaryItems = await this.fetchCategory(
+        `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=99`
+      );
+      this.animationItems = await this.fetchCategory(
+        `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=16`
+      );
+      this.movies = await this.fetchCategory(
+        `${baseUrl}/movie/top_rated?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc`
+      );
     },
 
     // Navigation
