@@ -209,6 +209,18 @@
 </template>
 <script>
 import Cast from "../components/cast.vue";
+
+// Constants
+const WATCHLIST_KEY = "watchlist";
+const HISTORY_KEY = "history";
+const ID_COOKIE = "id";
+const BASE_MOVIE_API_URL = "https://api.themoviedb.org/3/movie";
+const COMMON_HEADERS = {
+  accept: "application/json",
+  Authorization:
+    "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsIm5iZiI6MTcwMzQwOTIzNy42MDE5OTk4LCJzdWIiOiI2NTg3ZjY1NTJkZmZkODVjZGI0NGQ5MDYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.74U2ndKrTu5lyaGDxrPDGKJNVMjCen72gWPGG75oWcs",
+};
+
 export default {
   name: "single-movie",
   data() {
@@ -227,126 +239,156 @@ export default {
   },
   async created() {
     this.isMobile = screen.width < 450;
+    this.query = this.$route.query.id || this.getCookie(ID_COOKIE);
+
     if (this.$route.query.id) {
-      this.query = this.$route.query.id;
-      this.setCookie("id", this.query, 1);
-    } else {
-      this.query = this.getCookie("id");
+      this.setCookie(ID_COOKIE, this.query, 1);
     }
 
-    await this.getTopMovie(this.query);
-    await this.getSimilarMovies(this.query);
-
-    // Initialize isAdded here
-    this.isAdded = this.movieExistsInArray(
-      this.movie,
-      JSON.parse(localStorage.getItem("watchlist") || "[]")
-    );
-    this.getCredits(this.movie);
-    this.getTrailer(this.movie);
+    await this.loadMovieData(this.query);
   },
   methods: {
-    async getCredits(movie) {
+    async loadMovieData(id) {
       try {
-        const url = `https://api.themoviedb.org/3/movie/${movie.id}/credits?language=en-US`;
-        const options = {
-          method: "GET",
-          headers: {
-            accept: "application/json",
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsIm5iZiI6MTcwMzQwOTIzNy42MDE5OTk4LCJzdWIiOiI2NTg3ZjY1NTJkZmZkODVjZGI0NGQ5MDYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.74U2ndKrTu5lyaGDxrPDGKJNVMjCen72gWPGG75oWcs",
-          },
-        };
-        const res = await fetch(url, options);
-        const json = await res.json();
-        this.credits = json.cast;
+        await this.getTopMovie(id);
+        await Promise.all([
+          this.getSimilarMovies(id),
+          this.getCredits(this.movie),
+          this.getTrailer(this.movie),
+        ]);
+
+        this.updateWatchlistStatus();
       } catch (error) {
-        console.error("Error fetching credits:", error);
+        console.error("Error loading movie data:", error);
       }
     },
-    removeFromWatchList(movie) {
-      var watchlistFromLocalStorage = JSON.parse(
-        localStorage.getItem("watchlist") || "[]"
+
+    // LocalStorage helpers
+    getLocalStorageArray(key) {
+      return JSON.parse(localStorage.getItem(key) || "[]");
+    },
+
+    setLocalStorageArray(key, array) {
+      localStorage.setItem(key, JSON.stringify(array));
+    },
+
+    updateWatchlistStatus() {
+      const watchlist = this.getLocalStorageArray(WATCHLIST_KEY);
+      this.isAdded = watchlist.some(
+        (item) =>
+          item.id === this.movie.id && item.isSerie === this.movie.isSerie
       );
-      var index = watchlistFromLocalStorage.findIndex(
-        (item) => item.id === movie.id
-      );
-      if (index !== -1) {
-        watchlistFromLocalStorage.splice(index, 1);
-        localStorage.setItem(
-          "watchlist",
-          JSON.stringify(watchlistFromLocalStorage)
-        );
-        this.isAdded = false;
+    },
+
+    async fetchApiData(url, options) {
+      try {
+        const response = await fetch(url, options);
+        if (!response.ok)
+          throw new Error(`HTTP error! status: ${response.status}`);
+        return await response.json();
+      } catch (error) {
+        console.error(`Error fetching data from ${url}:`, error);
+        throw error;
       }
     },
-    movieExistsInArray(movie, array) {
-      return array.some(
+
+    async getCredits(movie) {
+      const url = `${BASE_MOVIE_API_URL}/${movie.id}/credits?language=en-US`;
+      const data = await this.fetchApiData(url, {
+        method: "GET",
+        headers: COMMON_HEADERS,
+      });
+      this.credits = data.cast;
+    },
+
+    async getTopMovie(id) {
+      const url = `${BASE_MOVIE_API_URL}/${id}?api_key=5b75818e63dfdb396cadedf77425b334&language=en-US&page=1`;
+      this.movie = await this.fetchApiData(url, { method: "GET" });
+      this.addToHistory(this.movie);
+    },
+
+    async getSimilarMovies(id) {
+      const url = `${BASE_MOVIE_API_URL}/${id}/recommendations?language=en-US&page=1`;
+      const data = await this.fetchApiData(url, {
+        method: "GET",
+        headers: COMMON_HEADERS,
+      });
+      this.similarMovies = data.results.slice(1);
+    },
+
+    async getTrailer(movie) {
+      const url = `${BASE_MOVIE_API_URL}/${movie.id}/videos?language=en-US`;
+      const data = await this.fetchApiData(url, {
+        method: "GET",
+        headers: COMMON_HEADERS,
+      });
+
+      const trailer = data.results.find(
+        (element) => element.site === "YouTube" && element.type === "Trailer"
+      );
+      if (trailer) this.trailerKey = trailer.key;
+    },
+
+    manageLocalStorageArray(key, movie, addToStart = false) {
+      const array = this.getLocalStorageArray(key);
+      const index = array.findIndex(
         (item) => item.id === movie.id && item.isSerie === movie.isSerie
       );
+
+      if (index !== -1) {
+        array.splice(index, 1);
+      }
+
+      if (addToStart) {
+        array.unshift(movie);
+      } else {
+        array.push(movie);
+      }
+
+      this.setLocalStorageArray(key, array);
     },
+
     addToHistory(movie) {
       movie.isSerie = "movie";
-      var historyFromLocalStorage = JSON.parse(
-        localStorage.getItem("history") || "[]"
-      );
-
-      // Find the index of the movie in the history
-      var movieIndex = historyFromLocalStorage.findIndex(
-        (item) => item.id === movie.id && item.isSerie === movie.isSerie
-      );
-
-      if (movieIndex === -1) {
-        // If the movie doesn't exist, add it to the history
-        historyFromLocalStorage.push(movie);
-      } else {
-        // If the movie exists, remove it from its current position and add to the end of the array
-        historyFromLocalStorage.splice(movieIndex, 1);
-        historyFromLocalStorage.push(movie);
-      }
-
-      localStorage.setItem("history", JSON.stringify(historyFromLocalStorage));
+      this.manageLocalStorageArray(HISTORY_KEY, movie);
     },
-    watchMovie(id) {
-      location.href = `https://multiembed.mov/?video_id=${id}`;
-    },
+
     addToWatchlist(movie) {
       movie.isSerie = "movie";
-      var watchlistFromLocalStorage = JSON.parse(
-        localStorage.getItem("watchlist") || "[]"
-      );
-
-      // Find the index of the movie in the watchlist
-      var movieIndex = watchlistFromLocalStorage.findIndex(
-        (item) => item.id === movie.id && item.isSerie === movie.isSerie
-      );
-
-      if (movieIndex === -1) {
-        // If the movie doesn't exist, add it to the watchlist
-        watchlistFromLocalStorage.push(movie);
-      } else {
-        // If the movie exists, remove it from its current position and add to the first position
-        watchlistFromLocalStorage.splice(movieIndex, 1);
-        watchlistFromLocalStorage.unshift(movie);
-      }
-
-      localStorage.setItem(
-        "watchlist",
-        JSON.stringify(watchlistFromLocalStorage)
-      );
+      this.manageLocalStorageArray(WATCHLIST_KEY, movie, true);
       this.isAdded = true;
     },
-    setCookie(name, value, days) {
-      var expires = "";
-      if (days) {
-        var date = new Date();
-        date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-        expires = "; expires=" + date.toUTCString();
-      }
-      document.cookie = name + "=" + (value || "") + expires + "; path=/";
+
+    removeFromWatchList(movie) {
+      const watchlist = this.getLocalStorageArray(WATCHLIST_KEY);
+      const updatedWatchlist = watchlist.filter(
+        (item) => !(item.id === movie.id && item.isSerie === movie.isSerie)
+      );
+      this.setLocalStorageArray(WATCHLIST_KEY, updatedWatchlist);
+      this.isAdded = false;
     },
+
+    watchMovie(id) {
+      window.location.href = `https://multiembed.mov/?video_id=${id}`;
+    },
+
+    ClickOnSimilarMovies(item) {
+      this.eraseCookie(ID_COOKIE);
+      this.setCookie(ID_COOKIE, item.id, 1);
+      this.loadMovieData(item.id);
+    },
+
+    // Cookie helpers
+    setCookie(name, value, days) {
+      const date = new Date();
+      date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+      document.cookie = `${name}=${
+        value || ""
+      }; expires=${date.toUTCString()}; path=/`;
+    },
+
     getCookie(name) {
-      const nameEQ = name + "=";
+      const nameEQ = `${name}=`;
       return (
         document.cookie
           .split(";")
@@ -355,78 +397,12 @@ export default {
           ?.substring(nameEQ.length) || null
       );
     },
+
     eraseCookie(name) {
-      document.cookie =
-        name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-    },
-    async getTopMovie(id) {
-      this.movie = await fetch(
-        `https://api.themoviedb.org/3/movie/${id}?api_key=5b75818e63dfdb396cadedf77425b334&language=en-US&page=1`
-      ).then((res) => res.json());
-      console.log(this.movie);
-      this.addToHistory(this.movie);
-    },
-    ClickOnSimilarMovies(item) {
-      this.getTopMovie(item.id);
-      this.getSimilarMovies(item.id);
-      this.getCredits(item.id);
-      this.getTrailer(item.id);
-      this.eraseCookie("id");
-      this.setCookie("id", item.id, 1);
-      this.isAdded = this.movieExistsInArray(
-        item,
-        JSON.parse(localStorage.getItem("watchlist") || "[]")
-      );
-    },
-    async getSimilarMovies(ID) {
-      this.similarMovies = [];
-      const url =
-        "https://api.themoviedb.org/3/movie/" +
-        ID +
-        "/recommendations?language=en-US&page=1";
-      const options = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-        },
-      };
-
-      await fetch(url, options)
-        .then((res) => res.json())
-        .then(async (json) => {
-          this.similarMovies = json.results.slice(1);
-        })
-        .catch((err) => console.error("error:" + err));
-    },
-    async getTrailer(movie) {
-      const url =
-        "https://api.themoviedb.org/3/movie/" +
-        movie.id +
-        "/videos?language=en-US";
-      const options = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsIm5iZiI6MTcwMzQwOTIzNy42MDE5OTk4LCJzdWIiOiI2NTg3ZjY1NTJkZmZkODVjZGI0NGQ5MDYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.74U2ndKrTu5lyaGDxrPDGKJNVMjCen72gWPGG75oWcs",
-        },
-      };
-      await fetch(url, options)
-        .then((res) => res.json())
-        .then((json) => {
-          json.results.forEach(element => {
-            if(element.site === "YouTube" && element.type === "Trailer"){
-              this.trailerKey = element.key;
-              return;
-            }
-          });
-        })
-
-        .catch((err) => console.error(err));
+      document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
     },
   },
+  components: { Cast },
 };
 </script>
 

@@ -190,6 +190,15 @@
   </div>
 </template>
 <script>
+// API Configuration Constants
+const API_CONFIG = {
+  baseUrl: 'https://api.themoviedb.org/3/tv/',
+  headers: {
+    accept: 'application/json',
+    Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M'
+  }
+};
+
 export default {
   name: "single-movie",
   data() {
@@ -197,7 +206,7 @@ export default {
       isMobile: false,
       selectedSeason: 1,
       details: [],
-      isAdded: false, // Initialize the variable here
+      isAdded: false,
       season: 1,
       episode: 1,
       episodes: [],
@@ -214,252 +223,183 @@ export default {
   },
   async created() {
     this.isMobile = screen.width < 450;
-
+    this.query = this.$route.query.id || this.getCookie("id");
+    
     if (this.$route.query.id) {
-      this.query = this.$route.query.id;
       this.setCookie("id", this.query, 1);
-    } else {
-      this.query = this.getCookie("id");
     }
 
     await this.getTopMovie(this.query);
-    this.getSimilarMovies(this.query);
-    this.getDetails(this.query);
-    this.getIMDBID(this.query);
-    this.getCredits(this.query);
-    this.getTrailer(this.query);
+    
+    // Parallelize API calls
+    await Promise.all([
+      this.getSimilarMovies(this.query),
+      this.getDetails(this.query),
+      this.getIMDBID(this.query),
+      this.getCredits(this.query),
+      this.getTrailer(this.query)
+    ]);
 
-    // Initialize isAdded here
-    this.isAdded = this.movieExistsInArray(
-      this.movie,
-      JSON.parse(localStorage.getItem("watchlist") || "[]")
-    );
+    this.checkIfMovieIsAdded();
   },
   methods: {
-    async getTrailer(movie) {
-      const url =
-        "https://api.themoviedb.org/3/tv/" +
-        movie +
-        "/videos?language=en-US";
-      const options = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsIm5iZiI6MTcwMzQwOTIzNy42MDE5OTk4LCJzdWIiOiI2NTg3ZjY1NTJkZmZkODVjZGI0NGQ5MDYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.74U2ndKrTu5lyaGDxrPDGKJNVMjCen72gWPGG75oWcs",
-        },
-      };
-      await fetch(url, options)
-        .then((res) => res.json())
-        .then((json) => {
-          json.results.forEach(element => {
-            if(element.site === "YouTube" && element.type === "Trailer"){
-              this.trailerKey = element.key;
-              return;
-            }
-          });
-        })
+    // Generic API fetch helper
+    async fetchTmdbData(endpoint, params = '') {
+      try {
+        const response = await fetch(`${API_CONFIG.baseUrl}${endpoint}${params}`, {
+          method: 'GET',
+          headers: API_CONFIG.headers
+        });
+        return await response.json();
+      } catch (error) {
+        console.error(`Error fetching ${endpoint}:`, error);
+        return null;
+      }
+    },
 
-        .catch((err) => console.error(err));
+    // LocalStorage helpers
+    getLocalStorageArray(key) {
+      return JSON.parse(localStorage.getItem(key) || "[]");
     },
-    getCredits(movie) {
-      const url = `https://api.themoviedb.org/3/tv/${movie}/credits?language=en-US`;
-      const options = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsIm5iZiI6MTczMDkyMDMxNC4yMzg4MjIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.6xq36kNsh7lPZGElIUB-gyelOmB2x2WQQOUXCAEfIiY",
-        },
-      };
+    
+    setLocalStorageArray(key, array) {
+      localStorage.setItem(key, JSON.stringify(array));
+    },
 
-      fetch(url, options)
-        .then((res) => res.json())
-        .then((json) => {
-          this.credits = json.cast;
-        })
-        .catch((err) => console.error(err));
+    // List management helper
+    updateLocalStorageList(key, movie, addToStart = false) {
+      const list = this.getLocalStorageArray(key);
+      const index = list.findIndex(item => item.id === movie.id && item.isSerie === movie.isSerie);
+      
+      if (index > -1) {
+        list.splice(index, 1);
+      }
+      
+      if (addToStart) {
+        list.unshift(movie);
+      } else {
+        list.push(movie);
+      }
+      
+      this.setLocalStorageArray(key, list);
+      return index === -1; // returns true if item was added, false if it was moved
     },
-    removeFromWatchList(movie) {
-      var watchlistFromLocalStorage = JSON.parse(
-        localStorage.getItem("watchlist") || "[]"
-      );
-      var index = watchlistFromLocalStorage.findIndex(
-        (item) => item.id === movie.id
-      );
-      watchlistFromLocalStorage.splice(index, 1);
-      localStorage.setItem(
-        "watchlist",
-        JSON.stringify(watchlistFromLocalStorage)
-      );
-      this.isAdded = false;
+
+    // Movie data methods
+    async getTopMovie(id) {
+      const data = await this.fetchTmdbData(`${id}?api_key=5b75818e63dfdb396cadedf77425b334&language=en-US&page=1`);
+      if (data) {
+        this.movie = data;
+        this.addToHistory(this.movie);
+      }
     },
+
+    async getSimilarMovies(id) {
+      const data = await this.fetchTmdbData(`${id}/recommendations?language=en-US&page=1`);
+      if (data) {
+        this.similarMovies = data.results.slice(1);
+      }
+    },
+
+    async getDetails(id) {
+      const data = await this.fetchTmdbData(`${id}?language=en-US`);
+      if (data) {
+        this.details = data.seasons.map(element => ({ season: element.name }));
+        this.selectedSeriesInfo = data;
+      }
+    },
+
+    async getIMDBID(id) {
+      const data = await this.fetchTmdbData(`${id}/external_ids`);
+      if (data) {
+        this.imdb_id = data.imdb_id;
+      }
+    },
+
+    async getCredits(id) {
+      const data = await this.fetchTmdbData(`${id}/credits?language=en-US`);
+      if (data) {
+        this.credits = data.cast;
+      }
+    },
+
+    async getTrailer(id) {
+      const data = await this.fetchTmdbData(`${id}/videos?language=en-US`);
+      if (data) {
+        const trailer = data.results.find(
+          element => element.site === "YouTube" && element.type === "Trailer"
+        );
+        if (trailer) this.trailerKey = trailer.key;
+      }
+    },
+
+    // Watchlist/history methods
+    checkIfMovieIsAdded() {
+      this.isAdded = this.movieExistsInArray(
+        this.movie,
+        this.getLocalStorageArray("watchlist")
+      );
+    },
+
     movieExistsInArray(movie, array) {
       return array.some(
         (item) => item.id === movie.id && item.isSerie === movie.isSerie
       );
     },
+
     addToHistory(movie) {
       movie.isSerie = "tv";
-      var historyFromLocalStorage = JSON.parse(
-        localStorage.getItem("history") || "[]"
-      );
-
-      // Find the index of the movie in the history
-      var movieIndex = historyFromLocalStorage.findIndex(
-        (item) => item.id === movie.id && item.isSerie === movie.isSerie
-      );
-
-      if (movieIndex === -1) {
-        // If the movie doesn't exist, add it to the history
-        historyFromLocalStorage.push(movie);
-        this.isAdded = true;
-      } else {
-        // If the movie exists, remove it from its current position and add it to the end of the array
-        historyFromLocalStorage.splice(movieIndex, 1);
-        historyFromLocalStorage.push(movie); // Change from unshift to push
-        this.isAdded = false;
-      }
-
-      localStorage.setItem("history", JSON.stringify(historyFromLocalStorage));
+      this.isAdded = this.updateLocalStorageList("history", movie);
     },
+
     addToWatchlist(movie) {
       movie.isSerie = "tv";
-      var watchlistFromLocalStorage = JSON.parse(
-        localStorage.getItem("watchlist") || "[]"
-      );
-
-      // Find the index of the movie in the watchlist
-      var movieIndex = watchlistFromLocalStorage.findIndex(
-        (item) => item.id === movie.id && item.isSerie === movie.isSerie
-      );
-
-      if (movieIndex === -1) {
-        // If the movie doesn't exist, add it to the watchlist
-        watchlistFromLocalStorage.push(movie);
-      } else {
-        // If the movie exists, remove it from its current position and add to the first position
-        watchlistFromLocalStorage.splice(movieIndex, 1);
-        watchlistFromLocalStorage.unshift(movie);
-      }
-
-      localStorage.setItem(
-        "watchlist",
-        JSON.stringify(watchlistFromLocalStorage)
-      );
-      this.isAdded = true;
+      this.isAdded = this.updateLocalStorageList("watchlist", movie, true);
     },
+
+    removeFromWatchList(movie) {
+      const watchlist = this.getLocalStorageArray("watchlist");
+      const index = watchlist.findIndex(item => item.id === movie.id);
+      if (index > -1) {
+        watchlist.splice(index, 1);
+        this.setLocalStorageArray("watchlist", watchlist);
+        this.isAdded = false;
+      }
+    },
+
+    // Cookie helpers
     setCookie(name, value, days) {
-      var expires = "";
-      if (days) {
-        var date = new Date();
-        date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-        expires = "; expires=" + date.toUTCString();
-      }
-      document.cookie = name + "=" + (value || "") + expires + "; path=/";
+      const date = new Date();
+      date.setTime(date.getTime() + days * 864e5);
+      document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
     },
+
     getCookie(name) {
-      var nameEQ = name + "=";
-      var ca = document.cookie.split(";");
-      for (var i = 0; i < ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) == " ") c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
-      }
-      return null;
+      return document.cookie.split('; ').find(row => row.startsWith(`${name}=`))?.split('=')[1];
     },
+
     eraseCookie(name) {
-      document.cookie =
-        name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+      document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
     },
-    async getTopMovie(id) {
-      this.movie = await fetch(
-        `https://api.themoviedb.org/3/tv/${id}?api_key=5b75818e63dfdb396cadedf77425b334&language=en-US&page=1`
-      ).then((res) => res.json());
-      this.addToHistory(this.movie);
-    },
+
+    // Navigation methods
     watchMovie(id) {
-      location.href =
-        "https://multiembed.mov/?video_id=" +
-        id +
-        "&tmdb=1&s=" +
-        this.season +
-        "&e=" +
-        this.episode;
+      location.href = `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${this.season}&e=${this.episode}`;
     },
+
     handleClick(item) {
       this.getTopMovie(item.id);
-      this.getSimilarMovies(item.id);
-      this.getDetails(item.id);
+      Promise.all([
+        this.getSimilarMovies(item.id),
+        this.getDetails(item.id),
+        this.getCredits(item.id),
+        this.getIMDBID(item.id),
+        this.getTrailer(item.id)
+      ]);
       this.eraseCookie("id");
       this.setCookie("id", item.id, 1);
-      this.getCredits(item.id);
-      this.getIMDBID(item.id);
-      this.getTrailer(item.id);
-    },
-    async getSimilarMovies(ID) {
-      this.similarMovies = [];
-      const url =
-        "https://api.themoviedb.org/3/tv/" +
-        ID +
-        "/recommendations?language=en-US&page=1";
-      const options = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-        },
-      };
-
-      await fetch(url, options)
-        .then((res) => res.json())
-        .then(async (json) => {
-          this.similarMovies = json.results.slice(1);
-        })
-        .catch((err) => console.error("error:" + err));
-    },
-    async getIMDBID(id) {
-      const url = "https://api.themoviedb.org/3/tv/" + id + "/external_ids";
-      const options = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-        },
-      };
-
-      fetch(url, options)
-        .then((res) => res.json())
-        .then((json) => {
-          this.imdb_id = json.imdb_id;
-        })
-        .catch((err) => console.error("error:" + err));
-    },
-    async getDetails(id) {
-      this.details = [];
-      const url = "https://api.themoviedb.org/3/tv/" + id + "?language=en-US";
-      const options = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-        },
-      };
-
-      await fetch(url, options)
-        .then((res) => res.json())
-        .then((json) => {
-          json.seasons.forEach((element) => {
-            this.details.push({ season: element.name });
-          });
-          this.selectedSeriesInfo = json;
-        })
-        .catch((err) => console.error("error:" + err));
-    },
-  },
+    }
+  }
 };
 </script>
 <style scoped>

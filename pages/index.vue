@@ -110,7 +110,7 @@ export default {
 
   data() {
     return {
-      watchlist: [],
+      watchlist: null,
       isAdded: false,
       topMovie: null,
       newMovies: [],
@@ -122,55 +122,19 @@ export default {
       randomMovies: [],
       upcomingMovies: [],
       series: [],
-      watchlist: null,
     };
   },
+
   created() {
-    if (localStorage.watchlist) {
-      this.watchlist = localStorage.watchlist;
-    } else {
-      localStorage.watchlist = [];
-    }
+    this.initializeWatchlist();
     this.getTopMovie("movie");
     this.initialize();
   },
 
   methods: {
-    changeThePoster(list) {
-      list.forEach((movie) => {
-        if (!movie.hasOwnProperty("backdrop_path")) {
-          movie.backdrop_path = movie.poster_path;
-        }
-      });
-    },
-    addToWatchlist(movie) {
-      movie.isSerie = "movie";
-      var watchlistFromLocalStorage = JSON.parse(
-        localStorage.getItem("watchlist") || "[]"
-      );
-
-      // Find the index of the movie in the watchlist
-      var movieIndex = watchlistFromLocalStorage.findIndex(
-        (item) => item.id === movie.id && item.isSerie === movie.isSerie
-      );
-
-      if (movieIndex === -1) {
-        // If the movie doesn't exist, add it to the watchlist
-        watchlistFromLocalStorage.push(movie);
-      } else {
-        // If the movie exists, remove it from its current position and add to the first position
-        watchlistFromLocalStorage.splice(movieIndex, 1);
-        watchlistFromLocalStorage.unshift(movie);
-      }
-
-      localStorage.setItem(
-        "watchlist",
-        JSON.stringify(watchlistFromLocalStorage)
-      );
-      this.isAdded = true;
-    },
-    async initialize() {
-      const options = {
+    // API Configuration
+    getApiOptions() {
+      return {
         method: "GET",
         headers: {
           accept: "application/json",
@@ -178,118 +142,121 @@ export default {
             "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
         },
       };
-      this.watchlist = JSON.parse(localStorage.getItem("watchlist") || "[]"); // Parse the watchlist from localStorage
+    },
 
-      if (this.watchlist.length === 0) {
-        // Check if the watchlist is empty
-        this.watchlist = null; // Set watchlist to null if it is empty
-      } else {
-        if (!this.watchlist.poster_path) {
-          this.watchlist.poster_path = this.watchlist.backdrop_path;
-        } // Call changeThePoster if watchlist is not empty
+    // LocalStorage helpers
+    initializeWatchlist() {
+      const storedWatchlist = localStorage.getItem("watchlist");
+      this.watchlist = storedWatchlist ? JSON.parse(storedWatchlist) : null;
+    },
+
+    // Movie data helpers
+    ensureBackdropPath(list) {
+      return list.map((movie) => ({
+        ...movie,
+        backdrop_path: movie.backdrop_path || movie.poster_path,
+      }));
+    },
+
+    // Watchlist management
+    addToWatchlist(movie) {
+      movie.isSerie = "movie";
+      let watchlist = JSON.parse(localStorage.getItem("watchlist") || "[]");
+
+      const existingIndex = watchlist.findIndex(
+        (item) => item.id === movie.id && item.isSerie === movie.isSerie
+      );
+
+      if (existingIndex >= 0) {
+        watchlist.splice(existingIndex, 1);
       }
 
-      this.newMovies = await fetch(
-        "https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=1",
-        options
-      )
-        .then((res) => res.json())
-        .then((data) => data.results);
-      this.changeThePoster(this.newMovies);
-
-      this.horrorItems = await fetch(
-        "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=27",
-        options
-      )
-        .then((res) => res.json())
-        .then((data) => data.results);
-      this.changeThePoster(this.horrorItems);
-
-      this.fantasyItems = await fetch(
-        "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=14",
-        options
-      )
-        .then((res) => res.json())
-        .then((data) => data.results);
-      this.changeThePoster(this.fantasyItems);
-
-      this.documentaryItems = await fetch(
-        "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=99",
-        options
-      )
-        .then((res) => res.json())
-        .then((data) => data.results);
-      this.changeThePoster(this.documentaryItems);
-
-      this.animationItems = await fetch(
-        "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=16",
-        options
-      )
-        .then((res) => res.json())
-        .then((data) => data.results);
-      this.changeThePoster(this.animationItems);
-
-      this.movies = await fetch(
-        "https://api.themoviedb.org/3/movie/top_rated?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc",
-        options
-      )
-        .then((res) => res.json())
-        .then((data) => data.results);
-      this.changeThePoster(this.movies);
+      watchlist.unshift(movie);
+      localStorage.setItem("watchlist", JSON.stringify(watchlist));
+      this.isAdded = true;
+      this.watchlist = watchlist.length ? watchlist : null;
     },
+
+    // Data fetching
+    async fetchCategory(url) {
+      try {
+        const response = await fetch(url, this.getApiOptions());
+        const data = await response.json();
+        return this.ensureBackdropPath(data.results || []);
+      } catch (error) {
+        console.error(`Error fetching ${url}:`, error);
+        return [];
+      }
+    },
+
+    async initialize() {
+      const baseUrl = "https://api.themoviedb.org/3";
+      const requests = [
+        // Parallelize all API requests
+        this.fetchCategory(
+          `${baseUrl}/movie/top_rated?language=en-US&page=1`
+        ).then((data) => (this.newMovies = data)),
+        this.fetchCategory(
+          `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=27`
+        ).then((data) => (this.horrorItems = data)),
+        this.fetchCategory(
+          `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=14`
+        ).then((data) => (this.fantasyItems = data)),
+        this.fetchCategory(
+          `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=99`
+        ).then((data) => (this.documentaryItems = data)),
+        this.fetchCategory(
+          `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=16`
+        ).then((data) => (this.animationItems = data)),
+        this.fetchCategory(
+          `${baseUrl}/movie/top_rated?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc`
+        ).then((data) => (this.movies = data)),
+      ];
+
+      await Promise.all(requests);
+    },
+
+    // Navigation
     handleMovieClick(id) {
-      this.$router.push({ name: "info", query: { id: id } });
+      this.$router.push({ name: "info", query: { id } });
     },
-    async getTopMovie(movie) {
+
+    async getTopMovie(type) {
       try {
         const baseUrl = "https://api.themoviedb.org/3";
-        const options = {
-          method: "GET",
-          headers: {
-            accept: "application/json",
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-          },
-        };
+        const url = `${baseUrl}/discover/${type}?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc`;
 
-        // Fetch top movies
-        const discoverUrl = `${baseUrl}/discover/${movie}?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc`;
-        const res = await fetch(discoverUrl, options);
-        const json = await res.json();
+        const response = await fetch(url, this.getApiOptions());
+        const data = await response.json();
 
-        if (!json.results || json.results.length === 0) {
+        if (!data.results?.length) {
           throw new Error("No movies found in the response.");
         }
 
-        // Select a random movie from the list
-        const randMovieFromList = Math.floor(
-          Math.random() * json.results.length
-        );
-        this.topMovie = json.results[randMovieFromList];
-        this.topMovie.isSerie = "movie";
+        const randomIndex = Math.floor(Math.random() * data.results.length);
+        this.topMovie = {
+          ...data.results[randomIndex],
+          isSerie: "movie",
+          backdrop_path:
+            data.results[randomIndex].backdrop_path ||
+            data.results[randomIndex].poster_path,
+        };
 
-        // Fetch IMDb ID for the selected movie
-        const movieDetailsUrl = `${baseUrl}/movie/${this.topMovie.id}?language=en-US`;
-        const movieRes = await fetch(movieDetailsUrl, options);
-        const movieJson = await movieRes.json();
+        // Fetch IMDb ID
+        const detailsUrl = `${baseUrl}/movie/${this.topMovie.id}?language=en-US`;
+        const detailsResponse = await fetch(detailsUrl, this.getApiOptions());
+        const detailsData = await detailsResponse.json();
 
-        // Ensure we got a valid IMDb ID
-        if (!movieJson.imdb_id) {
-          throw new Error(
-            `IMDb ID not found for movie ID: ${this.topMovie.id}`
-          );
+        if (detailsData.imdb_id) {
+          this.topMovie.imdb_id = detailsData.imdb_id;
         }
-
-        this.topMovie.imdb_id = movieJson.imdb_id;
-
-        console.log("Top Movie:", this.topMovie);
       } catch (error) {
         console.error("Error fetching top movie:", error);
       }
     },
+
     watchMovie(id) {
-      location.href = "https://multiembed.mov/?video_id=" + id;
-      // this.$router.push({ name: "watch", query: { id: id } });
+      window.location.href = `https://multiembed.mov/?video_id=${id}`;
     },
   },
 };
