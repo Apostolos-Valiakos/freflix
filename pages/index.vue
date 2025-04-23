@@ -41,7 +41,7 @@
     </section>
     <div style="background-color: black">
       <obras
-        v-if="watchlist"
+        v-if="watchlist.length != 0"
         :obras="watchlist"
         titulo="Watchlist"
         type="movie"
