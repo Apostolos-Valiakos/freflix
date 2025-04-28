@@ -2,7 +2,7 @@
 <!-- IMDB ID -->
 
 <template>
-  <div v-if="movies.length > 0 && topMovie">
+  <div v-if="movies && movies.length > 0 && topMovie">
     <section>
       <v-img
         :src="'https://image.tmdb.org/t/p/original' + topMovie.backdrop_path"
@@ -41,7 +41,7 @@
     </section>
     <div style="background-color: black">
       <obras
-        v-if="watchlist.length != 0"
+        v-if="watchlist && watchlist.length != 0"
         :obras="watchlist"
         titulo="Watchlist"
         type="movie"
@@ -88,10 +88,10 @@
     </div>
   </div>
 </template>
-<script
+<!-- <script
   async
   src="https://www.googletagmanager.com/gtag/js?id=G-XMRB0HFGVK"
-></script>
+></script> -->
 <script>
 window.dataLayer = window.dataLayer || [];
 function gtag() {
@@ -230,7 +230,7 @@ export default {
           throw new Error("No movies found in the response.");
         }
 
-        const randomIndex = Math.floor(Math.random() * data.results.length);
+        const randomIndex = Math.floor(Math.random() * data.results?.length);
         this.topMovie = {
           ...data.results[randomIndex],
           isSerie: "movie",
