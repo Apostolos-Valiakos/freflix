@@ -56,13 +56,11 @@
             @click="seeInfo(movie.id)"
             :src="'https://image.tmdb.org/t/p//w500' + movie.backdrop_path"
           />
-          <v-card-title v-if="isSerie">
-            {{ movie.name }}
-            <h5 class="mx-2">({{ movie.first_air_date }})</h5>
-          </v-card-title>
-          <v-card-title v-else>
-            {{ movie.title }}
-            <h5 class="mx-2">({{ movie.release_date }})</h5>
+          <v-card-title>
+            {{ movie.name || movie.title }}
+            <h5 class="mx-2">
+              ({{ movie.first_air_date || movie.release_date }})
+            </h5>
           </v-card-title>
           <!-- Add more movie details or actions -->
           <v-card-subtitle>
