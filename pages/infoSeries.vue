@@ -52,6 +52,25 @@
             <h3>Last air date: {{ movie.last_air_date }}</h3>
             <p>{{ movie.overview }}</p>
             <br />
+            <div class="my-3 text-center" v-if="isMobile">
+              <v-btn
+                v-if="!isAdded"
+                @click="addToWatchlist(movie)"
+                style="color: white"
+                color="red"
+                :disabled="isAdded"
+              >
+                Add to watchlist
+              </v-btn>
+              <v-btn
+                v-if="isAdded"
+                @click="removeFromWatchList(movie)"
+                style="color: red"
+                color="white"
+              >
+                Remove from watchlist
+              </v-btn>
+            </div>
             <h3>
               Last Episode to air:
               <v-chip color="red">
@@ -192,11 +211,12 @@
 <script>
 // API Configuration Constants
 const API_CONFIG = {
-  baseUrl: 'https://api.themoviedb.org/3/tv/',
+  baseUrl: "https://api.themoviedb.org/3/tv/",
   headers: {
-    accept: 'application/json',
-    Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M'
-  }
+    accept: "application/json",
+    Authorization:
+      "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+  },
 };
 
 export default {
@@ -224,32 +244,35 @@ export default {
   async created() {
     this.isMobile = screen.width < 450;
     this.query = this.$route.query.id || this.getCookie("id");
-    
+
     if (this.$route.query.id) {
       this.setCookie("id", this.query, 1);
     }
 
     await this.getTopMovie(this.query);
-    
+
     // Parallelize API calls
     await Promise.all([
       this.getSimilarMovies(this.query),
       this.getDetails(this.query),
       this.getIMDBID(this.query),
       this.getCredits(this.query),
-      this.getTrailer(this.query)
+      this.getTrailer(this.query),
     ]);
 
     this.checkIfMovieIsAdded();
   },
   methods: {
     // Generic API fetch helper
-    async fetchTmdbData(endpoint, params = '') {
+    async fetchTmdbData(endpoint, params = "") {
       try {
-        const response = await fetch(`${API_CONFIG.baseUrl}${endpoint}${params}`, {
-          method: 'GET',
-          headers: API_CONFIG.headers
-        });
+        const response = await fetch(
+          `${API_CONFIG.baseUrl}${endpoint}${params}`,
+          {
+            method: "GET",
+            headers: API_CONFIG.headers,
+          }
+        );
         return await response.json();
       } catch (error) {
         console.error(`Error fetching ${endpoint}:`, error);
@@ -261,7 +284,7 @@ export default {
     getLocalStorageArray(key) {
       return JSON.parse(localStorage.getItem(key) || "[]");
     },
-    
+
     setLocalStorageArray(key, array) {
       localStorage.setItem(key, JSON.stringify(array));
     },
@@ -269,25 +292,29 @@ export default {
     // List management helper
     updateLocalStorageList(key, movie, addToStart = false) {
       const list = this.getLocalStorageArray(key);
-      const index = list.findIndex(item => item.id === movie.id && item.isSerie === movie.isSerie);
-      
+      const index = list.findIndex(
+        (item) => item.id === movie.id && item.isSerie === movie.isSerie
+      );
+
       if (index > -1) {
         list.splice(index, 1);
       }
-      
+
       if (addToStart) {
         list.unshift(movie);
       } else {
         list.push(movie);
       }
-      
+
       this.setLocalStorageArray(key, list);
       return index === -1; // returns true if item was added, false if it was moved
     },
 
     // Movie data methods
     async getTopMovie(id) {
-      const data = await this.fetchTmdbData(`${id}?api_key=5b75818e63dfdb396cadedf77425b334&language=en-US&page=1`);
+      const data = await this.fetchTmdbData(
+        `${id}?api_key=5b75818e63dfdb396cadedf77425b334&language=en-US&page=1`
+      );
       if (data) {
         this.movie = data;
         this.addToHistory(this.movie);
@@ -295,7 +322,9 @@ export default {
     },
 
     async getSimilarMovies(id) {
-      const data = await this.fetchTmdbData(`${id}/recommendations?language=en-US&page=1`);
+      const data = await this.fetchTmdbData(
+        `${id}/recommendations?language=en-US&page=1`
+      );
       if (data) {
         this.similarMovies = data.results.slice(1);
       }
@@ -304,7 +333,9 @@ export default {
     async getDetails(id) {
       const data = await this.fetchTmdbData(`${id}?language=en-US`);
       if (data) {
-        this.details = data.seasons.map(element => ({ season: element.name }));
+        this.details = data.seasons.map((element) => ({
+          season: element.name,
+        }));
         this.selectedSeriesInfo = data;
       }
     },
@@ -327,7 +358,7 @@ export default {
       const data = await this.fetchTmdbData(`${id}/videos?language=en-US`);
       if (data) {
         const trailer = data.results.find(
-          element => element.site === "YouTube" && element.type === "Trailer"
+          (element) => element.site === "YouTube" && element.type === "Trailer"
         );
         if (trailer) this.trailerKey = trailer.key;
       }
@@ -359,7 +390,7 @@ export default {
 
     removeFromWatchList(movie) {
       const watchlist = this.getLocalStorageArray("watchlist");
-      const index = watchlist.findIndex(item => item.id === movie.id);
+      const index = watchlist.findIndex((item) => item.id === movie.id);
       if (index > -1) {
         watchlist.splice(index, 1);
         this.setLocalStorageArray("watchlist", watchlist);
@@ -375,7 +406,10 @@ export default {
     },
 
     getCookie(name) {
-      return document.cookie.split('; ').find(row => row.startsWith(`${name}=`))?.split('=')[1];
+      return document.cookie
+        .split("; ")
+        .find((row) => row.startsWith(`${name}=`))
+        ?.split("=")[1];
     },
 
     eraseCookie(name) {
@@ -394,12 +428,12 @@ export default {
         this.getDetails(item.id),
         this.getCredits(item.id),
         this.getIMDBID(item.id),
-        this.getTrailer(item.id)
+        this.getTrailer(item.id),
       ]);
       this.eraseCookie("id");
       this.setCookie("id", item.id, 1);
-    }
-  }
+    },
+  },
 };
 </script>
 <style scoped>

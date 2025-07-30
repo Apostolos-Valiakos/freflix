@@ -48,6 +48,25 @@
             <h3>{{ movie.release_date }}</h3>
             <h3>{{ movie.runtime }} mins</h3>
             <p>{{ movie.overview }}</p>
+            <v-row style="justify-content: center" class="mt-3" v-if="isMobile">
+              <v-btn
+                v-if="!isAdded"
+                @click="addToWatchlist(movie)"
+                style="color: white"
+                color="red"
+                :disabled="isAdded"
+              >
+                Add to watchlist
+              </v-btn>
+              <v-btn
+                v-if="isAdded"
+                @click="removeFromWatchList(movie)"
+                style="color: red"
+                color="white"
+              >
+                Remove from watchlist
+              </v-btn>
+            </v-row>
             <p class="genre">Genre:</p>
             <div
               class="in-row"
