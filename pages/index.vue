@@ -192,7 +192,6 @@ export default {
     async initialize() {
       const baseUrl = "https://api.themoviedb.org/3";
 
-      // Sequential requests
       this.newMovies = await this.fetchCategory(
         `${baseUrl}/movie/top_rated?language=en-US&page=1`
       );
@@ -211,6 +210,11 @@ export default {
       this.movies = await this.fetchCategory(
         `${baseUrl}/movie/top_rated?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc`
       );
+
+      var searchFilters = localStorage.getItem("searchFilters");
+      if (searchFilters.length > 0) {
+        localStorage.removeItem("searchFilters");
+      }
     },
 
     // Navigation

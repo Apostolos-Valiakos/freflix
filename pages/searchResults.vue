@@ -115,6 +115,26 @@ export default {
     };
   },
   methods: {
+    saveFilters() {
+      const filters = {
+        isSerie: this.isSerie,
+        searchTerm: this.searchTerm,
+      };
+
+      localStorage.setItem("searchFilters", JSON.stringify(filters));
+    },
+    loadFilters() {
+      const filtersFromLocalStorage = JSON.parse(
+        localStorage.getItem("searchFilters") || "{}"
+      );
+
+      if (filtersFromLocalStorage.hasOwnProperty("isSerie")) {
+        this.isSerie = filtersFromLocalStorage.isSerie;
+      }
+      if (filtersFromLocalStorage.hasOwnProperty("searchTerm")) {
+        this.searchTerm = filtersFromLocalStorage.searchTerm;
+      }
+    },
     addToWatchlist(movie) {
       if (this.isSerie) {
         movie.isSerie = "tv";
@@ -340,6 +360,7 @@ export default {
         }
       }
       this.autocomplete();
+      this.saveFilters();
     },
     getPopularMovies() {
       const url =
@@ -396,14 +417,26 @@ export default {
         .then((json) => (this.categories = json.genres))
         .catch((err) => console.error("error:" + err));
     },
+    initializeFunction() {
+      this.getPopularMovies();
+      if (screen.width < 450) {
+        this.marginFromTop = "margin-top: 0px";
+      }
+      this.getCategories();
+      this.getSeriesCategories();
+      this.loadFilters();
+    },
   },
   created() {
-    this.getPopularMovies();
-    if (screen.width < 450) {
-      this.marginFromTop = "margin-top: 0px";
+    if (
+      localStorage.getItem("searchFilters") &&
+      localStorage.getItem("searchFilters").length > 0
+    ) {
+      this.loadFilters();
+      this.search(1);
+    } else {
+      this.initializeFunction();
     }
-    this.getCategories();
-    this.getSeriesCategories();
   },
 };
 </script>
