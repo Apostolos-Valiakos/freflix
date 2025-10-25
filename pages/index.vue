@@ -88,19 +88,6 @@
     </div>
   </div>
 </template>
-<!-- <script
-  async
-  src="https://www.googletagmanager.com/gtag/js?id=G-XMRB0HFGVK"
-></script> -->
-<script>
-window.dataLayer = window.dataLayer || [];
-function gtag() {
-  dataLayer.push(arguments);
-}
-gtag("js", new Date());
-
-gtag("config", "G-XMRB0HFGVK");
-</script>
 <script>
 export default {
   transition: {
@@ -212,7 +199,7 @@ export default {
       );
 
       var searchFilters = localStorage.getItem("searchFilters");
-      if (searchFilters.length > 0) {
+      if (searchFilters && searchFilters.length > 0) {
         localStorage.removeItem("searchFilters");
       }
     },
