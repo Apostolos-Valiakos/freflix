@@ -5,6 +5,7 @@
         :src="'https://image.tmdb.org/t/p/original' + topMovie.backdrop_path"
         alt="Movie Poster"
         class="movie-banner"
+        lazy-src="https://via.placeholder.com/1920x1080/000000/FFFFFF?text=Loading..."
       />
       <!-- Content container - Note: Vuetify padding classes (px-4 px-md-16) are great for responsiveness -->
       <div class="content-overlay px-4 px-md-16">
@@ -152,10 +153,10 @@ export default {
     };
   },
 
-  created() {
+  async created() {
     this.initializeWatchlist();
-    this.getTopMovie("movie");
-    this.initialize();
+    await this.getTopMovie("movie");
+    await this.initialize();
   },
 
   methods: {
@@ -219,25 +220,38 @@ export default {
     async initialize() {
       const baseUrl = "https://api.themoviedb.org/3";
 
-      // Sequential requests
-      this.newMovies = await this.fetchCategory(
-        `${baseUrl}/movie/top_rated?language=en-US&page=1`
-      );
-      this.horrorItems = await this.fetchCategory(
-        `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=27`
-      );
-      this.fantasyItems = await this.fetchCategory(
-        `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=14`
-      );
-      this.documentaryItems = await this.fetchCategory(
-        `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=99`
-      );
-      this.animationItems = await this.fetchCategory(
-        `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=16`
-      );
-      this.movies = await this.fetchCategory(
-        `${baseUrl}/movie/top_rated?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc`
-      );
+      // Parallelize all fetches with Promise.all
+      const [
+        newMoviesData,
+        horrorData,
+        fantasyData,
+        documentaryData,
+        animationData,
+      ] = await Promise.all([
+        this.fetchCategory(`${baseUrl}/movie/top_rated?language=en-US&page=1`),
+        this.fetchCategory(
+          `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=27`
+        ),
+        this.fetchCategory(
+          `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=14`
+        ),
+        this.fetchCategory(
+          `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=99`
+        ),
+        this.fetchCategory(
+          `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=16`
+        ),
+      ]);
+
+      // Assign in parallel order to avoid blocking
+      this.newMovies = newMoviesData;
+      this.horrorItems = horrorData;
+      this.fantasyItems = fantasyData;
+      this.documentaryItems = documentaryData;
+      this.animationItems = animationData;
+
+      // Reuse newMovies for movies if needed (avoids duplicate fetch)
+      this.movies = this.newMovies;
     },
 
     // Navigation
@@ -258,12 +272,12 @@ export default {
         }
 
         const randomIndex = Math.floor(Math.random() * data.results?.length);
+        const topMovieData = data.results[randomIndex];
+
         this.topMovie = {
-          ...data.results[randomIndex],
+          ...topMovieData,
           isSerie: "movie",
-          backdrop_path:
-            data.results[randomIndex].backdrop_path ||
-            data.results[randomIndex].poster_path,
+          backdrop_path: topMovieData.backdrop_path || topMovieData.poster_path,
         };
 
         // Check if the top movie is already in the watchlist to set isAdded state
@@ -276,13 +290,13 @@ export default {
         );
         this.isAdded = isCurrentlyAdded;
 
-        // Fetch IMDb ID
+        // Parallelize details fetch if needed (but only after setting topMovie)
         const detailsUrl = `${baseUrl}/movie/${this.topMovie.id}?language=en-US`;
         const detailsResponse = await fetch(detailsUrl, this.getApiOptions());
         const detailsData = await detailsResponse.json();
 
         if (detailsData.imdb_id) {
-          this.topMovie.imdb_id = detailsData.imdb_id;
+          this.$set(this.topMovie, "imdb_id", detailsData.imdb_id); // Reactive update
         }
       } catch (error) {
         console.error("Error fetching top movie:", error);
