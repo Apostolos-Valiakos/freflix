@@ -1,41 +1,55 @@
 <template>
   <div :style="marginFromTop">
-    <div
-      class="search-header d-flex justify-space-around mb-6 bg-surface-variant"
-    >
-      <v-text-field
-        color="red"
-        class="ma-2 pa-2 search-field"
-        label="Search"
-        v-model="searchTerm"
-        @change="search(1)"
-      />
-      <!-- @change="autocomplete" -->
-      <v-select
-        color="red"
-        class="ma-2 pa-2 category-select"
-        v-if="categories || seriesCategories"
-        @change="searchPerCategory(selectedCategory, 1)"
-        :item-text="'name'"
-        :item-value="'id'"
-        v-model="selectedCategory"
-        label="Search by Category"
-        :items="isSerie ? seriesCategories : categories"
-      />
+    <div class="search-header">
+      <div
+        class="search-inputs d-flex flex-wrap justify-space-between align-center"
+      >
+        <v-text-field
+          color="red"
+          class="ma-2 pa-2 search-field flex-grow-1"
+          label="Search"
+          v-model="searchTerm"
+          @change="search(1)"
+          clearable
+        />
+        <v-select
+          color="red"
+          class="ma-2 pa-2 category-select"
+          v-if="categories || seriesCategories"
+          @change="searchPerCategory(selectedCategory, 1)"
+          :item-text="'name'"
+          :item-value="'id'"
+          v-model="selectedCategory"
+          label="Search by Category"
+          :items="isSerie ? seriesCategories : categories"
+          hide-details
+        />
+        <v-btn-toggle
+          v-model="isSerie"
+          class="ma-2 pa-2 type-toggle"
+          color="red"
+          mandatory
+          @change="search(1)"
+        >
+          <v-btn>Movies</v-btn>
+          <v-btn>Series</v-btn>
+        </v-btn-toggle>
+      </div>
+      <div class="search-actions d-flex justify-center mt-4">
+        <v-btn class="search-btn" @click="search(1)" color="red" large>
+          <v-icon left>mdi-magnify</v-icon>
+          Search
+        </v-btn>
+      </div>
     </div>
-    <v-checkbox
-      class="ma-2 pa-2 series-checkbox"
-      color="red"
-      label="Looking for Series"
-      v-model="isSerie"
-    ></v-checkbox>
-
-    <v-btn class="mx-5 mb-8 search-btn" @click="search(1)" color="red">
-      Search
-    </v-btn>
 
     <h2 class="page-title" v-if="searchTerm">
       Search Results for "{{ searchTerm }}"
+    </h2>
+    <h2 class="page-title" v-else-if="selectedCategory">
+      {{ isSerie ? "Series in" : "Movies in" }} "{{
+        getCategoryName(selectedCategory)
+      }}"
     </h2>
     <h2 class="page-title" v-else>
       {{ isSerie ? "Popular Series" : "Popular Movies" }}
@@ -133,6 +147,11 @@ export default {
     },
   },
   methods: {
+    getCategoryName(id) {
+      const cats = this.isSerie ? this.seriesCategories : this.categories;
+      const cat = cats.find((c) => c.id === parseInt(id));
+      return cat ? cat.name : "";
+    },
     saveFilters() {
       const filters = {
         isSerie: this.isSerie,
@@ -510,9 +529,15 @@ export default {
     rgba(0, 0, 0, 0.9)
   ) !important;
   border-radius: 16px;
-  padding: 1rem;
+  padding: 1.5rem;
   margin: 1rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.search-inputs {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .search-field,
@@ -522,9 +547,21 @@ export default {
   color: #f0f0f0 !important;
 }
 
-.series-checkbox {
-  color: #ff0000 !important;
-  margin-left: 1rem !important;
+.type-toggle .v-btn {
+  border-radius: 8px !important;
+  margin: 0 2px !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+}
+
+.type-toggle .v-btn--active {
+  background-color: #ff0000 !important;
+  color: white !important;
+}
+
+.search-actions {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .search-btn {
@@ -534,6 +571,7 @@ export default {
   box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3) !important;
   transition: all 0.3s ease !important;
   text-transform: none !important;
+  min-width: 120px !important;
 }
 
 .search-btn:hover {
@@ -646,12 +684,23 @@ export default {
   .search-header {
     flex-direction: column !important;
     align-items: center !important;
+    padding: 1rem !important;
+  }
+
+  .search-inputs {
+    flex-direction: column !important;
+    width: 100% !important;
   }
 
   .search-field,
   .category-select {
     width: 100% !important;
-    max-width: 300px !important;
+    max-width: none !important;
+  }
+
+  .type-toggle {
+    justify-content: center !important;
+    width: 100% !important;
   }
 
   .results-grid {
@@ -680,6 +729,10 @@ export default {
   .watchlist-btn {
     padding: 0.4rem 1rem !important;
     font-size: 0.9rem !important;
+  }
+
+  .search-btn {
+    width: 100% !important;
   }
 }
 </style>
