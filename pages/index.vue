@@ -317,6 +317,7 @@ export default {
   height: 100vh;
   min-height: 500px; /* Ensure a minimum height even on very small devices */
   justify-content: flex-start;
+  align-items: flex-start;
   padding: 5em 2.5em; /* Desktop Padding */
   display: flex;
   flex-direction: column;
@@ -329,10 +330,11 @@ export default {
 */
 .content-overlay {
   z-index: 1;
-  max-width: 1200px; /* Constrain text width on large screens */
+  max-width: 1200px;
   width: 100%;
-  margin-left: auto;
-  margin-right: auto;
+  margin-left: 0 !important; /* 👈 Remove auto-centering */
+  margin-right: auto !important; /* optional, keeps responsive flow */
+  text-align: left !important; /* 👈 Ensure text aligns left */
 }
 
 /* Movie Banner Image */
