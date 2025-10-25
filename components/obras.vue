@@ -1,74 +1,42 @@
 <template>
-  <div>
-    <div class="ml-8" @keyup.right="nextPage" @keyup.left="prevPage">
-      <v-card-title
-        class="font-weight-bold pr-5 ma-0"
-        style="color: #e5e5e5; font-size: 27px !important"
-      >
-        {{ titulo }}
-      </v-card-title>
+  <div @keyup.right="nextSlide" @keyup.left="prevSlide">
+    <v-card-title class="font-weight-bold pr-5 ma-0 title">
+      {{ titulo }}
+    </v-card-title>
 
-      <v-carousel
-        hide-delimiters
-        show-arrows-on-hover
-        style="white-space: nowrap; display: inline-block; overflow: hidden"
-        class="carousel"
-      >
-        <template v-slot:prev="{ on, attrs }">
-          <v-btn icon v-bind="attrs" v-on="on" @click="prevPage">
-            <v-icon>mdi-chevron-left</v-icon>
-          </v-btn>
-        </template>
-        <template v-slot:next="{ on, attrs }">
-          <v-btn icon v-bind="attrs" v-on="on" @click="nextPage">
-            <v-icon>mdi-chevron-right</v-icon>
-          </v-btn>
-        </template>
-        <v-carousel-item
-          v-for="(el, index) in slider"
-          :key="index"
-          class="movie"
-        >
-          <div class="d-flex align-center">
-            <v-card
-              v-for="(item, index) in items"
-              :key="index"
-              class="movie-card elevation-2 mx-1"
-              @mouseover="item.isActive = true"
-              @mouseleave="item.isActive = false"
-              @click="handleclick(item)"
-              style="
-                min-width: 250px;
-                max-width: 250px;
-                transition: transform 0.3s;
-                overflow: hidden;
-                border: none;
-              "
-            >
-              <a :href="getItemUrl(item)">
-                <v-img
-                  style="
-                    min-width: 250px;
-                    max-width: 250px;
-                    transition: transform 0.3s;
-                    overflow: hidden;
-                    border: none;
-                  "
-                  :src="
-                    'https://image.tmdb.org/t/p/w500' + (item.poster_path || '')
-                  "
-                  :lazy-src="
-                    'https://image.tmdb.org/t/p/w500' + (item.poster_path || '')
-                  "
-                  contain
-                  class="movie-poster"
-                ></v-img>
-              </a>
-            </v-card>
-          </div>
-        </v-carousel-item>
-      </v-carousel>
-    </div>
+    <v-carousel
+      v-model="currentIndex"
+      hide-delimiters
+      :show-arrows="true"
+      height="auto"
+      class="carousel"
+    >
+      <v-carousel-item v-for="(page, index) in pages" :key="index">
+        <div class="d-flex justify-center align-center">
+          <v-card
+            v-for="(item, itemIndex) in page"
+            :key="item.id || itemIndex"
+            class="movie-card elevation-2 mx-1"
+            @mouseover="item.isActive = true"
+            @mouseleave="item.isActive = false"
+            @click="handleclick(item)"
+          >
+            <a :href="getItemUrl(item)">
+              <v-img
+                :src="
+                  'https://image.tmdb.org/t/p/w500' + (item.poster_path || '')
+                "
+                :lazy-src="
+                  'https://image.tmdb.org/t/p/w500' + (item.poster_path || '')
+                "
+                contain
+                class="movie-poster"
+              ></v-img>
+            </a>
+          </v-card>
+        </div>
+      </v-carousel-item>
+    </v-carousel>
   </div>
 </template>
 
@@ -103,7 +71,6 @@ export default {
       currentIndex: 0,
       itemsPerPage: 6,
       clicado: 0,
-      slider: [1, 2, 3, 4],
     };
   },
   mounted() {
@@ -154,8 +121,6 @@ export default {
         .catch((err) => console.error("error:" + err));
     },
     handleclick(item) {
-
-
       if (item.isSerie) {
         if (item.isSerie === "movie") {
           this.$router.push({ name: "info", query: { id: item.id } });
@@ -169,35 +134,70 @@ export default {
           this.$router.push({ name: "infoSeries", query: { id: item.id } });
         }
       }
-
-
     },
-    prevPage() {
-      for (let x = 0; x <= this.columns; x++) {
-        this.items.unshift(this.items.pop());
-      }
+    nextSlide() {
+      this.currentIndex = (this.currentIndex + 1) % this.pages.length;
     },
-    nextPage() {
-      for (let x = 0; x <= this.columns; x++) {
-        this.items.push(this.items.shift());
-      }
+    prevSlide() {
+      this.currentIndex =
+        (this.currentIndex - 1 + this.pages.length) % this.pages.length;
     },
   },
   computed: {
     columns() {
-      if (this.$vuetify.breakpoint.xl) {
-        return 4;
+      return this.$vuetify.breakpoint.xl
+        ? 9
+        : this.$vuetify.breakpoint.lg
+        ? 8
+        : this.$vuetify.breakpoint.md
+        ? 7
+        : 3;
+    },
+    // Adjust the step value here to change how many items the carousel shifts per slide
+    // For example, step: 1 shifts by 1 item (high overlap), step: 2 shifts by 2 items (medium overlap), etc.
+    // Ensure step <= columns to maintain overlap; step = columns shows no overlap (full page turns)
+    step() {
+      return 1; // Change this number to adjust the shift positions
+    },
+    pages() {
+      const numItems = this.items.length;
+      if (numItems === 0) return [];
+      const chunkSize = this.columns;
+      const step = this.step;
+      const pages = [];
+      // Generate starting indices in multiples of step, up to numItems to ensure cycling coverage
+      for (let i = 0; i < numItems; i += step) {
+        const page = [];
+        for (let j = 0; j < chunkSize; j++) {
+          const idx = (i + j) % numItems;
+          page.push(this.items[idx]);
+        }
+        pages.push(page);
       }
-
-      if (this.$vuetify.breakpoint.lg) {
-        return 3;
+      // If the last partial cycle isn't covered (e.g., when numItems % step != 0), add remaining starts
+      // This ensures full infinite loop without gaps in possible views
+      const generatedStarts = new Set(
+        pages.map((p, idx) => (idx * step) % numItems)
+      );
+      for (let start = 0; start < numItems; start++) {
+        if (!generatedStarts.has(start)) {
+          const page = [];
+          for (let j = 0; j < chunkSize; j++) {
+            const idx = (start + j) % numItems;
+            page.push(this.items[idx]);
+          }
+          pages.push(page);
+        }
       }
-
-      if (this.$vuetify.breakpoint.md) {
-        return 2;
+      return pages;
+    },
+  },
+  watch: {
+    "$vuetify.breakpoint.name"(newBreakpoint) {
+      // Reset index if necessary when breakpoint changes and pages length changes
+      if (this.currentIndex >= this.pages.length) {
+        this.currentIndex = 0;
       }
-
-      return 1;
     },
   },
 };
@@ -210,39 +210,79 @@ export default {
 .cursor-pointer {
   cursor: pointer;
 }
-.carousel {
-  overflow-x: auto;
+.carousel ::v-deep .v-carousel__controls {
+  justify-content: space-between;
 }
 .movie-card {
   border-radius: 8px;
   overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transform-origin: center;
+  border: none;
 }
 .movie-poster {
   border-radius: 8px;
-  margin: 0; /* Remove margin to eliminate black space */
+  margin: 0;
 }
 .v-carousel-item {
-  transition: transform 0.5s ease; /* Transition for smooth animation */
-}
-.movie-card {
-  position: relative;
-  min-width: 250px;
-  max-width: 250px;
-  height: 375px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  overflow: hidden;
-  border-radius: 8px;
-  transform-origin: center; /* Ensures it scales from the center */
+  transition: transform 0.5s ease;
 }
 
 .movie-card:hover {
-  transform: scale(1.1); /* Expands the hovered card */
+  transform: scale(1.1);
   box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3);
   z-index: 19999;
 }
 
 .expanded-card {
-  transform: scale(1.1); /* Ensure the hovered card expands */
+  transform: scale(1.1);
   z-index: 19999;
+}
+
+/* Responsive card sizes */
+@media (min-width: 1904px) {
+  .movie-card {
+    min-width: 250px !important;
+    max-width: 250px !important;
+    height: 375px !important;
+  }
+}
+
+@media (min-width: 1264px) and (max-width: 1903px) {
+  .movie-card {
+    min-width: 220px !important;
+    max-width: 220px !important;
+    height: 330px !important;
+  }
+}
+
+@media (min-width: 960px) and (max-width: 1263px) {
+  .movie-card {
+    min-width: 180px !important;
+    max-width: 180px !important;
+    height: 270px !important;
+  }
+}
+
+@media (min-width: 600px) and (max-width: 959px) {
+  .movie-card {
+    min-width: 150px !important;
+    max-width: 150px !important;
+    height: 225px !important;
+  }
+}
+
+@media (max-width: 599px) {
+  .movie-card {
+    min-width: 130px !important;
+    max-width: 130px !important;
+    height: 195px !important;
+  }
+  .title {
+    font-size: 20px !important;
+  }
+  .carousel ::v-deep .v-btn {
+    margin: 0 8px;
+  }
 }
 </style>

@@ -1,42 +1,69 @@
-<!-- https://coverapi.store/embed/tt3032476/ -->
-<!-- IMDB ID -->
-
 <template>
   <div v-if="movies && movies.length > 0 && topMovie">
-    <section>
+    <section class="hero-section">
       <v-img
         :src="'https://image.tmdb.org/t/p/original' + topMovie.backdrop_path"
         alt="Movie Poster"
-        class="movie-banner grad"
-        gradient="to bottom, rgba(0,0,0,0.2), rgba(0,0,0,1)"
+        class="movie-banner"
       />
-      <div style="z-index: 1">
-        <h1>{{ topMovie.title }}</h1>
-        <v-btn text color="white">
-          {{ topMovie.vote_average }}
-          According to IMDB Rating <br />
-          out of {{ topMovie.vote_count }} votes
-        </v-btn>
-        <p class="synopsis">{{ topMovie.overview }}</p>
-        <v-form class="button-container">
+      <!-- Content container - Note: Vuetify padding classes (px-4 px-md-16) are great for responsiveness -->
+      <div class="content-overlay px-4 px-md-16">
+        <!-- Title - Responsive font sizes -->
+        <h1 class="text-h4 text-sm-h2 text-md-h1 font-weight-black mb-4">
+          {{ topMovie.title }}
+        </h1>
+
+        <!-- Rating/Metadata -->
+        <div class="d-flex align-center mb-4">
+          <span class="text-body-2 text-sm-body-1 font-weight-medium">
+            {{ new Date(topMovie.release_date).getFullYear() }}
+          </span>
+          <v-chip small outlined class="ml-3 text-caption text-sm-body-2">
+            {{ topMovie.vote_average }} / 10
+          </v-chip>
+        </div>
+
+        <!-- Synopsis - Responsive max-width and now visible on small screens with line-clamping -->
+        <p class="synopsis text-body-2 text-sm-body-1">
+          {{ topMovie.overview }}
+        </p>
+
+        <!-- Buttons - Responsive sizing (using $vuetify.breakpoint) is already robust -->
+        <v-form class="button-container d-flex mt-6">
+          <!-- Primary Action: Play -->
           <v-btn
-            v-if="topMovie"
-            @click="handleMovieClick(topMovie.id)"
-            style="color: red"
-            color="white"
-          >
-            More information
-          </v-btn>
-          <v-btn
-            @click="addToWatchlist(topMovie)"
-            style="color: white"
+            :large="$vuetify.breakpoint.mdAndUp"
+            :small="$vuetify.breakpoint.smAndDown"
             color="red"
-            :disabled="isAdded"
+            class="white--text mr-3 rounded-md font-weight-bold px-4 px-sm-8"
+            @click="handleMovieClick(topMovie.id)"
           >
-            Add to Watchlist
+            <v-icon left>mdi-play</v-icon>
+            Play
+          </v-btn>
+          <!-- Secondary Action: More Info -->
+          <v-btn
+            :large="$vuetify.breakpoint.mdAndUp"
+            :small="$vuetify.breakpoint.smAndDown"
+            color="white"
+            class="white--text rounded-md font-weight-bold px-4 px-sm-8"
+            @click="handleMovieClick(topMovie.id)"
+          >
+            <!-- Note: The white button needs the text/icon to be black/red to show contrast -->
+            <v-icon left color="red">mdi-information-outline</v-icon>
+            <span class="hidden-sm-and-down" style="color: red">More Info</span>
+          </v-btn>
+          <!-- Add to Watchlist -->
+          <v-btn
+            icon
+            class="ml-3 rounded-circle"
+            :color="isAdded ? 'red' : 'white'"
+            :disabled="isAdded"
+            @click="addToWatchlist(topMovie)"
+          >
+            <v-icon>{{ isAdded ? "mdi-check" : "mdi-plus" }}</v-icon>
           </v-btn>
         </v-form>
-        <div class="gradient"></div>
       </div>
     </section>
     <div style="background-color: black">
@@ -192,6 +219,7 @@ export default {
     async initialize() {
       const baseUrl = "https://api.themoviedb.org/3";
 
+      // Sequential requests
       this.newMovies = await this.fetchCategory(
         `${baseUrl}/movie/top_rated?language=en-US&page=1`
       );
@@ -210,11 +238,6 @@ export default {
       this.movies = await this.fetchCategory(
         `${baseUrl}/movie/top_rated?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc`
       );
-
-      var searchFilters = localStorage.getItem("searchFilters");
-      if (searchFilters.length > 0) {
-        localStorage.removeItem("searchFilters");
-      }
     },
 
     // Navigation
@@ -243,6 +266,16 @@ export default {
             data.results[randomIndex].poster_path,
         };
 
+        // Check if the top movie is already in the watchlist to set isAdded state
+        const storedWatchlist = localStorage.getItem("watchlist");
+        const watchlist = storedWatchlist ? JSON.parse(storedWatchlist) : [];
+        const isCurrentlyAdded = watchlist.some(
+          (item) =>
+            item.id === this.topMovie.id &&
+            item.isSerie === this.topMovie.isSerie
+        );
+        this.isAdded = isCurrentlyAdded;
+
         // Fetch IMDb ID
         const detailsUrl = `${baseUrl}/movie/${this.topMovie.id}?language=en-US`;
         const detailsResponse = await fetch(detailsUrl, this.getApiOptions());
@@ -264,151 +297,93 @@ export default {
 </script>
 
 <style>
-section:first-child {
+/* Hero Section - Set to full height, content anchored to the top (flex-start)
+*/
+.hero-section {
   height: 100vh;
-  padding: 0 2.5em;
+  min-height: 500px; /* Ensure a minimum height even on very small devices */
+  justify-content: flex-start;
+  padding: 5em 2.5em; /* Desktop Padding */
   display: flex;
   flex-direction: column;
-  justify-content: center;
   object-fit: cover;
   position: relative;
 }
 
-section:first-child::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 0;
-  padding-bottom: calc(33.5% - 92px + 30px);
+/* Content Overlay - Constrain width for readability on large screens,
+  but ensure it takes full width for mobile responsiveness (handled by px- classes) 
+*/
+.content-overlay {
+  z-index: 1;
+  max-width: 1200px; /* Constrain text width on large screens */
   width: 100%;
-  background-image: linear-gradient(
-    transparent,
-    rgba(25, 26, 26, 0.4) 10%,
-    rgba(25, 26, 26, 0.6) 20%,
-    rgba(25, 26, 26, 0.8) 60%,
-    var(--dark-grey)
-  );
-  z-index: -1;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-section:not(first-child) {
-  padding: 3em 2.5em 0;
-}
-
+/* Movie Banner Image */
 .movie-banner {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
   position: absolute;
+  top: 0;
   left: 0;
   z-index: 0;
   opacity: 0.8;
 }
 
+/* Typography Base Styles */
 h1,
 p {
   padding: 0;
   margin: 0;
+  color: white; /* Ensure text is white for contrast */
   text-shadow: 2px 2px 4px rgb(0 0 0 / 45%);
 }
 
 h1 {
-  font-size: 3rem;
-  max-width: 20em;
+  /* H1 font size is handled by Vuetify classes in template: text-h4 text-sm-h2 text-md-h1 */
+  max-width: 90%; /* Prevent title from taking up too much width */
 }
 
 .synopsis {
-  font-size: 1.4vw;
-  width: 100%;
-  max-width: 30em;
+  /* Synopsis font size is handled by Vuetify classes in template: text-body-2 text-sm-body-1 */
+  max-width: 40rem; /* Constrain max line length for better desktop readability */
   padding-top: 0.5rem;
   padding-bottom: 1rem;
 }
 
-button {
-  all: unset;
-  padding: 0.7rem 1.7rem;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.more-info-button {
-  background-color: var(--red);
-  color: var(--white);
-  border-radius: 0.5em;
-  padding: 0.7em 2em;
-}
-
-.more-info-button:hover {
-  opacity: 0.9;
-}
-
-.cta-white {
-  border-radius: 0.5em;
-  color: var(--black);
-  background-color: var(--white);
-}
-
-.cta-white:hover,
-.cta-transparent:hover {
-  opacity: 0.8;
-}
-
-.movie-grid {
-  display: flex;
-  gap: 1em;
-  overflow-x: auto;
-  height: 30em;
-}
-
-.movie-grid::-webkit-scrollbar {
-  height: 5px;
-}
-
-.movie-poster {
-  max-width: 15em;
-  border-radius: 0.5em;
-  margin-bottom: 1.5em;
-}
-
-.movie {
-  position: relative;
-}
-
-.cta-transparent {
-  border-radius: 0.5em;
-  color: var(--white);
-  background-color: var(--transparent);
-}
-
-@media (max-width: 50em) {
-  section:first-child {
-    padding: 10em 1em;
+/* Responsive Overrides for Mobile (less than 600px) */
+@media (max-width: 600px) {
+  .hero-section {
+    /* More compact padding on mobile */
+    padding-top: 20px;
+    padding-bottom: 20px;
+    min-height: 70vh; /* Shorter hero section on mobile */
   }
 
-  section:not(first-child) {
-    padding: 0 1em;
-  }
-
-  h1 {
-    margin-top: 4em;
-    font-size: 2.5rem;
-  }
-
-  h2 {
-    font-size: 1.3rem;
-  }
-
+  /* Force synopsis to full width on mobile */
   .synopsis {
-    font-size: 1.2rem;
+    max-width: 100%;
+  }
+
+  /* Button container adjustments for better touch targets */
+  .button-container {
+    flex-wrap: wrap;
   }
 }
+
+/* Responsive Overrides for Tablet (less than 960px) */
+@media (max-width: 960px) {
+  .hero-section {
+    padding: 3em 1.5em;
+  }
+}
+
+/* Other general styles remain */
 .v-window.v-item-group.theme--dark.v-window--show-arrows-on-hover.v-carousel {
   height: 400px !important;
-}
-.grad {
-  background: linear-gradient(to top, transparent, black);
 }
 </style>

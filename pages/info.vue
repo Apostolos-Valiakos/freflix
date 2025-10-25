@@ -25,6 +25,7 @@
                   style="color: white"
                   color="red"
                   :disabled="isAdded"
+                  class="watchlist-btn"
                 >
                   Add to watchlist
                 </v-btn>
@@ -33,6 +34,7 @@
                   @click="removeFromWatchList(movie)"
                   style="color: red"
                   color="white"
+                  class="watchlist-btn remove"
                 >
                   Remove from watchlist
                 </v-btn>
@@ -44,10 +46,10 @@
               ⭐ Rating: {{ movie.vote_average }} out of
               {{ movie.vote_count }} votes on IMDB
             </p>
-            <h2>{{ movie.title }}</h2>
-            <h3>{{ movie.release_date }}</h3>
-            <h3>{{ movie.runtime }} mins</h3>
-            <p>{{ movie.overview }}</p>
+            <h2 class="movie-title">{{ movie.title }}</h2>
+            <h3 class="movie-meta">{{ movie.release_date }}</h3>
+            <h3 class="movie-meta">{{ movie.runtime }} mins</h3>
+            <p class="movie-overview">{{ movie.overview }}</p>
             <v-row style="justify-content: center" class="mt-3" v-if="isMobile">
               <v-btn
                 v-if="!isAdded"
@@ -55,6 +57,7 @@
                 style="color: white"
                 color="red"
                 :disabled="isAdded"
+                class="watchlist-btn"
               >
                 Add to watchlist
               </v-btn>
@@ -63,6 +66,7 @@
                 @click="removeFromWatchList(movie)"
                 style="color: red"
                 color="white"
+                class="watchlist-btn remove"
               >
                 Remove from watchlist
               </v-btn>
@@ -74,7 +78,9 @@
             >
               <div v-for="genre in movie.genres" :key="genre.id">
                 <p>
-                  <v-chip color="red" class="mx-1">{{ genre.name }}</v-chip>
+                  <v-chip color="red" class="mx-1 genre-chip">{{
+                    genre.name
+                  }}</v-chip>
                 </p>
               </div>
             </div>
@@ -84,7 +90,7 @@
     </section>
     <Cast :cast="credits" v-if="credits != []" />
     <div>
-      <v-card>
+      <v-card class="tabs-container">
         <template>
           <v-card>
             <v-tabs
@@ -94,6 +100,7 @@
               centered
               dark
               icons-and-text
+              class="movie-tabs"
             >
               <v-tabs-slider></v-tabs-slider>
 
@@ -123,6 +130,7 @@
                       height="600"
                       frameBorder="0"
                       allowfullscreen
+                      class="embed-iframe"
                     ></iframe>
                   </div>
                 </v-card>
@@ -141,7 +149,7 @@
                   >
                     <div style="width: 800px; height: 600px">
                       <v-btn
-                        class="mt-14"
+                        class="mt-14 watch-btn"
                         color="red"
                         style="color: white"
                         @click="watchMovie(movie.imdb_id)"
@@ -172,6 +180,7 @@
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         referrerpolicy="strict-origin-when-cross-origin"
                         allowfullscreen
+                        class="embed-iframe"
                       ></iframe>
                     </div>
                   </div>
@@ -183,18 +192,25 @@
       </v-card>
     </div>
 
-    <div style="display: flex; justify-content: center; text-align: center">
+    <div
+      style="display: flex; justify-content: center; text-align: center"
+      class="similar-section"
+    >
       <v-sheet
         style="
           background-color: black;
           text-align: center;
           justify-content: center;
         "
-        class="d-flex align-content-center flex-wrap bg-surface-variant"
+        class="d-flex align-content-center flex-wrap bg-surface-variant similar-sheet"
       >
-        <div v-for="(item, index) in similarMovies" :key="index">
+        <div
+          v-for="(item, index) in similarMovies"
+          :key="index"
+          class="similar-item"
+        >
           <v-card
-            class="pa-2"
+            class="pa-2 similar-card"
             @click="ClickOnSimilarMovies(item)"
             v-if="item !== undefined && item.poster_path"
             style="background-color: black"
@@ -204,7 +220,7 @@
             <a :href="'/info?id=' + item.id">
               <v-img
                 contain
-                class="mt-2 movie-poster"
+                class="mt-2 movie-poster similar-poster"
                 :src="'https://image.tmdb.org/t/p//w500' + item.poster_path"
                 max-width="200"
                 max-height="200"
@@ -217,6 +233,7 @@
                 display: flex;
                 color: white;
               "
+              class="similar-title"
             >
               {{ item.title }}
             </v-card-text>
@@ -435,6 +452,7 @@ p {
 section:first-child {
   object-fit: cover;
   position: relative;
+  overflow: hidden;
 }
 
 section:first-child::after {
@@ -447,12 +465,23 @@ section:first-child::after {
   width: 100%;
   background-image: linear-gradient(
     transparent,
-    rgba(25, 26, 26, 0.4) 10%,
-    rgba(25, 26, 26, 0.6) 20%,
-    rgba(25, 26, 26, 0.8) 80%,
-    var(--dark-grey)
+    rgba(25, 26, 26, 0.3) 5%,
+    rgba(25, 26, 26, 0.5) 15%,
+    rgba(25, 26, 26, 0.7) 30%,
+    rgba(25, 26, 26, 0.9) 70%,
+    #000000
   );
   z-index: -1;
+  animation: gradientShift 10s ease-in-out infinite alternate;
+}
+
+@keyframes gradientShift {
+  0% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 section:nth-child(2) {
@@ -460,28 +489,60 @@ section:nth-child(2) {
   justify-content: center;
   align-items: center;
   margin-top: -10em;
+  position: relative;
 }
 
 .popularity-text {
   padding-bottom: 0.3em;
+  color: #ffd700;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  font-size: 1.1rem;
 }
 
 h2 {
   padding: 0;
   margin: 0;
   max-width: 15em;
-  font-size: 2rem;
+  font-size: 2.5rem;
+  background: linear-gradient(45deg, #ff0000, #ff4500);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  font-weight: bold;
 }
 
-p {
-  padding: 0;
-  margin: 0;
+.movie-meta {
+  color: #e5e5e5;
+  font-size: 1.2rem;
+  margin: 0.2em 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.movie-overview {
+  color: #f0f0f0;
+  line-height: 1.6;
+  font-size: 1.1rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   max-width: 30em;
-  font-size: 1.3rem;
 }
 
 .genre {
   padding-top: 1em;
+  color: #ff0000;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.genre-chip {
+  border: 2px solid #ff0000;
+  transition: all 0.3s ease;
+}
+
+.genre-chip:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(255, 0, 0, 0.3);
 }
 
 .movie-banner {
@@ -492,28 +553,133 @@ p {
   position: absolute;
   left: 0;
   z-index: 0;
-  opacity: 0.8;
+  opacity: 0.7;
+  filter: brightness(0.8);
+  transition: filter 0.3s ease;
 }
 
 .movie-poster {
   width: 15em;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-@media (max-width: 50em) {
-  section:nth-child(2) {
-    flex-direction: column;
-    padding: 0 1em;
-    /* text-align: ; */
-  }
-
-  h2 {
-    font-size: 1.7rem;
-  }
-
-  p {
-    font-size: 1.2rem;
-  }
+.movie-poster:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 40px rgba(255, 0, 0, 0.4);
 }
+
+.watchlist-btn {
+  border-radius: 25px;
+  padding: 0 2rem;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  text-transform: none;
+}
+
+.watchlist-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 0, 0, 0.4);
+}
+
+.watchlist-btn.remove {
+  border: 2px solid #ff0000;
+}
+
+.watchlist-btn.remove:hover {
+  background-color: #ff0000;
+  color: white !important;
+}
+
+.tabs-container {
+  margin: 2rem 0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.movie-tabs .v-tab {
+  font-weight: bold;
+  text-transform: none;
+  transition: color 0.3s ease;
+}
+
+.movie-tabs .v-tab--active {
+  color: #ff0000 !important;
+}
+
+.embed-iframe {
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  transition: transform 0.3s ease;
+}
+
+.watch-btn {
+  border-radius: 25px;
+  padding: 1rem 3rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  text-transform: none;
+}
+
+.watch-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(255, 0, 0, 0.5);
+}
+
+.similar-section {
+  margin: 3rem 0;
+  padding: 2rem;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.8),
+    rgba(0, 0, 0, 0.9)
+  );
+  border-radius: 16px;
+}
+
+.similar-sheet {
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+.similar-item {
+  transition: transform 0.3s ease;
+}
+
+.similar-card {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.similar-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 12px 40px rgba(255, 0, 0, 0.3);
+}
+
+.similar-poster {
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+}
+
+.similar-poster:hover {
+  transform: scale(1.1);
+}
+
+.similar-title {
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .movie-grid {
   display: grid;
   grid-template-columns: auto auto auto auto auto;
@@ -523,5 +689,39 @@ p {
 .grid-item {
   padding: 20px;
   text-align: center;
+}
+
+@media (max-width: 50em) {
+  section:nth-child(2) {
+    flex-direction: column;
+    padding: 0 1em;
+  }
+
+  h2 {
+    font-size: 2rem;
+  }
+
+  .movie-overview {
+    font-size: 1rem;
+  }
+
+  .movie-poster {
+    width: 12em;
+  }
+
+  .embed-iframe,
+  .watch-btn {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .similar-section {
+    padding: 1rem;
+  }
+
+  .similar-sheet {
+    justify-content: center;
+    gap: 1rem;
+  }
 }
 </style>
