@@ -37,6 +37,9 @@
     <h2 class="page-title" v-if="searchTerm">
       Search Results for "{{ searchTerm }}"
     </h2>
+    <h2 class="page-title" v-else>
+      {{ isSerie ? "Popular Series" : "Popular Movies" }}
+    </h2>
     <div class="autocomplete-chips">
       <v-chip
         @click="searchFromChip(item)"
@@ -97,15 +100,8 @@
         </v-card>
       </v-col>
     </v-row>
-    <div class="text-center">
-      <v-pagination
-        v-if="noOfPages"
-        :length="noOfPages"
-        color="#f44336"
-        v-model="page"
-        @input="updatePagination"
-        class="pagination"
-      ></v-pagination>
+    <div ref="sentinel" class="sentinel pa-4 text-center">
+      <v-progress-circular v-if="loading" indeterminate color="red" />
     </div>
   </div>
 </template>
@@ -118,6 +114,8 @@ export default {
       showEmbed: false,
       page: 1,
       isSerie: false,
+      isCategoryMode: false,
+      loading: false,
       autocompleteItems: [],
       embedLink: "",
       selectedCategory: "",
@@ -126,13 +124,21 @@ export default {
       noOfPages: 0,
       searchTerm: "", // Search term passed to this page
       searchResults: [], // List of movies received from the search
+      observer: null,
     };
+  },
+  watch: {
+    isSerie(newVal) {
+      this.search(1);
+    },
   },
   methods: {
     saveFilters() {
       const filters = {
         isSerie: this.isSerie,
         searchTerm: this.searchTerm,
+        selectedCategory: this.selectedCategory,
+        isCategoryMode: this.isCategoryMode,
       };
 
       localStorage.setItem("searchFilters", JSON.stringify(filters));
@@ -147,6 +153,12 @@ export default {
       }
       if (filtersFromLocalStorage.hasOwnProperty("searchTerm")) {
         this.searchTerm = filtersFromLocalStorage.searchTerm;
+      }
+      if (filtersFromLocalStorage.hasOwnProperty("selectedCategory")) {
+        this.selectedCategory = filtersFromLocalStorage.selectedCategory;
+      }
+      if (filtersFromLocalStorage.hasOwnProperty("isCategoryMode")) {
+        this.isCategoryMode = filtersFromLocalStorage.isCategoryMode;
       }
     },
     addToWatchlist(movie) {
@@ -179,12 +191,16 @@ export default {
         JSON.stringify(watchlistFromLocalStorage)
       );
     },
-    searchFromChip(item) {
+    async searchFromChip(item) {
       this.searchTerm = item.name;
-      const url =
-        "https://api.themoviedb.org/3/keyword/" +
-        item.id +
-        "/movies?include_adult=false&language=en-US&page=1";
+      this.isCategoryMode = false;
+      const page = 1;
+      if (page === 1) {
+        this.searchResults = [];
+        this.page = 1;
+      }
+      const endpoint = this.isSerie ? "tv" : "movie";
+      const url = `https://api.themoviedb.org/3/discover/${endpoint}?include_adult=false&language=en-US&page=${page}&sort_by=popularity.desc&with_keywords=${item.id}`;
       const options = {
         method: "GET",
         headers: {
@@ -194,17 +210,16 @@ export default {
         },
       };
 
-      fetch(url, options)
-        .then((res) => res.json())
-        .then((json) => {
-          this.noOfPages = json.total_pages;
-          if (this.noOfPages > 100) {
-            this.noOfPages = 50;
-          }
-          this.searchResults = json.results;
-        })
-        .catch((err) => console.error("error:" + err));
+      try {
+        const res = await fetch(url, options);
+        const json = await res.json();
+        this.noOfPages = Math.min(json.total_pages || 0, 50);
+        this.searchResults = json.results || [];
+      } catch (err) {
+        console.error("error:" + err);
+      }
       this.autocomplete();
+      this.saveFilters();
     },
     autocomplete() {
       const url =
@@ -237,69 +252,50 @@ export default {
         this.$router.push({ name: "info", query: { id: id } });
       }
     },
-    searchPerCategory(selectedCategory, pagination) {
+    async searchPerCategory(selectedCategory, pagination) {
       if (!pagination) {
         pagination = 1;
       }
+      const isNew = pagination === 1;
+      if (isNew) {
+        this.searchResults = [];
+      }
+      let url;
       if (this.isSerie) {
-        const url =
+        url =
           "https://api.themoviedb.org/3/discover/tv?include_adult=false&include_video=false&language=en-US&page=" +
           pagination +
           "&sort_by=popularity.desc&with_genres=" +
           selectedCategory;
-        const options = {
-          method: "GET",
-          headers: {
-            accept: "application/json",
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-          },
-        };
-
-        fetch(url, options)
-          .then((res) => res.json())
-          .then((json) => {
-            this.noOfPages = json.total_pages;
-            if (this.noOfPages > 100) {
-              this.noOfPages = 50;
-            }
-            this.searchResults = json.results;
-          })
-          .catch((err) => console.error("error:" + err));
       } else {
-        const url =
+        url =
           "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=" +
           pagination +
           "&sort_by=popularity.desc&with_genres=" +
           selectedCategory;
-        const options = {
-          method: "GET",
-          headers: {
-            accept: "application/json",
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-          },
-        };
+      }
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+        },
+      };
 
-        fetch(url, options)
-          .then((res) => res.json())
-          .then((json) => {
-            this.noOfPages = json.total_pages;
-            if (this.noOfPages > 100) {
-              this.noOfPages = 50;
-            }
-            this.searchResults = json.results;
-          })
-          .catch((err) => console.error("error:" + err));
+      try {
+        const res = await fetch(url, options);
+        const json = await res.json();
+        this.noOfPages = Math.min(json.total_pages || 0, 50);
+        if (isNew) {
+          this.searchResults = json.results || [];
+        } else {
+          this.searchResults.push(...(json.results || []));
+        }
+      } catch (err) {
+        console.error("error:" + err);
       }
-    },
-    updatePagination(pagination) {
-      if (this.searchTerm) {
-        this.search(pagination);
-      } else {
-        this.searchPerCategory(this.selectedCategory, pagination);
-      }
-      window.scrollTo(0, 0);
+      this.saveFilters();
     },
     seeMovie(link) {
       if (this.isSerie) {
@@ -311,74 +307,64 @@ export default {
       }
     },
     async search(page) {
-      this.searchResults = [];
-      if (this.isSerie) {
-        try {
-          const url =
+      const isNew = page === 1;
+      if (isNew) {
+        this.searchResults = [];
+      }
+      if (this.searchTerm) {
+        let url;
+        if (this.isSerie) {
+          url =
             "https://api.themoviedb.org/3/search/tv?query=" +
             this.searchTerm +
             "&include_adult=false&language=en-US&page=" +
             page;
-          const options = {
-            method: "GET",
-            headers: {
-              accept: "application/json",
-              Authorization:
-                "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-            },
-          };
-
-          await fetch(url, options)
-            .then((res) => res.json())
-            .then((json) => {
-              this.noOfPages = json.total_pages;
-              if (this.noOfPages > 100) {
-                this.noOfPages = 50;
-              }
-              this.searchResults = json.results;
-            })
-            .catch((err) => console.error("error:" + err));
-          // Adjust this based on your API response structure
-        } catch (error) {
-          alert("Error fetching search results:", error);
-        }
-      } else {
-        try {
-          const url =
+        } else {
+          url =
             "https://api.themoviedb.org/3/search/movie?query=" +
             this.searchTerm +
             "&include_adult=false&language=en-US&page=" +
             page;
-          const options = {
-            method: "GET",
-            headers: {
-              accept: "application/json",
-              Authorization:
-                "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-            },
-          };
+        }
+        const options = {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+            Authorization:
+              "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+          },
+        };
 
-          await fetch(url, options)
-            .then((res) => res.json())
-            .then((json) => {
-              this.noOfPages = json.total_pages;
-              if (this.noOfPages > 100) {
-                this.noOfPages = 50;
-              }
-              this.searchResults = json.results;
-            })
-            .catch((err) => console.error("error:" + err));
-          // Adjust this based on your API response structure
+        try {
+          const res = await fetch(url, options);
+          const json = await res.json();
+          this.noOfPages = Math.min(json.total_pages || 0, 50);
+          if (isNew) {
+            this.searchResults = json.results || [];
+          } else {
+            this.searchResults.push(...(json.results || []));
+          }
         } catch (error) {
+          console.error("error:" + error);
           alert("Error fetching search results:", error);
         }
+        this.autocomplete();
+        this.saveFilters();
+      } else {
+        const cat =
+          this.isCategoryMode && this.selectedCategory
+            ? this.selectedCategory
+            : "";
+        await this.searchPerCategory(cat, page);
       }
-      this.autocomplete();
-      this.saveFilters();
     },
-    getPopularMovies() {
-      const url =
-        "https://api.themoviedb.org/3/movie/popular?language=en-US&page=1";
+    async getPopular(page) {
+      const isNew = page === 1;
+      if (isNew) {
+        this.searchResults = [];
+      }
+      const endpoint = this.isSerie ? "tv" : "movie";
+      const url = `https://api.themoviedb.org/3/${endpoint}/popular?language=en-US&page=${page}`;
       const options = {
         method: "GET",
         headers: {
@@ -388,16 +374,55 @@ export default {
         },
       };
 
-      fetch(url, options)
-        .then((res) => res.json())
-        .then((json) => {
-          this.noOfPages = json.total_pages;
-          if (this.noOfPages > 100) {
-            this.noOfPages = 50;
-          }
-          this.searchResults = json.results;
+      try {
+        const res = await fetch(url, options);
+        const json = await res.json();
+        this.noOfPages = Math.min(json.total_pages || 0, 50);
+        if (isNew) {
+          this.searchResults = json.results || [];
+        } else {
+          this.searchResults.push(...(json.results || []));
+        }
+      } catch (err) {
+        console.error("error:" + err);
+      }
+      this.saveFilters();
+    },
+    loadNextPage() {
+      this.loading = true;
+      this.page++;
+      let promise;
+      if (this.searchTerm) {
+        promise = this.search(this.page);
+      } else if (this.isCategoryMode && this.selectedCategory) {
+        promise = this.searchPerCategory(this.selectedCategory, this.page);
+      } else {
+        promise = this.getPopular(this.page);
+      }
+      promise
+        .then(() => {
+          this.loading = false;
         })
-        .catch((err) => console.error("error:" + err));
+        .catch((err) => {
+          console.error(err);
+          this.loading = false;
+          this.page--;
+        });
+    },
+    setupInfiniteScroll() {
+      this.observer = new IntersectionObserver(
+        (entries) => {
+          const target = entries[0];
+          if (
+            target.isIntersecting &&
+            this.page < this.noOfPages &&
+            !this.loading
+          ) {
+            this.loadNextPage();
+          }
+        },
+        { threshold: 0 }
+      );
     },
     getSeriesCategories() {
       const url = "https://api.themoviedb.org/3/genre/tv/list?language=en";
@@ -431,25 +456,32 @@ export default {
         .then((json) => (this.categories = json.genres))
         .catch((err) => console.error("error:" + err));
     },
-    initializeFunction() {
-      this.getPopularMovies();
-      if (screen.width < 450) {
-        this.marginFromTop = "margin-top: 0px";
-      }
-      this.getCategories();
-      this.getSeriesCategories();
-      this.loadFilters();
-    },
   },
   created() {
-    if (
-      localStorage.getItem("searchFilters") &&
-      localStorage.getItem("searchFilters").length > 0
-    ) {
-      this.loadFilters();
-      this.search(1);
+    this.loadFilters();
+    this.getCategories();
+    this.getSeriesCategories();
+    if (screen.width < 450) {
+      this.marginFromTop = "margin-top: 0px";
+    }
+    const initialPage = 1;
+    if (this.isCategoryMode) {
+      this.searchPerCategory(this.selectedCategory, initialPage);
     } else {
-      this.initializeFunction();
+      this.search(initialPage);
+    }
+  },
+  mounted() {
+    this.$nextTick(() => {
+      this.setupInfiniteScroll();
+      if (this.$refs.sentinel) {
+        this.observer.observe(this.$refs.sentinel);
+      }
+    });
+  },
+  beforeDestroy() {
+    if (this.observer) {
+      this.observer.disconnect();
     }
   },
 };
@@ -605,23 +637,9 @@ export default {
   height: 100%;
   width: 100%;
 }
-.pagination .v-pagination {
-  width: 100%; /* Allow the pagination container to adjust according to the screen size */
-  display: flex;
-  justify-content: center; /* Center the pagination component */
-  padding: 0;
-  margin: 0;
-}
-.v-pagination {
-  flex-wrap: wrap !important; /* Allow the buttons to wrap onto multiple lines if necessary */
-}
-.v-pagination__item {
-  color: #ff0000 !important;
-  transition: color 0.3s ease !important;
-}
-.v-pagination__item--active {
-  background-color: #ff0000 !important;
-  color: white !important;
+
+.sentinel {
+  min-height: 20px;
 }
 
 @media (max-width: 959px) {
