@@ -19,9 +19,19 @@
           <span class="text-body-2 text-sm-body-1 font-weight-medium">
             {{ new Date(topMovie.release_date).getFullYear() }}
           </span>
-          <v-chip small outlined class="ml-3 text-caption text-sm-body-2">
+          <v-chip
+            small
+            color="red"
+            outlined
+            class="mx-3 text-caption text-sm-body-2"
+          >
             {{ topMovie.vote_average }} / 10
           </v-chip>
+          <div v-for="genre in topMovie.genres" :key="genre.id">
+            <v-chip color="red" class="mx-1 genre-chip">{{
+              genre.name
+            }}</v-chip>
+          </div>
         </div>
 
         <!-- Synopsis - Responsive max-width and now visible on small screens with line-clamping -->
@@ -50,9 +60,8 @@
             class="white--text rounded-md font-weight-bold px-4 px-sm-8"
             @click="handleMovieClick(topMovie.id)"
           >
-            <!-- Note: The white button needs the text/icon to be black/red to show contrast -->
             <v-icon left color="red">mdi-information-outline</v-icon>
-            <span class="hidden-sm-and-down" style="color: red">More Info</span>
+            <span style="color: red">More Info</span>
           </v-btn>
           <!-- Add to Watchlist -->
           <v-btn
@@ -157,6 +166,7 @@ export default {
     this.initializeWatchlist();
     await this.getTopMovie("movie");
     await this.initialize();
+    localStorage.removeItem("searchFilters");
   },
 
   methods: {
@@ -294,9 +304,11 @@ export default {
         const detailsUrl = `${baseUrl}/movie/${this.topMovie.id}?language=en-US`;
         const detailsResponse = await fetch(detailsUrl, this.getApiOptions());
         const detailsData = await detailsResponse.json();
+        console.log(detailsData);
 
         if (detailsData.imdb_id) {
           this.$set(this.topMovie, "imdb_id", detailsData.imdb_id); // Reactive update
+          this.$set(this.topMovie, "genres", detailsData.genres); // Reactive update
         }
       } catch (error) {
         console.error("Error fetching top movie:", error);
