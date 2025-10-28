@@ -1,24 +1,39 @@
 <template>
   <div>
-    <section v-if="movie">
+    <section v-if="movie" style="height: 100vh">
       <v-img
         :src="'https://image.tmdb.org/t/p/original' + movie.poster_path"
         alt="Movie Poster"
         class="movie-banner"
       />
-      <div style="z-index: 1">
+      <div style="z-index: 1; padding-top: 5em">
         <v-row>
           <v-col v-if="!isMobile">
             <figure>
-              <v-row style="justify-content: center">
+              <v-row
+                style="
+                  justify-content: center;
+                  align-content: center;
+                  display: flex;
+                  margin-top: 20vh;
+                "
+              >
                 <v-img
+                  max-width="250"
                   style="display: flex; justify-content: center"
                   :src="`https://image.tmdb.org/t/p/w500/${movie.poster_path}`"
                   alt="Poster Image"
                   class="movie-poster"
                 />
               </v-row>
-              <v-row style="justify-content: center">
+              <v-row
+                style="
+                  justify-content: center;
+                  position: relative;
+                  z-index: 2;
+                  padding-top: 1em;
+                "
+              >
                 <v-btn
                   v-if="!isAdded"
                   @click="addToWatchlist(movie)"
@@ -41,47 +56,53 @@
               </v-row>
             </figure>
           </v-col>
-          <v-col>
-            <p class="popularity-text">
-              ⭐ Rating: {{ movie.vote_average }} out of
-              {{ movie.vote_count }} votes on IMDB
-            </p>
-            <h2 class="movie-title">{{ movie.title }}</h2>
-            <h3 class="movie-meta">{{ movie.release_date }}</h3>
-            <h3 class="movie-meta">{{ movie.runtime }} mins</h3>
-            <p class="movie-overview">{{ movie.overview }}</p>
-            <v-row style="justify-content: center" class="mt-3" v-if="isMobile">
-              <v-btn
-                v-if="!isAdded"
-                @click="addToWatchlist(movie)"
-                style="color: white"
-                color="red"
-                :disabled="isAdded"
-                class="watchlist-btn"
+          <v-col style="margin-top: 20vh">
+            <div style="position: relative; z-index: 2; padding-top: 5em">
+              <p class="popularity-text">
+                ⭐ Rating: {{ movie.vote_average }} out of
+                {{ movie.vote_count }} votes on IMDB
+              </p>
+              <h2 class="movie-title">{{ movie.title }}</h2>
+              <h3 class="movie-meta">{{ movie.release_date }}</h3>
+              <h3 class="movie-meta">{{ movie.runtime }} mins</h3>
+              <p class="movie-overview">{{ movie.overview }}</p>
+              <v-row
+                style="justify-content: center"
+                class="mt-3"
+                v-if="isMobile"
               >
-                Add to watchlist
-              </v-btn>
-              <v-btn
-                v-if="isAdded"
-                @click="removeFromWatchList(movie)"
-                style="color: red"
-                color="white"
-                class="watchlist-btn remove"
+                <v-btn
+                  v-if="!isAdded"
+                  @click="addToWatchlist(movie)"
+                  style="color: white"
+                  color="red"
+                  :disabled="isAdded"
+                  class="watchlist-btn"
+                >
+                  Add to watchlist
+                </v-btn>
+                <v-btn
+                  v-if="isAdded"
+                  @click="removeFromWatchList(movie)"
+                  style="color: red"
+                  color="white"
+                  class="watchlist-btn remove"
+                >
+                  Remove from watchlist
+                </v-btn>
+              </v-row>
+              <p class="genre">Genre:</p>
+              <div
+                class="in-row"
+                style="display: flex; flex-direction: row; flex-wrap: nowrap"
               >
-                Remove from watchlist
-              </v-btn>
-            </v-row>
-            <p class="genre">Genre:</p>
-            <div
-              class="in-row"
-              style="display: flex; flex-direction: row; flex-wrap: nowrap"
-            >
-              <div v-for="genre in movie.genres" :key="genre.id">
-                <p>
-                  <v-chip color="red" class="mx-1 genre-chip">{{
-                    genre.name
-                  }}</v-chip>
-                </p>
+                <div v-for="genre in movie.genres" :key="genre.id">
+                  <p>
+                    <v-chip color="red" class="mx-1 genre-chip">
+                      {{ genre.name }}
+                    </v-chip>
+                  </p>
+                </div>
               </div>
             </div>
           </v-col>
@@ -460,19 +481,11 @@ section:first-child::after {
   position: absolute;
   bottom: 0;
   left: 0;
-  height: 0;
-  padding-bottom: calc(33.5% - 92px + 30px);
   width: 100%;
-  background-image: linear-gradient(
-    transparent,
-    rgba(25, 26, 26, 0.3) 5%,
-    rgba(25, 26, 26, 0.5) 15%,
-    rgba(25, 26, 26, 0.7) 30%,
-    rgba(25, 26, 26, 0.9) 70%,
-    #000000
-  );
-  z-index: -1;
-  animation: gradientShift 10s ease-in-out infinite alternate;
+  height: 50%;
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.8));
+  z-index: 1;
+  pointer-events: none;
 }
 
 @keyframes gradientShift {
@@ -496,7 +509,7 @@ section:nth-child(2) {
   padding-bottom: 0.3em;
   color: #ffd700;
   font-weight: bold;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  text-shadow: none; /* Make text flat */
   font-size: 1.1rem;
 }
 
@@ -505,11 +518,8 @@ h2 {
   margin: 0;
   max-width: 15em;
   font-size: 2.5rem;
-  background: linear-gradient(45deg, #ff0000, #ff4500);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  color: white;
+
   font-weight: bold;
 }
 
@@ -517,14 +527,12 @@ h2 {
   color: #e5e5e5;
   font-size: 1.2rem;
   margin: 0.2em 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .movie-overview {
   color: #f0f0f0;
   line-height: 1.6;
   font-size: 1.1rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   max-width: 30em;
 }
 
@@ -674,7 +682,6 @@ h2 {
 
 .similar-title {
   font-weight: bold;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

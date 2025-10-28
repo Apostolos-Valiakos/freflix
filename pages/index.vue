@@ -27,12 +27,15 @@
           >
             {{ topMovie.vote_average }} / 10
           </v-chip>
-          <div v-for="genre in topMovie.genres" :key="genre.id">
-            <v-chip color="red" class="mx-1 genre-chip">{{
-              genre.name
-            }}</v-chip>
-          </div>
         </div>
+
+        <v-row class="my-2">
+          <div v-for="genre in topMovie.genres" :key="genre.id">
+            <v-chip color="red" class="mx-1 genre-chip">
+              {{ genre.name }}
+            </v-chip>
+          </div>
+        </v-row>
 
         <!-- Synopsis - Responsive max-width and now visible on small screens with line-clamping -->
         <p class="synopsis text-body-2 text-sm-body-1">
@@ -328,9 +331,9 @@ export default {
 .hero-section {
   height: 100vh;
   min-height: 500px; /* Ensure a minimum height even on very small devices */
-  justify-content: flex-start;
+  justify-content: flex-end;
   align-items: flex-start;
-  padding: 5em 2.5em; /* Desktop Padding */
+  padding: 8em 2.5em; /* Desktop Padding */
   display: flex;
   flex-direction: column;
   object-fit: cover;
@@ -387,7 +390,7 @@ h1 {
 @media (max-width: 600px) {
   .hero-section {
     /* More compact padding on mobile */
-    padding-top: 20px;
+    padding-top: 10px;
     padding-bottom: 20px;
     min-height: 70vh; /* Shorter hero section on mobile */
   }
