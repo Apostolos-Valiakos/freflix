@@ -1,6 +1,6 @@
 <template>
   <div @keyup.right="nextSlide" @keyup.left="prevSlide">
-    <v-card-title class="font-weight-bold pr-5 ma-0 title">
+    <v-card-title class="font-weight-bold pr-5 my-2 title">
       {{ titulo }}
     </v-card-title>
 
