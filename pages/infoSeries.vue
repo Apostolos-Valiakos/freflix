@@ -1,6 +1,6 @@
 <template>
   <div>
-    <section v-if="movie">
+    <section v-if="movie" style="height: 100vh">
       <v-img
         :src="'https://image.tmdb.org/t/p/original' + movie.poster_path"
         alt="Movie Poster"
@@ -10,8 +10,16 @@
         <v-row>
           <v-col v-if="!isMobile">
             <figure>
-              <v-row style="justify-content: center">
+              <v-row
+                style="
+                  justify-content: center;
+                  align-content: center;
+                  display: flex;
+                  margin-top: 20vh;
+                "
+              >
                 <v-img
+                  max-width="250"
                   style="display: flex; justify-content: center"
                   :src="`https://image.tmdb.org/t/p/w500/${movie.poster_path}`"
                   alt="Poster Image"
@@ -41,54 +49,58 @@
               </v-row>
             </figure>
           </v-col>
-          <v-col>
-            <p class="popularity-text">
-              ⭐ Rating: {{ movie.vote_average }} out of
-              {{ movie.vote_count }} votes on IMDB
-            </p>
-            <h2 class="movie-title">{{ movie.name }}</h2>
-            <h3 class="movie-meta">Last air date: {{ movie.last_air_date }}</h3>
-            <p class="movie-overview">{{ movie.overview }}</p>
-            <br />
-            <div class="my-3 text-center" v-if="isMobile">
-              <v-btn
-                v-if="!isAdded"
-                @click="addToWatchlist(movie)"
-                style="color: white"
-                color="red"
-                :disabled="isAdded"
-                class="watchlist-btn"
-              >
-                Add to watchlist
-              </v-btn>
-              <v-btn
-                v-if="isAdded"
-                @click="removeFromWatchList(movie)"
-                style="color: red"
-                color="white"
-                class="watchlist-btn remove"
-              >
-                Remove from watchlist
-              </v-btn>
-            </div>
-            <h3 class="episode-title">
-              Last Episode to air:
-              <v-chip color="red" class="episode-chip">
-                {{ movie.last_episode_to_air.name }}
-              </v-chip>
-            </h3>
-            <p class="genre">Genre:</p>
+          <v-col style="margin-top: 20vh">
+            <div style="position: relative; z-index: 2">
+              <p class="popularity-text">
+                ⭐ Rating: {{ movie.vote_average }} out of
+                {{ movie.vote_count }} votes on IMDB
+              </p>
+              <h2 class="movie-title">{{ movie.name }}</h2>
+              <h3 class="movie-meta">
+                Last air date: {{ movie.last_air_date }}
+              </h3>
+              <p class="movie-overview">{{ movie.overview }}</p>
+              <br />
+              <div class="my-3 text-center" v-if="isMobile">
+                <v-btn
+                  v-if="!isAdded"
+                  @click="addToWatchlist(movie)"
+                  style="color: white"
+                  color="red"
+                  :disabled="isAdded"
+                  class="watchlist-btn"
+                >
+                  Add to watchlist
+                </v-btn>
+                <v-btn
+                  v-if="isAdded"
+                  @click="removeFromWatchList(movie)"
+                  style="color: red"
+                  color="white"
+                  class="watchlist-btn remove"
+                >
+                  Remove from watchlist
+                </v-btn>
+              </div>
+              <h3 class="episode-title">
+                Last Episode to air:
+                <v-chip color="red" class="episode-chip">
+                  {{ movie.last_episode_to_air.name }}
+                </v-chip>
+              </h3>
+              <p class="genre">Genre:</p>
 
-            <div
-              class="in-row"
-              style="display: flex; flex-direction: row; flex-wrap: nowrap"
-            >
-              <div v-for="genre in movie.genres" :key="genre.id">
-                <p>
-                  <v-chip class="mx-1 genre-chip" color="red">
-                    {{ genre.name }}
-                  </v-chip>
-                </p>
+              <div
+                class="in-row"
+                style="display: flex; flex-direction: row; flex-wrap: nowrap"
+              >
+                <div v-for="genre in movie.genres" :key="genre.id">
+                  <p>
+                    <v-chip class="mx-1 genre-chip" color="red">
+                      {{ genre.name }}
+                    </v-chip>
+                  </p>
+                </div>
               </div>
             </div>
           </v-col>
