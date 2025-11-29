@@ -5,7 +5,7 @@
         <img
           src="~assets/Freflix-logo.png"
           class="logo mt-2"
-          alt="Netflix Logo"
+          alt="Freflix Logo"
         />
       </NuxtLink>
     </v-toolbar-title>
