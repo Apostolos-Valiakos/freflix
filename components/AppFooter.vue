@@ -1,6 +1,6 @@
 <template>
   <footer>
-    <p>&copy; Netflix Clone</p>
+    <p>&copy; Freflix</p>
   </footer>
 </template>
 <style scoped>
