@@ -88,7 +88,6 @@
       />
 
       <obras
-        class="mt-n3"
         v-if="newMovies"
         :obras="newMovies"
         titulo="Top Rated"
@@ -96,7 +95,6 @@
       />
 
       <obras
-        class="mt-n8"
         v-if="horrorItems"
         :obras="horrorItems"
         titulo="Horror"
@@ -104,7 +102,6 @@
       />
 
       <obras
-        class="mt-n8"
         v-if="fantasyItems"
         :obras="fantasyItems"
         titulo="Fantasy"
@@ -112,14 +109,12 @@
       />
 
       <obras
-        class="mt-n8"
         v-if="documentaryItems"
         :obras="documentaryItems"
         titulo="Documentary"
         type="movie"
       />
       <obras
-        class="mt-n8"
         v-if="animationItems"
         :obras="animationItems"
         titulo="Animation"

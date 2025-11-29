@@ -6,7 +6,7 @@
         alt="Movie Poster"
         class="movie-banner"
       />
-      <div style="z-index: 1; padding-top: 5em">
+      <div style="z-index: 1">
         <v-row>
           <v-col v-if="!isMobile">
             <figure>
@@ -57,7 +57,7 @@
             </figure>
           </v-col>
           <v-col style="margin-top: 20vh">
-            <div style="position: relative; z-index: 2; padding-top: 5em">
+            <div style="position: relative; z-index: 2">
               <p class="popularity-text">
                 ⭐ Rating: {{ movie.vote_average }} out of
                 {{ movie.vote_count }} votes on IMDB
