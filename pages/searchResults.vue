@@ -6,37 +6,28 @@
       >
         <v-text-field
           color="red"
-          class="ma-2 pa-2 search-field flex-grow-1"
+          class="ma-2 pa-4 search-field flex-grow-1"
           label="Search"
           v-model="searchTerm"
-          @change="search(1)"
+          @change="onTermChange"
           clearable
+          dense
         />
         <v-select
           color="red"
-          class="ma-2 pa-2 category-select"
-          v-if="categories || seriesCategories"
-          @change="searchPerCategory(selectedCategory, 1)"
+          class="ma-2 pa-4 category-select flex-grow-1"
+          v-if="categoryItems.length"
+          @change="onCategoryChange"
           :item-text="'name'"
-          :item-value="'id'"
+          :item-value="'name'"
           v-model="selectedCategory"
           label="Search by Category"
-          :items="isSerie ? seriesCategories : categories"
-          hide-details
+          :items="categoryItems"
+          dense
         />
-        <v-btn-toggle
-          v-model="isSerie"
-          class="ma-2 pa-2 type-toggle"
-          color="red"
-          mandatory
-          @change="search(1)"
-        >
-          <v-btn>Movies</v-btn>
-          <v-btn>Series</v-btn>
-        </v-btn-toggle>
       </div>
       <div class="search-actions d-flex justify-center mt-4">
-        <v-btn class="search-btn" @click="search(1)" color="red" large>
+        <v-btn class="search-btn" @click="onSearchClick" color="red" large>
           <v-icon left>mdi-magnify</v-icon>
           Search
         </v-btn>
@@ -47,13 +38,9 @@
       Search Results for "{{ searchTerm }}"
     </h2>
     <h2 class="page-title" v-else-if="selectedCategory">
-      {{ isSerie ? "Series in" : "Movies in" }} "{{
-        getCategoryName(selectedCategory)
-      }}"
+      Movies & Series in "{{ selectedCategory }}"
     </h2>
-    <h2 class="page-title" v-else>
-      {{ isSerie ? "Popular Series" : "Popular Movies" }}
-    </h2>
+    <h2 class="page-title" v-else>Popular Movies & Series</h2>
     <div class="autocomplete-chips">
       <v-chip
         @click="searchFromChip(item)"
@@ -76,7 +63,7 @@
       >
         <v-card class="mb-4 movie-card">
           <v-img
-            @click="seeInfo(movie.id)"
+            @click="seeInfo(movie)"
             :src="'https://image.tmdb.org/t/p//w500' + movie.backdrop_path"
             class="movie-image"
           />
@@ -86,17 +73,13 @@
               ({{ movie.first_air_date || movie.release_date }})
             </h5>
           </v-card-title>
-          <!-- Add more movie details or actions -->
           <v-card-subtitle class="movie-overview">
             {{ movie.overview }}
           </v-card-subtitle>
           <v-card-actions class="movie-actions">
-            <!-- <v-btn color="red" @click="seeMovie(movie.id)" style="color: white">
-              Play
-            </v-btn> -->
             <v-btn
               color="white"
-              @click="seeInfo(movie.id)"
+              @click="seeInfo(movie)"
               class="info-btn"
               style="color: red"
             >
@@ -127,8 +110,6 @@ export default {
       marginFromTop: "margin-top: 100px",
       showEmbed: false,
       page: 1,
-      isSerie: false,
-      isCategoryMode: false,
       loading: false,
       autocompleteItems: [],
       embedLink: "",
@@ -136,90 +117,61 @@ export default {
       categories: [],
       seriesCategories: [],
       noOfPages: 0,
-      searchTerm: "", // Search term passed to this page
-      searchResults: [], // List of movies received from the search
+      searchTerm: "",
+      searchResults: [],
       observer: null,
+      useKeywordSearch: false,
+      keywordId: "",
     };
   },
-  watch: {
-    isSerie(newVal) {
-      this.search(1);
+  computed: {
+    categoryItems() {
+      const names = new Set();
+      this.categories.forEach((c) => names.add(c.name));
+      this.seriesCategories.forEach((c) => names.add(c.name));
+      return Array.from(names).sort();
     },
   },
   methods: {
-    getCategoryName(id) {
-      const cats = this.isSerie ? this.seriesCategories : this.categories;
-      const cat = cats.find((c) => c.id === parseInt(id));
-      return cat ? cat.name : "";
+    onTermChange() {
+      this.selectedCategory = "";
+      this.useKeywordSearch = false;
+      this.keywordId = "";
+      this.search(1);
     },
-    saveFilters() {
-      const filters = {
-        isSerie: this.isSerie,
-        searchTerm: this.searchTerm,
-        selectedCategory: this.selectedCategory,
-        isCategoryMode: this.isCategoryMode,
-      };
-
-      localStorage.setItem("searchFilters", JSON.stringify(filters));
+    onCategoryChange() {
+      this.searchTerm = "";
+      this.useKeywordSearch = false;
+      this.keywordId = "";
+      this.searchPerCategory(this.selectedCategory, 1);
     },
-    loadFilters() {
-      const filtersFromLocalStorage = JSON.parse(
-        localStorage.getItem("searchFilters") || "{}"
-      );
-
-      if (filtersFromLocalStorage.hasOwnProperty("isSerie")) {
-        this.isSerie = filtersFromLocalStorage.isSerie;
-      }
-      if (filtersFromLocalStorage.hasOwnProperty("searchTerm")) {
-        this.searchTerm = filtersFromLocalStorage.searchTerm;
-      }
-      if (filtersFromLocalStorage.hasOwnProperty("selectedCategory")) {
-        this.selectedCategory = filtersFromLocalStorage.selectedCategory;
-      }
-      if (filtersFromLocalStorage.hasOwnProperty("isCategoryMode")) {
-        this.isCategoryMode = filtersFromLocalStorage.isCategoryMode;
-      }
+    onSearchClick() {
+      this.onTermChange();
     },
-    addToWatchlist(movie) {
-      if (this.isSerie) {
-        movie.isSerie = "tv";
-      } else {
-        movie.isSerie = "movie";
+    mergeResults(movieJson, tvJson) {
+      const results = [];
+      if (movieJson?.results) {
+        results.push(
+          ...movieJson.results.map((item) => ({ ...item, isSerie: "movie" }))
+        );
       }
-
-      var watchlistFromLocalStorage = JSON.parse(
-        localStorage.getItem("watchlist") || "[]"
-      );
-
-      // Find the index of the movie in the watchlist
-      var movieIndex = watchlistFromLocalStorage.findIndex(
-        (item) => item.id === movie.id && item.isSerie === movie.isSerie
-      );
-
-      if (movieIndex === -1) {
-        // If the movie doesn't exist, add it to the watchlist
-        watchlistFromLocalStorage.push(movie);
-      } else {
-        // If the movie exists, remove it from its current position and add to the first position
-        watchlistFromLocalStorage.splice(movieIndex, 1);
-        watchlistFromLocalStorage.unshift(movie);
+      if (tvJson?.results) {
+        results.push(
+          ...tvJson.results.map((item) => ({ ...item, isSerie: "tv" }))
+        );
       }
-
-      localStorage.setItem(
-        "watchlist",
-        JSON.stringify(watchlistFromLocalStorage)
-      );
+      return results.sort((a, b) => b.popularity - a.popularity);
     },
-    async searchFromChip(item) {
-      this.searchTerm = item.name;
-      this.isCategoryMode = false;
-      const page = 1;
-      if (page === 1) {
+    async search(page) {
+      this.useKeywordSearch = false;
+      this.keywordId = "";
+      const isNew = page === 1;
+      if (isNew) {
         this.searchResults = [];
-        this.page = 1;
       }
-      const endpoint = this.isSerie ? "tv" : "movie";
-      const url = `https://api.themoviedb.org/3/discover/${endpoint}?include_adult=false&language=en-US&page=${page}&sort_by=popularity.desc&with_keywords=${item.id}`;
+      const url = `https://api.themoviedb.org/3/search/multi?query=${encodeURIComponent(
+        this.searchTerm
+      )}&include_adult=false&language=en-US&page=${page}`;
       const options = {
         method: "GET",
         headers: {
@@ -233,14 +185,142 @@ export default {
         const res = await fetch(url, options);
         const json = await res.json();
         this.noOfPages = Math.min(json.total_pages || 0, 50);
-        this.searchResults = json.results || [];
-      } catch (err) {
-        console.error("error:" + err);
+        let results = (json.results || [])
+          .filter((r) => r.media_type !== "person")
+          .map((r) => ({
+            ...r,
+            isSerie: r.media_type === "tv" ? "tv" : "movie",
+          }));
+        if (isNew) {
+          this.searchResults = results;
+        } else {
+          this.searchResults.push(...results);
+        }
+      } catch (error) {
+        console.error("error:" + error);
+        alert("Error fetching search results:", error);
       }
       this.autocomplete();
       this.saveFilters();
     },
+    async searchByKeyword(keywordId, page) {
+      const isNew = page === 1;
+      if (isNew) {
+        this.searchResults = [];
+      }
+      const baseOptions = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+        },
+      };
+      const movieUrl = `https://api.themoviedb.org/3/discover/movie?include_adult=false&language=en-US&page=${page}&sort_by=popularity.desc&with_keywords=${keywordId}`;
+      const tvUrl = `https://api.themoviedb.org/3/discover/tv?include_adult=false&include_video=false&language=en-US&page=${page}&sort_by=popularity.desc&with_keywords=${keywordId}`;
+      const [movieRes, tvRes] = await Promise.all([
+        fetch(movieUrl, baseOptions),
+        fetch(tvUrl, baseOptions),
+      ]);
+      const [movieJson, tvJson] = await Promise.all([
+        movieRes.json(),
+        tvRes.json(),
+      ]);
+      const merged = this.mergeResults(movieJson, tvJson);
+      this.noOfPages = Math.max(
+        movieJson.total_pages || 0,
+        tvJson.total_pages || 0
+      );
+      if (isNew) {
+        this.searchResults = merged;
+      } else {
+        this.searchResults.push(...merged);
+      }
+      this.autocomplete();
+      this.saveFilters();
+    },
+    async searchPerCategory(genreName, page) {
+      this.useKeywordSearch = false;
+      this.keywordId = "";
+      const isNew = page === 1;
+      if (isNew) {
+        this.searchResults = [];
+      }
+      const baseUrl = `https://api.themoviedb.org/3/discover`;
+      const baseParams = `include_adult=false&include_video=false&language=en-US&page=${page}&sort_by=popularity.desc`;
+      const baseOptions = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+        },
+      };
+      let movieJson = null;
+      let tvJson = null;
+      if (genreName === "") {
+        // Popular (no genre)
+        const [movieRes, tvRes] = await Promise.all([
+          fetch(`${baseUrl}/movie?${baseParams}`, baseOptions),
+          fetch(`${baseUrl}/tv?${baseParams}`, baseOptions),
+        ]);
+        movieJson = await movieRes.json();
+        tvJson = await tvRes.json();
+      } else {
+        const movieGenreId = this.categories.find(
+          (c) => c.name === genreName
+        )?.id;
+        const tvGenreId = this.seriesCategories.find(
+          (c) => c.name === genreName
+        )?.id;
+        const moviePromises = [];
+        const tvPromises = [];
+        if (movieGenreId !== undefined) {
+          moviePromises.push(
+            fetch(
+              `${baseUrl}/movie?${baseParams}&with_genres=${movieGenreId}`,
+              baseOptions
+            ).then((res) => res.json())
+          );
+        }
+        if (tvGenreId !== undefined) {
+          tvPromises.push(
+            fetch(
+              `${baseUrl}/tv?${baseParams}&with_genres=${tvGenreId}`,
+              baseOptions
+            ).then((res) => res.json())
+          );
+        }
+        if (moviePromises.length) {
+          movieJson = await moviePromises[0];
+        }
+        if (tvPromises.length) {
+          tvJson = await tvPromises[0];
+        }
+      }
+      const merged = this.mergeResults(movieJson, tvJson);
+      this.noOfPages = Math.max(
+        movieJson?.total_pages || 0,
+        tvJson?.total_pages || 0
+      );
+      if (isNew) {
+        this.searchResults = merged;
+      } else {
+        this.searchResults.push(...merged);
+      }
+      this.saveFilters();
+    },
+    async searchFromChip(item) {
+      this.searchTerm = item.name;
+      this.selectedCategory = "";
+      this.keywordId = item.id;
+      this.useKeywordSearch = true;
+      await this.searchByKeyword(item.id, 1);
+      this.autocomplete();
+      this.saveFilters();
+    },
     autocomplete() {
+      if (!this.searchTerm) return;
       const url =
         "https://api.themoviedb.org/3/search/keyword?query=" +
         this.searchTerm +
@@ -261,60 +341,37 @@ export default {
         })
         .catch((err) => console.error("error:" + err));
     },
-    seeInfo(id) {
-      if (this.isSerie) {
+    seeInfo(movie) {
+      if (movie.isSerie === "tv") {
         this.$router.push({
           name: "infoSeries",
-          query: { id: id },
+          query: { id: movie.id },
         });
       } else {
-        this.$router.push({ name: "info", query: { id: id } });
+        this.$router.push({ name: "info", query: { id: movie.id } });
       }
     },
-    async searchPerCategory(selectedCategory, pagination) {
-      if (!pagination) {
-        pagination = 1;
-      }
-      const isNew = pagination === 1;
-      if (isNew) {
-        this.searchResults = [];
-      }
-      let url;
-      if (this.isSerie) {
-        url =
-          "https://api.themoviedb.org/3/discover/tv?include_adult=false&include_video=false&language=en-US&page=" +
-          pagination +
-          "&sort_by=popularity.desc&with_genres=" +
-          selectedCategory;
-      } else {
-        url =
-          "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=" +
-          pagination +
-          "&sort_by=popularity.desc&with_genres=" +
-          selectedCategory;
-      }
-      const options = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-        },
-      };
+    addToWatchlist(movie) {
+      // isSerie already set during fetch
+      var watchlistFromLocalStorage = JSON.parse(
+        localStorage.getItem("watchlist") || "[]"
+      );
 
-      try {
-        const res = await fetch(url, options);
-        const json = await res.json();
-        this.noOfPages = Math.min(json.total_pages || 0, 50);
-        if (isNew) {
-          this.searchResults = json.results || [];
-        } else {
-          this.searchResults.push(...(json.results || []));
-        }
-      } catch (err) {
-        console.error("error:" + err);
+      var movieIndex = watchlistFromLocalStorage.findIndex(
+        (item) => item.id === movie.id && item.isSerie === movie.isSerie
+      );
+
+      if (movieIndex === -1) {
+        watchlistFromLocalStorage.push(movie);
+      } else {
+        watchlistFromLocalStorage.splice(movieIndex, 1);
+        watchlistFromLocalStorage.unshift(movie);
       }
-      this.saveFilters();
+
+      localStorage.setItem(
+        "watchlist",
+        JSON.stringify(watchlistFromLocalStorage)
+      );
     },
     seeMovie(link) {
       if (this.isSerie) {
@@ -322,101 +379,23 @@ export default {
           "https://multiembed.mov/?video_id=" + link + "&tmdb=1&s=1&e=1";
       } else {
         location.href = "https://multiembed.mov/?video_id=" + link + "&tmdb=1";
-        // this.$router.push({ name: "watch", query: { id: link } });
       }
-    },
-    async search(page) {
-      const isNew = page === 1;
-      if (isNew) {
-        this.searchResults = [];
-      }
-      if (this.searchTerm) {
-        let url;
-        if (this.isSerie) {
-          url =
-            "https://api.themoviedb.org/3/search/tv?query=" +
-            this.searchTerm +
-            "&include_adult=false&language=en-US&page=" +
-            page;
-        } else {
-          url =
-            "https://api.themoviedb.org/3/search/movie?query=" +
-            this.searchTerm +
-            "&include_adult=false&language=en-US&page=" +
-            page;
-        }
-        const options = {
-          method: "GET",
-          headers: {
-            accept: "application/json",
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-          },
-        };
-
-        try {
-          const res = await fetch(url, options);
-          const json = await res.json();
-          this.noOfPages = Math.min(json.total_pages || 0, 50);
-          if (isNew) {
-            this.searchResults = json.results || [];
-          } else {
-            this.searchResults.push(...(json.results || []));
-          }
-        } catch (error) {
-          console.error("error:" + error);
-          alert("Error fetching search results:", error);
-        }
-        this.autocomplete();
-        this.saveFilters();
-      } else {
-        const cat =
-          this.isCategoryMode && this.selectedCategory
-            ? this.selectedCategory
-            : "";
-        await this.searchPerCategory(cat, page);
-      }
-    },
-    async getPopular(page) {
-      const isNew = page === 1;
-      if (isNew) {
-        this.searchResults = [];
-      }
-      const endpoint = this.isSerie ? "tv" : "movie";
-      const url = `https://api.themoviedb.org/3/${endpoint}/popular?language=en-US&page=${page}`;
-      const options = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-        },
-      };
-
-      try {
-        const res = await fetch(url, options);
-        const json = await res.json();
-        this.noOfPages = Math.min(json.total_pages || 0, 50);
-        if (isNew) {
-          this.searchResults = json.results || [];
-        } else {
-          this.searchResults.push(...(json.results || []));
-        }
-      } catch (err) {
-        console.error("error:" + err);
-      }
-      this.saveFilters();
     },
     loadNextPage() {
       this.loading = true;
       this.page++;
       let promise;
       if (this.searchTerm) {
-        promise = this.search(this.page);
-      } else if (this.isCategoryMode && this.selectedCategory) {
-        promise = this.searchPerCategory(this.selectedCategory, this.page);
+        if (this.useKeywordSearch) {
+          promise = this.searchByKeyword(this.keywordId, this.page);
+        } else {
+          promise = this.search(this.page);
+        }
       } else {
-        promise = this.getPopular(this.page);
+        promise = this.searchPerCategory(
+          this.selectedCategory || "",
+          this.page
+        );
       }
       promise
         .then(() => {
@@ -475,8 +454,34 @@ export default {
         .then((json) => (this.categories = json.genres))
         .catch((err) => console.error("error:" + err));
     },
+    saveFilters() {
+      const filters = {
+        searchTerm: this.searchTerm,
+        selectedCategory: this.selectedCategory,
+        useKeywordSearch: this.useKeywordSearch,
+        keywordId: this.keywordId,
+      };
+      localStorage.setItem("searchFilters", JSON.stringify(filters));
+    },
+    loadFilters() {
+      const filtersFromLocalStorage = JSON.parse(
+        localStorage.getItem("searchFilters") || "{}"
+      );
+      if (filtersFromLocalStorage.hasOwnProperty("searchTerm")) {
+        this.searchTerm = filtersFromLocalStorage.searchTerm;
+      }
+      if (filtersFromLocalStorage.hasOwnProperty("selectedCategory")) {
+        this.selectedCategory = filtersFromLocalStorage.selectedCategory;
+      }
+      if (filtersFromLocalStorage.hasOwnProperty("useKeywordSearch")) {
+        this.useKeywordSearch = filtersFromLocalStorage.useKeywordSearch;
+      }
+      if (filtersFromLocalStorage.hasOwnProperty("keywordId")) {
+        this.keywordId = filtersFromLocalStorage.keywordId;
+      }
+    },
   },
-  created() {
+  async created() {
     this.loadFilters();
     this.getCategories();
     this.getSeriesCategories();
@@ -484,10 +489,14 @@ export default {
       this.marginFromTop = "margin-top: 0px";
     }
     const initialPage = 1;
-    if (this.isCategoryMode) {
-      this.searchPerCategory(this.selectedCategory, initialPage);
+    if (this.useKeywordSearch && this.keywordId) {
+      await this.searchByKeyword(this.keywordId, initialPage);
+    } else if (this.searchTerm) {
+      await this.search(initialPage);
+    } else if (this.selectedCategory) {
+      await this.searchPerCategory(this.selectedCategory, initialPage);
     } else {
-      this.search(initialPage);
+      await this.searchPerCategory("", initialPage);
     }
   },
   mounted() {
@@ -505,7 +514,6 @@ export default {
   },
 };
 </script>
-
 <style>
 /* Add custom styles for the search results page */
 .page-title {
@@ -547,16 +555,19 @@ export default {
   color: #f0f0f0 !important;
 }
 
-.type-toggle .v-btn {
-  border-radius: 8px !important;
-  margin: 0 2px !important;
-  text-transform: none !important;
-  font-weight: 500 !important;
+.search-field ::v-deep .v-input__slot {
+  background-color: #1a1a1a !important;
+  border-radius: 12px !important;
+  color: #f0f0f0 !important;
 }
 
-.type-toggle .v-btn--active {
-  background-color: #ff0000 !important;
+.search-field ::v-deep .v-list-item {
+  background-color: #2a2a2a !important;
   color: white !important;
+}
+
+.search-field ::v-deep .v-list-item:hover {
+  background-color: #ff0000 !important;
 }
 
 .search-actions {
@@ -696,11 +707,6 @@ export default {
   .category-select {
     width: 100% !important;
     max-width: none !important;
-  }
-
-  .type-toggle {
-    justify-content: center !important;
-    width: 100% !important;
   }
 
   .results-grid {
