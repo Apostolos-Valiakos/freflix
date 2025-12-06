@@ -157,7 +157,7 @@ export default {
     // For example, step: 1 shifts by 1 item (high overlap), step: 2 shifts by 2 items (medium overlap), etc.
     // Ensure step <= columns to maintain overlap; step = columns shows no overlap (full page turns)
     step() {
-      return 1; // Change this number to adjust the shift positions
+      return 3; // Change this number to adjust the shift positions
     },
     pages() {
       const numItems = this.items.length;
