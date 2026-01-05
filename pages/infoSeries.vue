@@ -228,6 +228,7 @@
                 justify-content: center;
                 display: flex;
                 color: white;
+                text-wrap: auto;
               "
               class="similar-title"
             >
