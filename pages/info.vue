@@ -152,6 +152,7 @@
                       frameBorder="0"
                       allowfullscreen
                       class="embed-iframe"
+                      :key="movie.imdb_id"
                     ></iframe>
                   </div>
                 </v-card>
@@ -238,7 +239,7 @@
             width="200"
             height="300"
           >
-            <a :href="'/info?id=' + item.id">
+            <a :href="'/info/?id=' + item.id">
               <v-img
                 contain
                 class="mt-2 movie-poster similar-poster"
@@ -253,6 +254,7 @@
                 justify-content: center;
                 display: flex;
                 color: white;
+                text-wrap: auto;
               "
               class="similar-title"
             >

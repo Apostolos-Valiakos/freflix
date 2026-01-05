@@ -148,6 +148,7 @@
                       frameBorder="0"
                       allowfullscreen
                       class="embed-iframe"
+                      :key="imdb_id"
                     ></iframe>
                   </div>
                 </v-card>
@@ -212,7 +213,7 @@
             width="200"
             height="300"
           >
-            <a :href="'/infoSeries?id=' + item.id">
+            <a :href="'/infoSeries/?id=' + item.id">
               <v-img
                 contain
                 class="mt-2 movie-poster similar-poster"
