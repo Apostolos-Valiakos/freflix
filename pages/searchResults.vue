@@ -69,7 +69,7 @@
           />
           <v-card-title class="movie-title-section">
             {{ movie.name || movie.title }}
-            <h5 class="movie-date">
+            <h5 class="movie-date ms-1">
               ({{ movie.first_air_date || movie.release_date }})
             </h5>
           </v-card-title>
