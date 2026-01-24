@@ -26,7 +26,7 @@
                   class="movie-poster"
                 />
               </v-row>
-              <v-row style="justify-content: center">
+              <v-row style="justify-content: center; padding-top: 1em">
                 <v-btn
                   v-if="!isAdded"
                   @click="addToWatchlist(movie)"
@@ -124,58 +124,88 @@
               <v-tabs-slider></v-tabs-slider>
 
               <v-tab href="#tab-1"> Greek subs </v-tab>
-
               <v-tab href="#tab-2"> Trailer </v-tab>
             </v-tabs>
 
-            <v-tabs-items v-model="tab">
+            <v-tabs-items v-model="tab" class="black-bg">
               <v-tab-item value="tab-1">
-                <v-card flat>
-                  <div
-                    v-if="movie"
-                    style="
-                      display: flex;
-                      justify-content: center;
-                      text-align: center;
-                      background-color: black;
-                    "
-                  >
-                    <iframe
-                      sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"
-                      :src="'https://coverapi.store/embed/' + imdb_id"
-                      width="800"
-                      height="600"
-                      frameBorder="0"
-                      allowfullscreen
-                      class="embed-iframe"
-                      :key="imdb_id"
-                    ></iframe>
+                <v-card flat color="black">
+                  <div v-if="movie" class="pt-4">
+                    <v-tabs
+                      v-model="innerTab"
+                      background-color="transparent"
+                      centered
+                      dark
+                      color="red"
+                      slider-color="red"
+                      class="inner-tabs mb-6"
+                      height="40"
+                    >
+                      <v-tab key="source-1" class="inner-tab-btn">
+                        <v-icon left small>mdi-server-network</v-icon> Source 1
+                      </v-tab>
+                      <v-tab key="source-2" class="inner-tab-btn">
+                        <v-icon left small>mdi-server-network</v-icon> Source 2
+                      </v-tab>
+                    </v-tabs>
+
+                    <v-tabs-items
+                      v-model="innerTab"
+                      style="background-color: black"
+                    >
+                      <v-tab-item key="source-1">
+                        <v-card flat color="black">
+                          <div class="iframe-container-wrapper">
+                            <iframe
+                              sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"
+                              :src="
+                                'https://coverapi.space/embed/tv?imdb=' +
+                                imdb_id +
+                                '&ds_lang=el'
+                              "
+                              frameBorder="0"
+                              allowfullscreen
+                              class="embed-iframe responsive-iframe"
+                              :key="imdb_id + '-1'"
+                            ></iframe>
+                          </div>
+                        </v-card>
+                      </v-tab-item>
+
+                      <v-tab-item key="source-2">
+                        <v-card flat color="black">
+                          <div class="iframe-container-wrapper">
+                            <iframe
+                              sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"
+                              :src="'https://coverapi.store/embed/' + imdb_id"
+                              frameBorder="0"
+                              allowfullscreen
+                              class="embed-iframe responsive-iframe"
+                              :key="imdb_id + '-2'"
+                            ></iframe>
+                          </div>
+                        </v-card>
+                      </v-tab-item>
+                    </v-tabs-items>
                   </div>
                 </v-card>
               </v-tab-item>
+
               <v-tab-item value="tab-2">
-                <v-card>
+                <v-card color="black">
                   <div
                     v-if="movie"
-                    style="
-                      display: flex;
-                      justify-content: center;
-                      text-align: center;
-                      background-color: black;
-                    "
+                    class="iframe-container-wrapper pt-5 pb-5"
+                    style="background-color: black"
                   >
-                    <div style="width: 800px; height: 600px">
-                      <iframe
-                        width="800"
-                        height="600"
-                        :src="'https://www.youtube.com/embed/' + trailerKey"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        referrerpolicy="strict-origin-when-cross-origin"
-                        allowfullscreen
-                        class="embed-iframe"
-                      ></iframe>
-                    </div>
+                    <iframe
+                      :src="'https://www.youtube.com/embed/' + trailerKey"
+                      frameborder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      referrerpolicy="strict-origin-when-cross-origin"
+                      allowfullscreen
+                      class="embed-iframe responsive-iframe"
+                    ></iframe>
                   </div>
                 </v-card>
               </v-tab-item>
@@ -184,6 +214,7 @@
         </template>
       </v-card>
     </div>
+
     <div
       style="display: flex; justify-content: center; text-align: center"
       class="similar-section"
@@ -196,15 +227,11 @@
           justify-content: center;
         "
       >
-        <!-- <h4 class="text-h5 font-weight-bold mb-4">Similar Movies</h4> -->
-
         <div
           v-for="(item, index) in similarMovies"
           :key="index"
           class="similar-item"
         >
-          <!-- Στο κλικ να ενημερώνεται το topMovie και το SimilarMovies -->
-          <!-- {{ item }} -->
           <v-card
             class="pa-2 similar-card"
             @click="handleClick(item)"
@@ -240,6 +267,7 @@
     </div>
   </div>
 </template>
+
 <script>
 // API Configuration Constants
 const API_CONFIG = {
@@ -271,6 +299,7 @@ export default {
       credits: [],
       trailerKey: null,
       tab: null,
+      innerTab: null,
     };
   },
   async created() {
@@ -468,6 +497,7 @@ export default {
   },
 };
 </script>
+
 <style scoped>
 h1,
 p {
@@ -637,6 +667,7 @@ section:nth-child(2) {
   color: white !important;
 }
 
+/* Tabs styling */
 .tabs-container {
   margin: 2rem 0;
   border-radius: 16px;
@@ -652,6 +683,46 @@ section:nth-child(2) {
 
 .movie-tabs .v-tab--active {
   color: #ff0000 !important;
+}
+
+.black-bg {
+  background-color: black !important;
+}
+
+/* Inner Nested Tabs Styling */
+.inner-tabs {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.inner-tab-btn {
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+.inner-tab-btn.v-tab--active {
+  opacity: 1;
+}
+
+/* Iframe Container Styling */
+.iframe-container-wrapper {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  background-color: black;
+  width: 100%;
+}
+
+.responsive-iframe {
+  width: 800px;
+  height: 600px;
+  max-width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  transition: transform 0.3s ease;
+  background-color: black;
 }
 
 .embed-iframe {
@@ -738,9 +809,10 @@ section:nth-child(2) {
     width: 12em;
   }
 
-  .embed-iframe {
+  /* Make iframes responsive on mobile */
+  .responsive-iframe {
     width: 100%;
-    max-width: 100%;
+    height: 50vh;
   }
 
   .similar-section {
