@@ -158,6 +158,20 @@
                           <div class="iframe-container-wrapper">
                             <iframe
                               sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"
+                              :src="'https://coverapi.store/embed/' + imdb_id"
+                              frameBorder="0"
+                              allowfullscreen
+                              class="embed-iframe responsive-iframe"
+                              :key="imdb_id + '-2'"
+                            ></iframe>
+                          </div>
+                        </v-card>
+                      </v-tab-item>
+                      <v-tab-item key="source-2">
+                        <v-card flat color="black">
+                          <div class="iframe-container-wrapper">
+                            <iframe
+                              sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"
                               :src="
                                 'https://coverapi.space/embed/tv?imdb=' +
                                 imdb_id +
@@ -167,21 +181,6 @@
                               allowfullscreen
                               class="embed-iframe responsive-iframe"
                               :key="imdb_id + '-1'"
-                            ></iframe>
-                          </div>
-                        </v-card>
-                      </v-tab-item>
-
-                      <v-tab-item key="source-2">
-                        <v-card flat color="black">
-                          <div class="iframe-container-wrapper">
-                            <iframe
-                              sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"
-                              :src="'https://coverapi.store/embed/' + imdb_id"
-                              frameBorder="0"
-                              allowfullscreen
-                              class="embed-iframe responsive-iframe"
-                              :key="imdb_id + '-2'"
                             ></iframe>
                           </div>
                         </v-card>
