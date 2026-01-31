@@ -157,7 +157,6 @@
                         <v-card flat color="black">
                           <div class="iframe-container-wrapper">
                             <iframe
-                              sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"
                               :src="'https://coverapi.store/embed/' + imdb_id"
                               frameBorder="0"
                               allowfullscreen
@@ -171,7 +170,6 @@
                         <v-card flat color="black">
                           <div class="iframe-container-wrapper">
                             <iframe
-                              sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"
                               :src="
                                 'https://coverapi.space/embed/tv?imdb=' +
                                 imdb_id +

@@ -160,7 +160,6 @@
                         <v-card flat color="black">
                           <div class="iframe-container-wrapper">
                             <iframe
-                              sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"
                               :src="
                                 'https://coverapi.store/embed/' + movie.imdb_id
                               "
@@ -176,16 +175,18 @@
                         <v-card flat color="black">
                           <div class="iframe-container-wrapper">
                             <iframe
-                              sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"
                               :src="
                                 'https://coverapi.space/embed/movie?imdb=' +
                                 movie.imdb_id +
                                 '&ds_lang=el'
                               "
-                              frameBorder="0"
+                              width="100%"
+                              height="480"
+                              frameborder="0"
+                              scrolling="no"
                               allowfullscreen
-                              class="embed-iframe responsive-iframe"
-                              :key="imdb_id + '-1'"
+                              class="embed-iframe"
+                              :key="movie.imdb_id + '-dynamic'"
                             ></iframe>
                           </div>
                         </v-card>
