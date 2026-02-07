@@ -130,117 +130,85 @@
     </section>
 
     <Cast :cast="credits" v-if="credits && credits.length" />
-    <v-container id="player-section" class="py-12 d-flex justify-center">
-      <v-card class="tabs-container">
+    <v-container
+      id="player-section"
+      class="py-12 d-flex justify-center"
+      v-if="movie"
+    >
+      <div class="tabs-container">
         <v-tabs
-          color="red"
           v-model="tab"
+          color="red"
           background-color="black"
           centered
           dark
           icons-and-text
-          class="movie-tabs"
         >
-          <v-tabs-slider></v-tabs-slider>
           <v-tab href="#tab-1"> Greek subs </v-tab>
           <v-tab href="#tab-2"> No subs </v-tab>
           <v-tab href="#tab-3"> Trailer </v-tab>
         </v-tabs>
 
         <v-tabs-items v-model="tab" class="player-tabs-content">
-          <v-tab-item value="tab-1" class="fill-height-item">
-            <div v-if="movie" class="inner-player-layout">
-              <v-tabs
-                v-model="innerTab"
-                background-color="transparent"
-                centered
-                dark
-                color="red"
-                height="40"
-              >
-                <v-tab key="source-1">Source 1</v-tab>
-                <v-tab key="source-2">Source 2</v-tab>
-              </v-tabs>
-
-                    <v-tabs-items
-                      v-model="innerTab"
-                      style="background-color: black"
-                    >
-                      <v-tab-item key="source-1">
-                        <v-card flat color="black">
-                          <div class="iframe-container-wrapper">
-                            <iframe
-                              :src="
-                                'https://coverapi.store/embed/' + movie.imdb_id
-                              "
-                              frameBorder="0"
-                              allowfullscreen
-                              class="embed-iframe responsive-iframe"
-                              :key="imdb_id + '-2'"
-                            ></iframe>
-                          </div>
-                        </v-card>
-                      </v-tab-item>
-                      <v-tab-item key="source-2">
-                        <v-card flat color="black">
-                          <div class="iframe-container-wrapper">
-                            <iframe
-                              :src="
-                                'https://coverapi.space/embed/movie?imdb=' +
-                                movie.imdb_id +
-                                '&ds_lang=el'
-                              "
-                              width="100%"
-                              height="480"
-                              frameborder="0"
-                              scrolling="no"
-                              allowfullscreen
-                              class="embed-iframe"
-                              :key="movie.imdb_id + '-dynamic'"
-                            ></iframe>
-                          </div>
-                        </v-card>
-                      </v-tab-item>
-                    </v-tabs-items>
-                  </div>
-                </v-card>
-              </v-tab-item>
-
-          <v-tab-item value="tab-2" class="fill-height-item">
-            <div
-              class="d-flex align-center justify-center fill-height bg-black"
+          <v-tab-item value="tab-1">
+            <v-tabs
+              v-model="innerTab"
+              background-color="transparent"
+              centered
+              dark
+              color="red"
+              dense
             >
-              <v-btn
-                class="watch-btn"
-                color="red"
-                dark
-                large
-                @click="watchMovie(movie.imdb_id)"
+              <v-tab>Source 1</v-tab>
+              <v-tab>Source 2</v-tab>
+            </v-tabs>
+            <v-tabs-items v-model="innerTab" class="black-bg">
+              <v-tab-item
+                v-for="(src, index) in [
+                  'https://coverapi.store/embed/' + movie.imdb_id,
+                  'https://coverapi.space/embed/movie?imdb=' +
+                    movie.imdb_id +
+                    '&ds_lang=el',
+                ]"
+                :key="index"
               >
-                Watch in external player
-              </v-btn>
+                <div class="iframe-container-wrapper">
+                  <iframe
+                    :src="src"
+                    frameborder="0"
+                    allowfullscreen
+                    scrolling="no"
+                    class="responsive-iframe"
+                  ></iframe>
+                </div>
+              </v-tab-item>
+            </v-tabs-items>
+          </v-tab-item>
+
+          <v-tab-item value="tab-2">
+            <div
+              class="d-flex align-center justify-center bg-black"
+              style="min-height: 400px"
+            >
+              <v-btn color="red" dark large @click="watchMovie(movie.imdb_id)"
+                >Watch in external player</v-btn
+              >
             </div>
           </v-tab-item>
 
-          <v-tab-item value="tab-3" class="fill-height-item">
-            <div class="fixed-iframe-wrapper">
+          <v-tab-item value="tab-3">
+            <div class="iframe-container-wrapper">
               <iframe
                 v-if="trailerKey"
                 :src="'https://www.youtube.com/embed/' + trailerKey"
                 frameborder="0"
                 allowfullscreen
-                class="full-iframe"
+                class="responsive-iframe"
               ></iframe>
-              <div
-                v-else
-                class="d-flex align-center justify-center fill-height white--text"
-              >
-                Trailer not available.
-              </div>
             </div>
           </v-tab-item>
         </v-tabs-items>
-      </v-card>
+      </div>
     </v-container>
 
     <v-container v-if="combinedSimilar.length" class="similar-section pb-12">
@@ -306,6 +274,12 @@ export default {
   methods: {
     async loadAllData() {
       const id = this.$route.query.id;
+      if (!id) return;
+
+      // Reset UI state for new movie
+      this.movie = null;
+      this.tab = "tab-1";
+      this.innerTab = 0;
       if (!id) return;
 
       const options = {
@@ -527,31 +501,6 @@ export default {
   gap: 16px;
 }
 
-/* 1. The main container */
-.tabs-container {
-  max-width: 1200px;
-  width: 95%;
-  margin: 2rem auto;
-  border-radius: 16px;
-  overflow: hidden;
-  height: 600px; /* Your fixed height */
-  display: flex;
-  flex-direction: column;
-  background-color: black !important;
-}
-
-/* 2. THE ERROR FIX: Target Vuetify's internal window containers */
-.tabs-container ::v-deep .v-window,
-.tabs-container ::v-deep .v-window__container,
-.tabs-container ::v-deep .v-window-item {
-  height: 100% !important;
-}
-
-/* 3. Force the tabs items area to take up the remaining space */
-.player-tabs-content {
-  flex-grow: 1;
-}
-
 /* 4. The iframe itself */
 .full-iframe {
   width: 100%;
@@ -562,12 +511,16 @@ export default {
 .black-bg {
   background-color: black !important;
 }
+/* Target the specific wrapper for your iframes */
 .iframe-container-wrapper {
   position: relative;
   width: 100%;
-  padding-bottom: 56.25%; /* 16:9 */
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
   height: 0;
+  overflow: hidden; /* This hides the scrollbar */
 }
+
+/* Ensure the iframe itself doesn't trigger scrollbars */
 .responsive-iframe {
   position: absolute;
   top: 0;
@@ -575,6 +528,7 @@ export default {
   width: 100%;
   height: 100%;
   border: none;
+  overflow: hidden;
 }
 .inner-tab-btn {
   text-transform: none !important;
@@ -610,20 +564,6 @@ export default {
   .movie-banner {
     opacity: 0.5;
   }
-}
-.tabs-container {
-  max-width: 1200px;
-  width: 95%;
-  margin: 2rem auto;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  background-color: black !important;
-
-  /* FIXED HEIGHT SETTING */
-  height: 1000px;
-  display: flex;
-  flex-direction: column;
 }
 
 /* Force Vuetify's internal containers to take the full remaining height */
@@ -670,5 +610,30 @@ export default {
   .tabs-container {
     height: 350px; /* Smaller fixed height for mobile */
   }
+}
+.tabs-container {
+  width: 100%;
+  max-width: 1100px;
+  background-color: black;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.iframe-container-wrapper {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* Perfect 16:9 ratio */
+  height: 0;
+  background: #000;
+  overflow: hidden;
+}
+
+.responsive-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 </style>
