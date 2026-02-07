@@ -7,26 +7,118 @@
         <v-text-field
           color="red"
           class="ma-2 pa-4 search-field flex-grow-1"
-          label="Search"
+          label="Search by Name"
           v-model="searchTerm"
           @change="onTermChange"
           clearable
           dense
-        />
-        <v-select
-          color="red"
-          class="ma-2 pa-4 category-select flex-grow-1"
-          v-if="categoryItems.length"
-          @change="onCategoryChange"
-          :item-text="'name'"
-          :item-value="'name'"
-          v-model="selectedCategory"
-          label="Search by Category"
-          :items="categoryItems"
-          dense
+          hide-details
         />
       </div>
-      <div class="search-actions d-flex justify-center mt-4">
+
+      <v-expansion-panels class="mt-4 mb-2" dark>
+        <v-expansion-panel style="background-color: #1a1a1a">
+          <v-expansion-panel-header class="white--text font-weight-bold">
+            <template v-slot:default="{ open }">
+              <v-row no-gutters>
+                <v-col cols="4" class="d-flex align-center">
+                  <v-icon :color="open ? 'red' : 'white'" left
+                    >mdi-filter-variant</v-icon
+                  >
+                  Advanced Filters
+                </v-col>
+                <v-col cols="8" class="text--secondary">
+                  <v-fade-transition leave-absolute>
+                    <span v-if="open" key="0"
+                      >Select categories, years, and ratings</span
+                    >
+                    <span v-else key="1">
+                      {{ activeFilterSummary }}
+                    </span>
+                  </v-fade-transition>
+                </v-col>
+              </v-row>
+            </template>
+          </v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <v-row>
+              <v-col cols="12" md="3">
+                <v-select
+                  v-model="filters.sortBy"
+                  :items="sortOptions"
+                  label="Sort By"
+                  item-text="label"
+                  item-value="value"
+                  dense
+                  outlined
+                  color="red"
+                  item-color="red"
+                  background-color="black"
+                  dark
+                ></v-select>
+              </v-col>
+
+              <v-col cols="12" md="3">
+                <v-select
+                  color="red"
+                  background-color="black"
+                  dark
+                  outlined
+                  dense
+                  v-if="categoryItems.length"
+                  :item-text="'name'"
+                  :item-value="'id'"
+                  v-model="filters.selectedGenre"
+                  label="Genre"
+                  :items="categoryItems"
+                  clearable
+                />
+              </v-col>
+
+              <v-col cols="12" md="3">
+                <div class="text-caption grey--text mb-2">
+                  Year: {{ filters.yearRange[0] }} - {{ filters.yearRange[1] }}
+                </div>
+                <v-range-slider
+                  v-model="filters.yearRange"
+                  :min="1950"
+                  :max="2030"
+                  thumb-label
+                  color="red"
+                  track-color="grey darken-2"
+                  dense
+                ></v-range-slider>
+              </v-col>
+
+              <v-col cols="12" md="3">
+                <div class="text-caption grey--text mb-2">
+                  Min Rating: {{ filters.minRating }}+
+                </div>
+                <v-slider
+                  v-model="filters.minRating"
+                  min="0"
+                  max="10"
+                  step="0.5"
+                  thumb-label
+                  color="yellow darken-2"
+                  track-color="grey darken-2"
+                  dense
+                >
+                  <template v-slot:append>
+                    <v-icon color="yellow darken-2">mdi-star</v-icon>
+                  </template>
+                </v-slider>
+              </v-col>
+            </v-row>
+            <v-row class="justify-end">
+              <v-btn text color="grey" @click="resetFilters">Reset</v-btn>
+              <v-btn color="red" @click="applyFilters">Apply Filters</v-btn>
+            </v-row>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+      </v-expansion-panels>
+
+      <div class="search-actions d-flex justify-center mt-2">
         <v-btn class="search-btn" @click="onSearchClick" color="red" large>
           <v-icon left>mdi-magnify</v-icon>
           Search
@@ -34,14 +126,13 @@
       </div>
     </div>
 
-    <h2 class="page-title" v-if="searchTerm">
+    <h2 class="page-title" v-if="isFiltering">Filtered Results</h2>
+    <h2 class="page-title" v-else-if="searchTerm">
       Search Results for "{{ searchTerm }}"
     </h2>
-    <h2 class="page-title" v-else-if="selectedCategory">
-      Movies & Series in "{{ selectedCategory }}"
-    </h2>
     <h2 class="page-title" v-else>Popular Movies & Series</h2>
-    <div class="autocomplete-chips">
+
+    <div class="autocomplete-chips" v-if="autocompleteItems.length > 0">
       <v-chip
         @click="searchFromChip(item)"
         class="mr-2 my-2 autocomplete-chip"
@@ -52,10 +143,11 @@
         {{ item.name }}
       </v-chip>
     </div>
+
     <v-row class="results-grid">
       <v-col
         v-for="(movie, index) in searchResults"
-        :key="index"
+        :key="index + '-' + movie.id"
         cols="12"
         sm="6"
         md="4"
@@ -64,39 +156,55 @@
         <v-card class="mb-4 movie-card">
           <v-img
             @click="seeInfo(movie)"
-            :src="'https://image.tmdb.org/t/p//w500' + movie.backdrop_path"
+            :src="
+              movie.backdrop_path
+                ? 'https://image.tmdb.org/t/p/w500' + movie.backdrop_path
+                : 'https://via.placeholder.com/500x281?text=No+Image'
+            "
             class="movie-image"
-          />
-          <v-card-title class="movie-title-section">
+          >
+            <template v-slot:placeholder>
+              <v-row class="fill-height ma-0" align="center" justify="center">
+                <v-progress-circular
+                  indeterminate
+                  color="red"
+                ></v-progress-circular>
+              </v-row>
+            </template>
+          </v-img>
+
+          <v-card-title class="movie-title-section text-truncate d-block">
             {{ movie.name || movie.title }}
-            <h5 class="movie-date ms-1">
-              ({{ movie.first_air_date || movie.release_date }})
-            </h5>
           </v-card-title>
-          <v-card-subtitle class="movie-overview">
-            {{ movie.overview }}
-          </v-card-subtitle>
-          <v-card-actions class="movie-actions">
-            <v-btn
-              color="white"
-              @click="seeInfo(movie)"
-              class="info-btn"
-              style="color: red"
+
+          <v-card-subtitle class="d-flex align-center pt-2">
+            <span
+              class="movie-date mr-2"
+              v-if="movie.first_air_date || movie.release_date"
             >
+              {{ (movie.first_air_date || movie.release_date).substring(0, 4) }}
+            </span>
+            <v-chip x-small color="red" outlined v-if="movie.vote_average">
+              {{ movie.vote_average.toFixed(1) }}
+            </v-chip>
+            <v-spacer></v-spacer>
+            <v-chip x-small color="grey darken-3" class="white--text">
+              {{ movie.isSerie === "tv" ? "TV" : "Movie" }}
+            </v-chip>
+          </v-card-subtitle>
+
+          <v-card-actions class="movie-actions">
+            <v-btn text @click="seeInfo(movie)" class="info-btn" color="red">
               Info
             </v-btn>
-            <v-btn
-              @click="addToWatchlist(movie)"
-              class="watchlist-btn"
-              style="color: white"
-              color="red"
-            >
-              Add to watchlist
+            <v-btn icon @click="addToWatchlist(movie)" color="white">
+              <v-icon>mdi-plus</v-icon>
             </v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
     </v-row>
+
     <div ref="sentinel" class="sentinel pa-4 text-center">
       <v-progress-circular v-if="loading" indeterminate color="red" />
     </div>
@@ -108,12 +216,9 @@ export default {
   data() {
     return {
       marginFromTop: "margin-top: 100px",
-      showEmbed: false,
       page: 1,
       loading: false,
       autocompleteItems: [],
-      embedLink: "",
-      selectedCategory: "",
       categories: [],
       seriesCategories: [],
       noOfPages: 0,
@@ -122,32 +227,85 @@ export default {
       observer: null,
       useKeywordSearch: false,
       keywordId: "",
+      isFiltering: false, // State to track if we are using advanced filters
+
+      // Advanced Filters State
+      filters: {
+        sortBy: "popularity.desc",
+        yearRange: [1980, 2026],
+        minRating: 0,
+        selectedGenre: null,
+      },
+      sortOptions: [
+        { label: "Popularity Descending", value: "popularity.desc" },
+        { label: "Popularity Ascending", value: "popularity.asc" },
+        { label: "Rating Descending", value: "vote_average.desc" },
+        { label: "Rating Ascending", value: "vote_average.asc" },
+        {
+          label: "Release Date Descending",
+          value: "primary_release_date.desc",
+        },
+        { label: "Release Date Ascending", value: "primary_release_date.asc" },
+      ],
     };
   },
   computed: {
     categoryItems() {
-      const names = new Set();
-      this.categories.forEach((c) => names.add(c.name));
-      this.seriesCategories.forEach((c) => names.add(c.name));
-      return Array.from(names).sort();
+      // Merge Movie and TV categories
+      const combined = [...this.categories, ...this.seriesCategories];
+      // Deduplicate by ID and Name
+      const unique = [];
+      const map = new Map();
+      for (const item of combined) {
+        if (!map.has(item.id)) {
+          map.set(item.id, true);
+          unique.push(item);
+        }
+      }
+      return unique.sort((a, b) => a.name.localeCompare(b.name));
+    },
+    activeFilterSummary() {
+      if (this.isFiltering) return "Filters Active";
+      return "Category, Year, Rating...";
     },
   },
   methods: {
+    resetFilters() {
+      this.filters = {
+        sortBy: "popularity.desc",
+        yearRange: [1980, 2026],
+        minRating: 0,
+        selectedGenre: null,
+      };
+      this.searchTerm = "";
+      this.isFiltering = false;
+      this.searchPerCategory("", 1); // Reset to default popular
+    },
+    applyFilters() {
+      this.searchTerm = ""; // Clear text search when filtering
+      this.useKeywordSearch = false;
+      this.isFiltering = true;
+      this.page = 1;
+      this.searchResults = []; // Clear current results
+      this.searchWithFilters(1);
+    },
     onTermChange() {
-      this.selectedCategory = "";
+      this.isFiltering = false; // Disable advanced filter mode
       this.useKeywordSearch = false;
       this.keywordId = "";
+      this.filters.selectedGenre = null; // Reset genre
       this.search(1);
     },
-    onCategoryChange() {
-      this.searchTerm = "";
-      this.useKeywordSearch = false;
-      this.keywordId = "";
-      this.searchPerCategory(this.selectedCategory, 1);
-    },
     onSearchClick() {
-      this.onTermChange();
+      if (this.isFiltering) {
+        this.applyFilters();
+      } else {
+        this.onTermChange();
+      }
     },
+
+    // --- API & SEARCH LOGIC ---
+
     mergeResults(movieJson, tvJson) {
       const results = [];
       if (movieJson?.results) {
@@ -160,31 +318,92 @@ export default {
           ...tvJson.results.map((item) => ({ ...item, isSerie: "tv" }))
         );
       }
-      return results.sort((a, b) => b.popularity - a.popularity);
+
+      const sortVal = this.filters.sortBy;
+      return results.sort((a, b) => {
+        if (sortVal.includes("vote_average")) {
+          return sortVal.includes("desc")
+            ? b.vote_average - a.vote_average
+            : a.vote_average - b.vote_average;
+        } else if (sortVal.includes("primary_release_date")) {
+          // Robust date handling
+          const dateA = new Date(
+            a.release_date || a.first_air_date || "1900-01-01"
+          );
+          const dateB = new Date(
+            b.release_date || b.first_air_date || "1900-01-01"
+          );
+          return sortVal.includes("desc") ? dateB - dateA : dateA - dateB;
+        }
+        return sortVal.includes("asc")
+          ? a.popularity - b.popularity
+          : b.popularity - a.popularity;
+      });
     },
-    async search(page) {
-      this.useKeywordSearch = false;
-      this.keywordId = "";
-      const isNew = page === 1;
-      if (isNew) {
-        this.searchResults = [];
+
+    async searchWithFilters(page) {
+      // This uses the /discover endpoint to support advanced filters
+      const baseUrl = `https://api.themoviedb.org/3/discover`;
+
+      // Common Params
+      let params = `include_adult=false&include_video=false&language=en-US&page=${page}`;
+      params += `&sort_by=${this.filters.sortBy}`;
+      params += `&vote_average.gte=${this.filters.minRating}`;
+
+      // Handle Genres
+      if (this.filters.selectedGenre) {
+        params += `&with_genres=${this.filters.selectedGenre}`;
       }
+
+      // Handle Years (Movie vs TV params differ)
+      // Movie: primary_release_date.gte
+      // TV: first_air_date.gte
+      const minDate = `${this.filters.yearRange[0]}-01-01`;
+      const maxDate = `${this.filters.yearRange[1]}-12-31`;
+
+      const movieParams = `${params}&primary_release_date.gte=${minDate}&primary_release_date.lte=${maxDate}`;
+      const tvParams = `${params}&first_air_date.gte=${minDate}&first_air_date.lte=${maxDate}`;
+
+      const options = this.getApiOptions();
+
+      try {
+        const [movieRes, tvRes] = await Promise.all([
+          fetch(`${baseUrl}/movie?${movieParams}`, options),
+          fetch(`${baseUrl}/tv?${tvParams}`, options),
+        ]);
+
+        const movieJson = await movieRes.json();
+        const tvJson = await tvRes.json();
+
+        const merged = this.mergeResults(movieJson, tvJson);
+        this.noOfPages = Math.max(
+          movieJson.total_pages || 0,
+          tvJson.total_pages || 0
+        );
+
+        if (page === 1) {
+          this.searchResults = merged;
+        } else {
+          this.searchResults.push(...merged);
+        }
+      } catch (e) {
+        console.error("Filter Search Error", e);
+      }
+    },
+
+    async search(page) {
+      this.isFiltering = false;
+      const isNew = page === 1;
+      if (isNew) this.searchResults = [];
+
       const url = `https://api.themoviedb.org/3/search/multi?query=${encodeURIComponent(
         this.searchTerm
       )}&include_adult=false&language=en-US&page=${page}`;
-      const options = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-        },
-      };
 
       try {
-        const res = await fetch(url, options);
+        const res = await fetch(url, this.getApiOptions());
         const json = await res.json();
-        this.noOfPages = Math.min(json.total_pages || 0, 50);
+        this.noOfPages = Math.min(json.total_pages || 0, 50); // Cap at 50 for performance
         let results = (json.results || [])
           .filter((r) => r.media_type !== "person")
           .map((r) => ({
@@ -197,135 +416,75 @@ export default {
           this.searchResults.push(...results);
         }
       } catch (error) {
-        console.error("error:" + error);
-        alert("Error fetching search results:", error);
+        console.error(error);
       }
-      this.autocomplete();
-      this.saveFilters();
+      if (isNew) this.autocomplete();
     },
+
     async searchByKeyword(keywordId, page) {
       const isNew = page === 1;
-      if (isNew) {
-        this.searchResults = [];
-      }
-      const baseOptions = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-        },
-      };
+      if (isNew) this.searchResults = [];
+      this.loading = true;
+
+      const options = this.getApiOptions();
       const movieUrl = `https://api.themoviedb.org/3/discover/movie?include_adult=false&language=en-US&page=${page}&sort_by=popularity.desc&with_keywords=${keywordId}`;
-      const tvUrl = `https://api.themoviedb.org/3/discover/tv?include_adult=false&include_video=false&language=en-US&page=${page}&sort_by=popularity.desc&with_keywords=${keywordId}`;
-      const [movieRes, tvRes] = await Promise.all([
-        fetch(movieUrl, baseOptions),
-        fetch(tvUrl, baseOptions),
-      ]);
-      const [movieJson, tvJson] = await Promise.all([
-        movieRes.json(),
-        tvRes.json(),
-      ]);
-      const merged = this.mergeResults(movieJson, tvJson);
-      this.noOfPages = Math.max(
-        movieJson.total_pages || 0,
-        tvJson.total_pages || 0
-      );
-      if (isNew) {
-        this.searchResults = merged;
-      } else {
-        this.searchResults.push(...merged);
-      }
-      this.autocomplete();
-      this.saveFilters();
-    },
-    async searchPerCategory(genreName, page) {
-      this.useKeywordSearch = false;
-      this.keywordId = "";
-      const isNew = page === 1;
-      if (isNew) {
-        this.searchResults = [];
-      }
-      const baseUrl = `https://api.themoviedb.org/3/discover`;
-      const baseParams = `include_adult=false&include_video=false&language=en-US&page=${page}&sort_by=popularity.desc`;
-      const baseOptions = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-        },
-      };
-      let movieJson = null;
-      let tvJson = null;
-      if (genreName === "") {
-        // Popular (no genre)
+      const tvUrl = `https://api.themoviedb.org/3/discover/tv?include_adult=false&language=en-US&page=${page}&sort_by=popularity.desc&with_keywords=${keywordId}`;
+
+      try {
         const [movieRes, tvRes] = await Promise.all([
-          fetch(`${baseUrl}/movie?${baseParams}`, baseOptions),
-          fetch(`${baseUrl}/tv?${baseParams}`, baseOptions),
+          fetch(movieUrl, options),
+          fetch(tvUrl, options),
         ]);
-        movieJson = await movieRes.json();
-        tvJson = await tvRes.json();
-      } else {
-        const movieGenreId = this.categories.find(
-          (c) => c.name === genreName
-        )?.id;
-        const tvGenreId = this.seriesCategories.find(
-          (c) => c.name === genreName
-        )?.id;
-        const moviePromises = [];
-        const tvPromises = [];
-        if (movieGenreId !== undefined) {
-          moviePromises.push(
-            fetch(
-              `${baseUrl}/movie?${baseParams}&with_genres=${movieGenreId}`,
-              baseOptions
-            ).then((res) => res.json())
-          );
-        }
-        if (tvGenreId !== undefined) {
-          tvPromises.push(
-            fetch(
-              `${baseUrl}/tv?${baseParams}&with_genres=${tvGenreId}`,
-              baseOptions
-            ).then((res) => res.json())
-          );
-        }
-        if (moviePromises.length) {
-          movieJson = await moviePromises[0];
-        }
-        if (tvPromises.length) {
-          tvJson = await tvPromises[0];
-        }
+
+        // Corrected JSON extraction
+        const movieJson = await movieRes.json();
+        const tvJson = await tvRes.json();
+
+        const merged = this.mergeResults(movieJson, tvJson);
+        this.noOfPages = Math.max(
+          movieJson.total_pages || 0,
+          tvJson.total_pages || 0
+        );
+
+        if (isNew) this.searchResults = merged;
+        else this.searchResults.push(...merged);
+      } catch (e) {
+        console.error("Keyword Search Error:", e);
+      } finally {
+        this.loading = false;
       }
-      const merged = this.mergeResults(movieJson, tvJson);
-      this.noOfPages = Math.max(
-        movieJson?.total_pages || 0,
-        tvJson?.total_pages || 0
-      );
-      if (isNew) {
-        this.searchResults = merged;
-      } else {
-        this.searchResults.push(...merged);
-      }
-      this.saveFilters();
     },
+
+    // Legacy method kept for "popular" init
+    async searchPerCategory(genreName, page) {
+      // If we are just loading initial "Popular" (empty genre), treat as filtered search with defaults
+      if (genreName === "") {
+        this.filters.selectedGenre = null;
+        await this.searchWithFilters(page);
+        return;
+      }
+      // If a specific genre was passed (from older logic), set it in filter and run
+      const genreObj = this.categoryItems.find((c) => c.name === genreName);
+      if (genreObj) {
+        this.filters.selectedGenre = genreObj.id;
+        this.isFiltering = true;
+        await this.searchWithFilters(page);
+      }
+    },
+
     async searchFromChip(item) {
       this.searchTerm = item.name;
-      this.selectedCategory = "";
+      this.filters.selectedGenre = null;
       this.keywordId = item.id;
       this.useKeywordSearch = true;
+      this.isFiltering = false;
       await this.searchByKeyword(item.id, 1);
       this.autocomplete();
-      this.saveFilters();
     },
-    autocomplete() {
-      if (!this.searchTerm) return;
-      const url =
-        "https://api.themoviedb.org/3/search/keyword?query=" +
-        this.searchTerm +
-        "&page=1";
-      const options = {
+
+    // --- UTILS ---
+    getApiOptions() {
+      return {
         method: "GET",
         headers: {
           accept: "application/json",
@@ -333,86 +492,69 @@ export default {
             "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
         },
       };
+    },
 
-      fetch(url, options)
+    autocomplete() {
+      if (!this.searchTerm) return;
+      const url = `https://api.themoviedb.org/3/search/keyword?query=${this.searchTerm}&page=1`;
+      fetch(url, this.getApiOptions())
         .then((res) => res.json())
         .then((json) => {
           this.autocompleteItems = json.results;
         })
-        .catch((err) => console.error("error:" + err));
+        .catch((err) => console.error(err));
     },
-    seeInfo(movie) {
-      if (movie.isSerie === "tv") {
-        this.$router.push({
-          name: "infoSeries",
-          query: { id: movie.id },
-        });
-      } else {
-        this.$router.push({ name: "info", query: { id: movie.id } });
-      }
-    },
-    addToWatchlist(movie) {
-      // isSerie already set during fetch
-      var watchlistFromLocalStorage = JSON.parse(
-        localStorage.getItem("watchlist") || "[]"
-      );
 
-      var movieIndex = watchlistFromLocalStorage.findIndex(
+    seeInfo(movie) {
+      const name = movie.isSerie === "tv" ? "infoSeries" : "info";
+      this.$router.push({ name, query: { id: movie.id } });
+    },
+
+    addToWatchlist(movie) {
+      let watchlist = JSON.parse(localStorage.getItem("watchlist") || "[]");
+      const index = watchlist.findIndex(
         (item) => item.id === movie.id && item.isSerie === movie.isSerie
       );
-
-      if (movieIndex === -1) {
-        watchlistFromLocalStorage.push(movie);
+      if (index === -1) {
+        watchlist.unshift(movie);
       } else {
-        watchlistFromLocalStorage.splice(movieIndex, 1);
-        watchlistFromLocalStorage.unshift(movie);
+        watchlist.splice(index, 1); // remove if exists (toggle) or move to top? Logic implies toggle usually or re-add
+        watchlist.unshift(movie);
       }
+      localStorage.setItem("watchlist", JSON.stringify(watchlist));
+    },
 
-      localStorage.setItem(
-        "watchlist",
-        JSON.stringify(watchlistFromLocalStorage)
-      );
-    },
-    seeMovie(link) {
-      if (this.isSerie) {
-        location.href =
-          "https://multiembed.mov/?video_id=" + link + "&tmdb=1&s=1&e=1";
-      } else {
-        location.href = "https://multiembed.mov/?video_id=" + link + "&tmdb=1";
-      }
-    },
     loadNextPage() {
       this.loading = true;
       this.page++;
       let promise;
-      if (this.searchTerm) {
-        if (this.useKeywordSearch) {
-          promise = this.searchByKeyword(this.keywordId, this.page);
-        } else {
-          promise = this.search(this.page);
-        }
+
+      if (this.isFiltering) {
+        promise = this.searchWithFilters(this.page);
+      } else if (this.useKeywordSearch) {
+        promise = this.searchByKeyword(this.keywordId, this.page);
+      } else if (this.searchTerm) {
+        promise = this.search(this.page);
       } else {
-        promise = this.searchPerCategory(
-          this.selectedCategory || "",
-          this.page
-        );
+        // Default fallback
+        promise = this.searchWithFilters(this.page);
       }
+
       promise
         .then(() => {
           this.loading = false;
         })
-        .catch((err) => {
-          console.error(err);
+        .catch(() => {
           this.loading = false;
           this.page--;
         });
     },
+
     setupInfiniteScroll() {
       this.observer = new IntersectionObserver(
         (entries) => {
-          const target = entries[0];
           if (
-            target.isIntersecting &&
+            entries[0].isIntersecting &&
             this.page < this.noOfPages &&
             !this.loading
           ) {
@@ -422,100 +564,49 @@ export default {
         { threshold: 0 }
       );
     },
-    getSeriesCategories() {
-      const url = "https://api.themoviedb.org/3/genre/tv/list?language=en";
-      const options = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsIm5iZiI6MTcwMzQwOTIzNy42MDE5OTk4LCJzdWIiOiI2NTg3ZjY1NTJkZmZkODVjZGI0NGQ5MDYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.74U2ndKrTu5lyaGDxrPDGKJNVMjCen72gWPGG75oWcs",
-        },
-      };
 
-      fetch(url, options)
-        .then((res) => res.json())
-        .then((json) => (this.seriesCategories = json.genres))
-        .catch((err) => console.error(err));
-    },
     getCategories() {
-      const url = "https://api.themoviedb.org/3/genre/movie/list?language=en";
-      const options = {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-        },
-      };
-
-      fetch(url, options)
+      fetch(
+        "https://api.themoviedb.org/3/genre/movie/list?language=en",
+        this.getApiOptions()
+      )
         .then((res) => res.json())
-        .then((json) => (this.categories = json.genres))
-        .catch((err) => console.error("error:" + err));
+        .then((json) => (this.categories = json.genres));
     },
-    saveFilters() {
-      const filters = {
-        searchTerm: this.searchTerm,
-        selectedCategory: this.selectedCategory,
-        useKeywordSearch: this.useKeywordSearch,
-        keywordId: this.keywordId,
-      };
-      localStorage.setItem("searchFilters", JSON.stringify(filters));
-    },
-    loadFilters() {
-      const filtersFromLocalStorage = JSON.parse(
-        localStorage.getItem("searchFilters") || "{}"
-      );
-      if (filtersFromLocalStorage.hasOwnProperty("searchTerm")) {
-        this.searchTerm = filtersFromLocalStorage.searchTerm;
-      }
-      if (filtersFromLocalStorage.hasOwnProperty("selectedCategory")) {
-        this.selectedCategory = filtersFromLocalStorage.selectedCategory;
-      }
-      if (filtersFromLocalStorage.hasOwnProperty("useKeywordSearch")) {
-        this.useKeywordSearch = filtersFromLocalStorage.useKeywordSearch;
-      }
-      if (filtersFromLocalStorage.hasOwnProperty("keywordId")) {
-        this.keywordId = filtersFromLocalStorage.keywordId;
-      }
+    getSeriesCategories() {
+      fetch(
+        "https://api.themoviedb.org/3/genre/tv/list?language=en",
+        this.getApiOptions()
+      )
+        .then((res) => res.json())
+        .then((json) => (this.seriesCategories = json.genres));
     },
   },
-  async created() {
-    this.loadFilters();
+
+  created() {
     this.getCategories();
     this.getSeriesCategories();
     if (screen.width < 450) {
       this.marginFromTop = "margin-top: 0px";
     }
-    const initialPage = 1;
-    if (this.useKeywordSearch && this.keywordId) {
-      await this.searchByKeyword(this.keywordId, initialPage);
-    } else if (this.searchTerm) {
-      await this.search(initialPage);
-    } else if (this.selectedCategory) {
-      await this.searchPerCategory(this.selectedCategory, initialPage);
-    } else {
-      await this.searchPerCategory("", initialPage);
-    }
+    // Load default popular
+    this.searchWithFilters(1);
   },
   mounted() {
     this.$nextTick(() => {
-      this.setupInfiniteScroll();
-      if (this.$refs.sentinel) {
-        this.observer.observe(this.$refs.sentinel);
+      // Ensure the element actually exists before observing
+      const target = this.$refs.sentinel;
+      if (target) {
+        this.setupInfiniteScroll();
+        this.observer.observe(target);
       }
     });
   },
-  beforeDestroy() {
-    if (this.observer) {
-      this.observer.disconnect();
-    }
-  },
 };
 </script>
-<style>
-/* Add custom styles for the search results page */
+
+<style scoped>
+/* Page & Header */
 .page-title {
   margin-top: 30px;
   margin-bottom: 20px;
@@ -525,220 +616,68 @@ export default {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   text-align: center;
   padding: 1rem;
 }
 
 .search-header {
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.8),
-    rgba(0, 0, 0, 0.9)
-  ) !important;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 1));
   border-radius: 16px;
   padding: 1.5rem;
   margin: 1rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(10px);
+  border: 1px solid #333;
 }
 
-.search-inputs {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.search-field,
-.category-select {
-  background-color: #1a1a1a !important;
-  border-radius: 12px !important;
-  color: #f0f0f0 !important;
-}
-
-.search-field ::v-deep .v-input__slot {
-  background-color: #1a1a1a !important;
-  border-radius: 12px !important;
-  color: #f0f0f0 !important;
-}
-
-.search-field ::v-deep .v-list-item {
-  background-color: #2a2a2a !important;
-  color: white !important;
-}
-
-.search-field ::v-deep .v-list-item:hover {
-  background-color: #ff0000 !important;
-}
-
-.search-actions {
-  max-width: 1200px;
-  margin: 0 auto;
+/* Inputs */
+.search-field ::v-deep .v-input__slot,
+.v-select ::v-deep .v-input__slot {
+  border-radius: 8px !important;
 }
 
 .search-btn {
   border-radius: 25px !important;
-  padding: 0 2rem !important;
   font-weight: bold !important;
-  box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3) !important;
-  transition: all 0.3s ease !important;
   text-transform: none !important;
-  min-width: 120px !important;
+  padding: 0 30px !important;
 }
 
-.search-btn:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 20px rgba(255, 0, 0, 0.5) !important;
-}
-
-.autocomplete-chips {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem;
-  margin: 1rem 0;
-}
-
-.autocomplete-chip {
-  border: 2px solid #ff0000 !important;
-  transition: all 0.3s ease !important;
-  cursor: pointer !important;
-}
-
-.autocomplete-chip:hover {
-  transform: scale(1.05) !important;
-  box-shadow: 0 4px 8px rgba(255, 0, 0, 0.3) !important;
-}
-
+/* Cards */
 .results-grid {
   margin: 2rem;
 }
-
 .movie-card {
   border-radius: 12px !important;
-  overflow: hidden !important;
-  transition: all 0.3s ease !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-  background-color: #000 !important;
+  background-color: #111 !important;
+  transition: transform 0.2s;
   cursor: pointer;
 }
-
 .movie-card:hover {
-  transform: translateY(-5px) !important;
-  box-shadow: 0 12px 40px rgba(255, 0, 0, 0.3) !important;
+  transform: scale(1.02);
+  z-index: 2;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
 }
-
 .movie-image {
-  transition: transform 0.3s ease !important;
-  border-radius: 8px !important;
-  height: 250px !important;
+  height: 200px;
+  border-radius: 12px 12px 0 0;
 }
-
-.movie-image:hover {
-  transform: scale(1.05) !important;
-}
-
 .movie-title-section {
-  color: #f0f0f0 !important;
-  font-size: 1.2rem !important;
-  font-weight: bold !important;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8) !important;
+  color: white !important;
+  font-size: 1.1rem;
+  font-weight: bold;
 }
 
-.movie-date {
-  color: #e5e5e5 !important;
-  font-size: 0.9rem !important;
-  margin: 0 !important;
-}
-
-.movie-overview {
-  color: #f0f0f0 !important;
-  line-height: 1.4 !important;
-  font-size: 0.9rem !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
-  padding: 0.5rem !important;
-}
-
-.movie-actions {
-  justify-content: space-around !important;
-  padding: 1rem !important;
-}
-
-.info-btn,
-.watchlist-btn {
-  border-radius: 20px !important;
-  padding: 0.5rem 1.5rem !important;
-  font-weight: bold !important;
-  transition: all 0.3s ease !important;
-  text-transform: none !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
-}
-
-.info-btn:hover,
-.watchlist-btn:hover {
-  transform: translateY(-1px) !important;
-  box-shadow: 0 4px 12px rgba(255, 0, 0, 0.4) !important;
-}
-
-.imgFundoPrincipal {
-  background: #000;
-  background-repeat: no-repeat;
-  background-size: cover;
-  height: 100%;
-  width: 100%;
-}
-
-.sentinel {
-  min-height: 20px;
-}
-
-@media (max-width: 959px) {
-  .search-header {
-    flex-direction: column !important;
-    align-items: center !important;
-    padding: 1rem !important;
-  }
-
-  .search-inputs {
-    flex-direction: column !important;
-    width: 100% !important;
-  }
-
-  .search-field,
-  .category-select {
-    width: 100% !important;
-    max-width: none !important;
-  }
-
+/* Mobile */
+@media (max-width: 600px) {
   .results-grid {
-    margin: 1rem !important;
+    margin: 0.5rem;
   }
-
-  .movie-card {
-    margin-bottom: 1rem !important;
-  }
-
   .page-title {
-    font-size: 2rem !important;
+    font-size: 1.8rem;
   }
-}
-
-@media (max-width: 599px) {
-  .movie-image {
-    height: 200px !important;
-  }
-
-  .movie-overview {
-    font-size: 0.8rem !important;
-  }
-
-  .info-btn,
-  .watchlist-btn {
-    padding: 0.4rem 1rem !important;
-    font-size: 0.9rem !important;
-  }
-
-  .search-btn {
-    width: 100% !important;
+  .search-header {
+    padding: 1rem;
+    margin: 0.5rem;
   }
 }
 </style>

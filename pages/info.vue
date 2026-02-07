@@ -1,156 +1,166 @@
 <template>
-  <div>
-    <section v-if="movie" style="height: 100vh">
+  <div style="background-color: black; min-height: 100vh">
+    <section v-if="movie" class="hero-container">
       <v-img
         :src="'https://image.tmdb.org/t/p/original' + movie.poster_path"
         alt="Movie Poster"
         class="movie-banner"
-      />
-      <div style="z-index: 1">
+      >
+        <div class="banner-overlay"></div>
+      </v-img>
+
+      <div class="content-wrapper">
         <v-row>
-          <v-col v-if="!isMobile">
-            <figure>
-              <v-row
-                style="
-                  justify-content: center;
-                  align-content: center;
-                  display: flex;
-                  margin-top: 20vh;
-                "
+          <v-col
+            cols="12"
+            md="4"
+            v-if="!isMobile"
+            class="d-flex flex-column align-center"
+          >
+            <v-img
+              max-width="300"
+              :src="`https://image.tmdb.org/t/p/w500/${movie.poster_path}`"
+              alt="Poster Image"
+              class="movie-poster-img elevation-20"
+            />
+
+            <div class="mt-6 w-100 d-flex justify-center" style="width: 300px">
+              <v-btn
+                v-if="!isAdded"
+                @click="addToWatchlist(movie)"
+                color="red"
+                dark
+                rounded
+                large
+                block
+                class="action-btn-main"
               >
-                <v-img
-                  max-width="250"
-                  style="display: flex; justify-content: center"
-                  :src="`https://image.tmdb.org/t/p/w500/${movie.poster_path}`"
-                  alt="Poster Image"
-                  class="movie-poster"
-                />
-              </v-row>
-              <v-row
-                style="
-                  justify-content: center;
-                  position: relative;
-                  z-index: 2;
-                  padding-top: 1em;
-                "
+                <v-icon left>mdi-plus</v-icon> Add to Watchlist
+              </v-btn>
+              <v-btn
+                v-else
+                @click="removeFromWatchList(movie)"
+                outlined
+                color="red"
+                dark
+                rounded
+                large
+                block
+                class="action-btn-main"
               >
-                <v-btn
-                  v-if="!isAdded"
-                  @click="addToWatchlist(movie)"
-                  style="color: white"
-                  color="red"
-                  :disabled="isAdded"
-                  class="watchlist-btn"
-                >
-                  Add to watchlist
-                </v-btn>
-                <v-btn
-                  v-if="isAdded"
-                  @click="removeFromWatchList(movie)"
-                  style="color: red"
-                  color="white"
-                  class="watchlist-btn remove"
-                >
-                  Remove from watchlist
-                </v-btn>
-              </v-row>
-            </figure>
+                <v-icon left>mdi-check</v-icon> In Watchlist
+              </v-btn>
+            </div>
           </v-col>
-          <v-col style="margin-top: 20vh">
-            <div style="position: relative; z-index: 2">
-              <p class="popularity-text">
-                ⭐ Rating: {{ movie.vote_average }} out of
-                {{ movie.vote_count }} votes on IMDB
-              </p>
-              <h2 class="movie-title">{{ movie.title }}</h2>
-              <h3 class="movie-meta">{{ movie.release_date }}</h3>
-              <h3 class="movie-meta">{{ movie.runtime }} mins</h3>
-              <p class="movie-overview">{{ movie.overview }}</p>
-              <v-row
-                style="justify-content: center"
-                class="mt-3"
-                v-if="isMobile"
+
+          <v-col
+            cols="12"
+            md="8"
+            :class="isMobile ? 'px-6' : 'px-10'"
+            class="info-column"
+          >
+            <div class="meta-tags d-flex align-center mb-4">
+              <span class="rating-badge">
+                <v-icon small color="yellow">mdi-star</v-icon>
+                {{ movie.vote_average.toFixed(1) }}
+              </span>
+              <span class="mx-3 grey--text">|</span>
+              <span class="white--text">{{
+                movie.release_date ? movie.release_date.substring(0, 4) : ""
+              }}</span>
+              <span class="mx-3 grey--text">|</span>
+              <span class="white--text">{{ movie.runtime }} min</span>
+            </div>
+
+            <h1 class="movie-title-text mb-4">{{ movie.title }}</h1>
+
+            <p class="movie-description mb-6">{{ movie.overview }}</p>
+
+            <div class="d-flex flex-wrap gap-4 mb-8">
+              <v-btn
+                v-if="isMobile && !isAdded"
+                @click="addToWatchlist(movie)"
+                color="red"
+                class="action-btn"
+                large
               >
-                <v-btn
-                  v-if="!isAdded"
-                  @click="addToWatchlist(movie)"
-                  style="color: white"
-                  color="red"
-                  :disabled="isAdded"
-                  class="watchlist-btn"
-                >
-                  Add to watchlist
-                </v-btn>
-                <v-btn
-                  v-if="isAdded"
-                  @click="removeFromWatchList(movie)"
-                  style="color: red"
-                  color="white"
-                  class="watchlist-btn remove"
-                >
-                  Remove from watchlist
-                </v-btn>
-              </v-row>
-              <p class="genre">Genre:</p>
-              <div
-                class="in-row"
-                style="display: flex; flex-direction: row; flex-wrap: nowrap"
+                <v-icon left>mdi-plus</v-icon> Add to Watchlist
+              </v-btn>
+              <v-btn
+                v-if="isMobile && isAdded"
+                @click="removeFromWatchList(movie)"
+                outlined
+                color="red"
+                class="action-btn"
+                large
               >
-                <div v-for="genre in movie.genres" :key="genre.id">
-                  <p>
-                    <v-chip color="red" class="mx-1 genre-chip">
-                      {{ genre.name }}
-                    </v-chip>
-                  </p>
-                </div>
-              </div>
+                <v-icon left>mdi-check</v-icon> In Watchlist
+              </v-btn>
+
+              <v-btn
+                color="white"
+                class="action-btn black--text"
+                large
+                @click="scrollToPlayer"
+              >
+                <v-icon left color="black">mdi-play</v-icon> Watch Now
+              </v-btn>
+            </div>
+
+            <div class="genre-list">
+              <span
+                class="grey--text text-uppercase caption font-weight-bold d-block mb-2"
+              >
+                Genres
+              </span>
+              <v-chip
+                v-for="genre in movie.genres"
+                :key="genre.id"
+                color="grey darken-3"
+                class="mr-2 mb-2 white--text"
+                label
+                small
+              >
+                {{ genre.name }}
+              </v-chip>
             </div>
           </v-col>
         </v-row>
       </div>
     </section>
-    <Cast :cast="credits" v-if="credits != []" />
-    <div>
+
+    <Cast :cast="credits" v-if="credits && credits.length" />
+    <v-container id="player-section" class="py-12 d-flex justify-center">
       <v-card class="tabs-container">
-        <template>
-          <v-card>
-            <v-tabs
-              color="red"
-              v-model="tab"
-              background-color="black"
-              centered
-              dark
-              icons-and-text
-              class="movie-tabs"
-            >
-              <v-tabs-slider></v-tabs-slider>
+        <v-tabs
+          color="red"
+          v-model="tab"
+          background-color="black"
+          centered
+          dark
+          icons-and-text
+          class="movie-tabs"
+        >
+          <v-tabs-slider></v-tabs-slider>
+          <v-tab href="#tab-1"> Greek subs </v-tab>
+          <v-tab href="#tab-2"> No subs </v-tab>
+          <v-tab href="#tab-3"> Trailer </v-tab>
+        </v-tabs>
 
-              <v-tab href="#tab-1"> Greek subs </v-tab>
-              <v-tab href="#tab-2"> No subs </v-tab>
-              <v-tab href="#tab-3"> Trailer </v-tab>
-            </v-tabs>
-
-            <v-tabs-items v-model="tab" class="black-bg">
-              <v-tab-item value="tab-1">
-                <v-card flat color="black">
-                  <div v-if="movie" class="pt-4">
-                    <v-tabs
-                      v-model="innerTab"
-                      background-color="transparent"
-                      centered
-                      dark
-                      color="red"
-                      slider-color="red"
-                      class="inner-tabs mb-6"
-                      height="40"
-                    >
-                      <v-tab key="source-1" class="inner-tab-btn">
-                        <v-icon left small>mdi-server-network</v-icon> Source 1
-                      </v-tab>
-                      <v-tab key="source-2" class="inner-tab-btn">
-                        <v-icon left small>mdi-server-network</v-icon> Source 2
-                      </v-tab>
-                    </v-tabs>
+        <v-tabs-items v-model="tab" class="player-tabs-content">
+          <v-tab-item value="tab-1" class="fill-height-item">
+            <div v-if="movie" class="inner-player-layout">
+              <v-tabs
+                v-model="innerTab"
+                background-color="transparent"
+                centered
+                dark
+                color="red"
+                height="40"
+              >
+                <v-tab key="source-1">Source 1</v-tab>
+                <v-tab key="source-2">Source 2</v-tab>
+              </v-tabs>
 
                     <v-tabs-items
                       v-model="innerTab"
@@ -196,615 +206,469 @@
                 </v-card>
               </v-tab-item>
 
-              <v-tab-item value="tab-2">
-                <v-card color="black">
-                  <div
-                    v-if="movie"
-                    style="
-                      display: flex;
-                      justify-content: center;
-                      text-align: center;
-                      background-color: black;
-                      padding: 2rem 0;
-                    "
-                  >
-                    <div style="width: 800px; height: 600px; max-width: 100%">
-                      <v-btn
-                        class="mt-14 watch-btn"
-                        color="red"
-                        style="color: white"
-                        @click="watchMovie(movie.imdb_id)"
-                      >
-                        Watch the Movie in an external player
-                      </v-btn>
-                    </div>
-                  </div>
-                </v-card>
-              </v-tab-item>
-
-              <v-tab-item value="tab-3">
-                <v-card color="black">
-                  <div
-                    v-if="movie"
-                    class="iframe-container-wrapper pt-5 pb-5"
-                    style="background-color: black"
-                  >
-                    <iframe
-                      :src="'https://www.youtube.com/embed/' + trailerKey"
-                      frameborder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      referrerpolicy="strict-origin-when-cross-origin"
-                      allowfullscreen
-                      class="embed-iframe responsive-iframe"
-                    ></iframe>
-                  </div>
-                </v-card>
-              </v-tab-item>
-            </v-tabs-items>
-          </v-card>
-        </template>
-      </v-card>
-    </div>
-
-    <div
-      style="display: flex; justify-content: center; text-align: center"
-      class="similar-section"
-    >
-      <v-sheet
-        style="
-          background-color: black;
-          text-align: center;
-          justify-content: center;
-        "
-        class="d-flex align-content-center flex-wrap bg-surface-variant similar-sheet"
-      >
-        <div
-          v-for="(item, index) in similarMovies"
-          :key="index"
-          class="similar-item"
-        >
-          <v-card
-            class="pa-2 similar-card"
-            @click="ClickOnSimilarMovies(item)"
-            v-if="item !== undefined && item.poster_path"
-            style="background-color: black"
-            width="200"
-            height="300"
-          >
-            <a :href="'/info/?id=' + item.id">
-              <v-img
-                contain
-                class="mt-2 movie-poster similar-poster"
-                :src="'https://image.tmdb.org/t/p//w500' + item.poster_path"
-                max-width="200"
-                max-height="200"
-              />
-            </a>
-            <v-card-text
-              style="
-                text-align: center;
-                justify-content: center;
-                display: flex;
-                color: white;
-                text-wrap: auto;
-              "
-              class="similar-title"
+          <v-tab-item value="tab-2" class="fill-height-item">
+            <div
+              class="d-flex align-center justify-center fill-height bg-black"
             >
-              {{ item.title }}
-            </v-card-text>
+              <v-btn
+                class="watch-btn"
+                color="red"
+                dark
+                large
+                @click="watchMovie(movie.imdb_id)"
+              >
+                Watch in external player
+              </v-btn>
+            </div>
+          </v-tab-item>
+
+          <v-tab-item value="tab-3" class="fill-height-item">
+            <div class="fixed-iframe-wrapper">
+              <iframe
+                v-if="trailerKey"
+                :src="'https://www.youtube.com/embed/' + trailerKey"
+                frameborder="0"
+                allowfullscreen
+                class="full-iframe"
+              ></iframe>
+              <div
+                v-else
+                class="d-flex align-center justify-center fill-height white--text"
+              >
+                Trailer not available.
+              </div>
+            </div>
+          </v-tab-item>
+        </v-tabs-items>
+      </v-card>
+    </v-container>
+
+    <v-container v-if="combinedSimilar.length" class="similar-section pb-12">
+      <h2 class="text-h4 white--text mb-6 px-4">More Like This</h2>
+      <v-row class="px-2">
+        <v-col
+          v-for="similar in combinedSimilar"
+          :key="similar.id"
+          cols="6"
+          sm="4"
+          md="2"
+        >
+          <v-card class="similar-card" @click="goToMovie(similar.id)">
+            <v-img
+              :src="
+                similar.poster_path
+                  ? 'https://image.tmdb.org/t/p/w342' + similar.poster_path
+                  : 'https://via.placeholder.com/342x513?text=No+Image'
+              "
+              class="rounded-lg"
+              aspect-ratio="0.66"
+            />
+            <div class="pa-2 white--text text-truncate subtitle-2">
+              {{ similar.title }}
+            </div>
           </v-card>
-        </div>
-      </v-sheet>
-    </div>
+        </v-col>
+      </v-row>
+    </v-container>
+
+    <AppFooter />
   </div>
 </template>
 
 <script>
 import Cast from "../components/cast.vue";
-
-// Constants
-const WATCHLIST_KEY = "watchlist";
-const HISTORY_KEY = "history";
-const ID_COOKIE = "id";
-const BASE_MOVIE_API_URL = "https://api.themoviedb.org/3/movie";
-const COMMON_HEADERS = {
-  accept: "application/json",
-  Authorization:
-    "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsIm5iZiI6MTcwMzQwOTIzNy42MDE5OTk4LCJzdWIiOiI2NTg3ZjY1NTJkZmZkODVjZGI0NGQ5MDYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.74U2ndKrTu5lyaGDxrPDGKJNVMjCen72gWPGG75oWcs",
-};
+import AppFooter from "../components/AppFooter.vue";
 
 export default {
-  name: "single-movie",
+  components: { Cast, AppFooter },
   data() {
     return {
-      tab: null,
-      text: "",
-      isMobile: false,
-      isAdded: false,
-      query: null,
-      popup: false,
       movie: null,
-      similarMovies: [],
       credits: [],
+      combinedSimilar: [],
+      isAdded: false,
+      tab: "tab-1",
+      innerTab: 0,
       trailerKey: null,
-      innerTab: null,
     };
   },
-  async created() {
-    this.isMobile = screen.width < 450;
-    this.query = this.$route.query.id || this.getCookie(ID_COOKIE);
-
-    if (this.$route.query.id) {
-      this.setCookie(ID_COOKIE, this.query, 1);
-    }
-
-    await this.loadMovieData(this.query);
+  computed: {
+    isMobile() {
+      return this.$vuetify.breakpoint.smAndDown;
+    },
+  },
+  watch: {
+    "$route.query.id": {
+      handler: "loadAllData",
+      immediate: true,
+    },
   },
   methods: {
-    async loadMovieData(id) {
+    async loadAllData() {
+      const id = this.$route.query.id;
+      if (!id) return;
+
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
+        },
+      };
+
       try {
-        await this.getTopMovie(id);
-        await Promise.all([
-          this.getSimilarMovies(id),
-          this.getCredits(this.movie),
-          this.getTrailer(this.movie),
-        ]);
+        // 1. Fetch Movie Details
+        const movieRes = await fetch(
+          `https://api.themoviedb.org/3/movie/${id}?language=en-US`,
+          options
+        );
+        this.movie = await movieRes.json();
 
-        this.updateWatchlistStatus();
-      } catch (error) {
-        console.error("Error loading movie data:", error);
+        // 2. Fetch Cast
+        const creditsRes = await fetch(
+          `https://api.themoviedb.org/3/movie/${id}/credits?language=en-US`,
+          options
+        );
+        const creditsData = await creditsRes.json();
+        this.credits = creditsData.cast || [];
+
+        // 3. Fetch Trailer
+        const videosRes = await fetch(
+          `https://api.themoviedb.org/3/movie/${id}/videos?language=en-US`,
+          options
+        );
+        const videosData = await videosRes.json();
+        const trailer = videosData.results.find(
+          (v) => v.type === "Trailer" && v.site === "YouTube"
+        );
+        this.trailerKey = trailer ? trailer.key : null;
+
+        // 4. Handle Collection & Similar (Combine for 18 items)
+        let collectionResults = [];
+        if (this.movie.belongs_to_collection) {
+          const collRes = await fetch(
+            `https://api.themoviedb.org/3/collection/${this.movie.belongs_to_collection.id}?language=en-US`,
+            options
+          );
+          const collData = await collRes.json();
+          collectionResults = (collData.parts || []).filter(
+            (p) => p.id !== this.movie.id
+          );
+        }
+
+        const similarRes = await fetch(
+          `https://api.themoviedb.org/3/movie/${id}/similar?language=en-US&page=1`,
+          options
+        );
+        const similarData = await similarRes.json();
+        const similarResults = similarData.results || [];
+
+        // Merge: Collection first, then Similar. Filter duplicates and current movie.
+        const merged = [...collectionResults, ...similarResults];
+        const unique = [];
+        const seen = new Set();
+        seen.add(Number(id));
+
+        for (const item of merged) {
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            unique.push(item);
+          }
+        }
+        this.combinedSimilar = unique.slice(0, 18);
+
+        this.checkWatchlist();
+        this.saveToHistory();
+      } catch (err) {
+        console.error("Error loading movie details:", err);
       }
     },
 
-    // LocalStorage helpers
-    getLocalStorageArray(key) {
-      return JSON.parse(localStorage.getItem(key) || "[]");
-    },
-
-    setLocalStorageArray(key, array) {
-      localStorage.setItem(key, JSON.stringify(array));
-    },
-
-    updateWatchlistStatus() {
-      const watchlist = this.getLocalStorageArray(WATCHLIST_KEY);
-      this.isAdded = watchlist.some(
-        (item) =>
-          item.id === this.movie.id && item.isSerie === this.movie.isSerie
-      );
-    },
-
-    async fetchApiData(url, options) {
-      try {
-        const response = await fetch(url, options);
-        if (!response.ok)
-          throw new Error(`HTTP error! status: ${response.status}`);
-        return await response.json();
-      } catch (error) {
-        console.error(`Error fetching data from ${url}:`, error);
-        throw error;
-      }
-    },
-
-    async getCredits(movie) {
-      const url = `${BASE_MOVIE_API_URL}/${movie.id}/credits?language=en-US`;
-      const data = await this.fetchApiData(url, {
-        method: "GET",
-        headers: COMMON_HEADERS,
-      });
-      this.credits = data.cast;
-    },
-
-    async getTopMovie(id) {
-      const url = `${BASE_MOVIE_API_URL}/${id}?api_key=5b75818e63dfdb396cadedf77425b334&language=en-US&page=1`;
-      this.movie = await this.fetchApiData(url, { method: "GET" });
-      this.addToHistory(this.movie);
-    },
-
-    async getSimilarMovies(id) {
-      const url = `${BASE_MOVIE_API_URL}/${id}/recommendations?language=en-US&page=1`;
-      const data = await this.fetchApiData(url, {
-        method: "GET",
-        headers: COMMON_HEADERS,
-      });
-      this.similarMovies = data.results.slice(1);
-    },
-
-    async getTrailer(movie) {
-      const url = `${BASE_MOVIE_API_URL}/${movie.id}/videos?language=en-US`;
-      const data = await this.fetchApiData(url, {
-        method: "GET",
-        headers: COMMON_HEADERS,
-      });
-
-      const trailer = data.results.find(
-        (element) => element.site === "YouTube" && element.type === "Trailer"
-      );
-      if (trailer) this.trailerKey = trailer.key;
-    },
-
-    manageLocalStorageArray(key, movie, addToStart = false) {
-      const array = this.getLocalStorageArray(key);
-      const index = array.findIndex(
-        (item) => item.id === movie.id && item.isSerie === movie.isSerie
-      );
-
-      if (index !== -1) {
-        array.splice(index, 1);
-      }
-
-      if (addToStart) {
-        array.unshift(movie);
-      } else {
-        array.push(movie);
-      }
-
-      this.setLocalStorageArray(key, array);
-    },
-
-    addToHistory(movie) {
-      movie.isSerie = "movie";
-      this.manageLocalStorageArray(HISTORY_KEY, movie);
+    checkWatchlist() {
+      const watchlist = JSON.parse(localStorage.getItem("watchlist") || "[]");
+      this.isAdded = watchlist.some((m) => m.id === this.movie.id);
     },
 
     addToWatchlist(movie) {
-      movie.isSerie = "movie";
-      this.manageLocalStorageArray(WATCHLIST_KEY, movie, true);
-      this.isAdded = true;
+      let watchlist = JSON.parse(localStorage.getItem("watchlist") || "[]");
+      if (!watchlist.some((m) => m.id === movie.id)) {
+        watchlist.push({ ...movie, isSerie: "movie" });
+        localStorage.setItem("watchlist", JSON.stringify(watchlist));
+        this.isAdded = true;
+      }
     },
 
     removeFromWatchList(movie) {
-      const watchlist = this.getLocalStorageArray(WATCHLIST_KEY);
-      const updatedWatchlist = watchlist.filter(
-        (item) => !(item.id === movie.id && item.isSerie === movie.isSerie)
-      );
-      this.setLocalStorageArray(WATCHLIST_KEY, updatedWatchlist);
+      let watchlist = JSON.parse(localStorage.getItem("watchlist") || "[]");
+      watchlist = watchlist.filter((m) => m.id !== movie.id);
+      localStorage.setItem("watchlist", JSON.stringify(watchlist));
       this.isAdded = false;
     },
 
-    watchMovie(id) {
-      window.location.href = `https://multiembed.mov/?video_id=${id}`;
+    saveToHistory() {
+      let history = JSON.parse(localStorage.getItem("history") || "[]");
+      const exists = history.find((m) => m.id === this.movie.id);
+      if (!exists) {
+        history.unshift({ ...this.movie, isSerie: "movie" });
+        if (history.length > 20) history.pop();
+        localStorage.setItem("history", JSON.stringify(history));
+      }
     },
 
-    ClickOnSimilarMovies(item) {
-      this.eraseCookie(ID_COOKIE);
-      this.setCookie(ID_COOKIE, item.id, 1);
-      this.loadMovieData(item.id);
+    watchMovie(imdbId) {
+      window.open(`https://vidsrc.to/embed/movie/${imdbId}`, "_blank");
     },
 
-    // Cookie helpers
-    setCookie(name, value, days) {
-      const date = new Date();
-      date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-      document.cookie = `${name}=${
-        value || ""
-      }; expires=${date.toUTCString()}; path=/`;
+    goToMovie(id) {
+      this.$router.push({ query: { id } });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     },
 
-    getCookie(name) {
-      const nameEQ = `${name}=`;
-      return (
-        document.cookie
-          .split(";")
-          .map((c) => c.trim())
-          .find((c) => c.startsWith(nameEQ))
-          ?.substring(nameEQ.length) || null
-      );
-    },
-
-    eraseCookie(name) {
-      document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
+    scrollToPlayer() {
+      const el = document.getElementById("player-section");
+      if (el) el.scrollIntoView({ behavior: "smooth" });
     },
   },
-  components: { Cast },
 };
 </script>
 
 <style scoped>
-h1,
-p {
-  padding: 0;
-  margin: 0;
-}
-
-section:first-child {
-  object-fit: cover;
+.hero-container {
   position: relative;
-  overflow: hidden;
-}
-
-section:first-child::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
+  height: 100vh;
   width: 100%;
-  height: 50%;
-  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.8));
-  z-index: 1;
-  pointer-events: none;
-}
-
-@keyframes gradientShift {
-  0% {
-    opacity: 0.8;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-section:nth-child(2) {
   display: flex;
-  justify-content: center;
   align-items: center;
-  margin-top: -10em;
-  position: relative;
-}
-
-.popularity-text {
-  padding-bottom: 0.3em;
-  color: #ffd700;
-  font-weight: bold;
-  text-shadow: none; /* Make text flat */
-  font-size: 1.1rem;
-}
-
-h2 {
-  padding: 0;
-  margin: 0;
-  max-width: 15em;
-  font-size: 2.5rem;
-  color: white;
-
-  font-weight: bold;
-}
-
-.movie-meta {
-  color: #e5e5e5;
-  font-size: 1.2rem;
-  margin: 0.2em 0;
-}
-
-.movie-overview {
-  color: #f0f0f0;
-  line-height: 1.6;
-  font-size: 1.1rem;
-  max-width: 30em;
-}
-
-.genre {
-  padding-top: 1em;
-  color: #ff0000;
-  font-weight: bold;
-  font-size: 1.1rem;
-}
-
-.genre-chip {
-  border: 2px solid #ff0000;
-  transition: all 0.3s ease;
-}
-
-.genre-chip:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(255, 0, 0, 0.3);
+  overflow: hidden;
 }
 
 .movie-banner {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center;
-  position: absolute;
-  left: 0;
   z-index: 0;
-  opacity: 0.7;
-  filter: brightness(0.8);
-  transition: filter 0.3s ease;
 }
 
-.movie-poster {
-  width: 15em;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.movie-poster:hover {
-  transform: scale(1.05);
-  box-shadow: 0 12px 40px rgba(255, 0, 0, 0.4);
-}
-
-.watchlist-btn {
-  border-radius: 25px;
-  padding: 0 2rem;
-  font-weight: bold;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
-  text-transform: none;
-}
-
-.watchlist-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 0, 0, 0.4);
-}
-
-.watchlist-btn.remove {
-  border: 2px solid #ff0000;
-}
-
-.watchlist-btn.remove:hover {
-  background-color: #ff0000;
-  color: white !important;
-}
-
-/* Tabs styling */
-.tabs-container {
-  margin: 2rem 0;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-}
-
-.movie-tabs .v-tab {
-  font-weight: bold;
-  text-transform: none;
-  transition: color 0.3s ease;
-}
-
-.movie-tabs .v-tab--active {
-  color: #ff0000 !important;
-}
-
-.black-bg {
-  background-color: black !important;
-}
-
-/* Inner Nested Tabs Styling */
-.inner-tabs {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.banner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  max-width: 800px;
+  height: 100%;
+  background: linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0.9) 20%,
+      rgba(0, 0, 0, 0.4) 50%,
+      rgba(0, 0, 0, 0.9) 80%
+    ),
+    linear-gradient(
+      to top,
+      rgba(0, 0, 0, 1) 5%,
+      transparent 50%,
+      rgba(0, 0, 0, 1) 95%
+    );
+}
+
+.content-wrapper {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
-.inner-tab-btn {
-  font-size: 0.9rem;
-  opacity: 0.7;
-}
-
-.inner-tab-btn.v-tab--active {
-  opacity: 1;
-}
-
-/* Iframe Container Styling */
-.iframe-container-wrapper {
-  display: flex;
-  justify-content: center;
-  text-align: center;
-  background-color: black;
-  width: 100%;
-}
-
-.responsive-iframe {
-  width: 800px;
-  height: 600px;
-  max-width: 100%; /* Ensures it fits on mobile */
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-  transition: transform 0.3s ease;
-  background-color: black;
-}
-
-.watch-btn {
-  border-radius: 25px;
-  padding: 1rem 3rem;
-  font-size: 1.2rem;
-  font-weight: bold;
-  box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
-  transition: all 0.3s ease;
-  text-transform: none;
-}
-
-.watch-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(255, 0, 0, 0.5);
-}
-
-.similar-section {
-  margin: 3rem 0;
-  padding: 2rem;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.8),
-    rgba(0, 0, 0, 0.9)
-  );
+.movie-poster-img {
   border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.2);
 }
 
-.similar-sheet {
-  gap: 1.5rem;
-  padding: 1rem;
-}
-
-.similar-item {
-  transition: transform 0.3s ease;
-}
-
-.similar-card {
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  overflow: hidden;
-}
-
-.similar-card:hover {
-  transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 12px 40px rgba(255, 0, 0, 0.3);
-}
-
-.similar-poster {
-  border-radius: 8px;
-  transition: transform 0.3s ease;
-}
-
-.similar-poster:hover {
-  transform: scale(1.1);
-}
-
-.similar-title {
+.rating-badge {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 12px;
+  border-radius: 20px;
   font-weight: bold;
-  white-space: nowrap;
+  color: white;
+  backdrop-filter: blur(5px);
+}
+
+.movie-title-text {
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  line-height: 1.1;
+  font-weight: 900;
+  color: white;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.movie-description {
+  font-size: 1.1rem;
+  color: #ccc;
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+.action-btn {
+  font-weight: bold;
+  text-transform: none;
+  letter-spacing: 0.5px;
+  border-radius: 8px;
+}
+
+.action-btn-main {
+  text-transform: none;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.gap-4 {
+  gap: 16px;
+}
+
+/* 1. The main container */
+.tabs-container {
+  max-width: 1200px;
+  width: 95%;
+  margin: 2rem auto;
+  border-radius: 16px;
   overflow: hidden;
-  text-overflow: ellipsis;
+  height: 600px; /* Your fixed height */
+  display: flex;
+  flex-direction: column;
+  background-color: black !important;
 }
 
-.movie-grid {
-  display: grid;
-  grid-template-columns: auto auto auto auto auto;
-  padding: 10px;
+/* 2. THE ERROR FIX: Target Vuetify's internal window containers */
+.tabs-container ::v-deep .v-window,
+.tabs-container ::v-deep .v-window__container,
+.tabs-container ::v-deep .v-window-item {
+  height: 100% !important;
 }
 
-.grid-item {
-  padding: 20px;
-  text-align: center;
+/* 3. Force the tabs items area to take up the remaining space */
+.player-tabs-content {
+  flex-grow: 1;
 }
 
-@media (max-width: 50em) {
-  section:nth-child(2) {
-    flex-direction: column;
-    padding: 0 1em;
-  }
+/* 4. The iframe itself */
+.full-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+.black-bg {
+  background-color: black !important;
+}
+.iframe-container-wrapper {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 */
+  height: 0;
+}
+.responsive-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+.inner-tab-btn {
+  text-transform: none !important;
+  font-size: 0.8rem !important;
+}
+.watch-btn {
+  text-transform: none;
+  font-weight: bold;
+  padding: 1.5rem 2rem !important;
+  font-size: 1.1rem;
+}
 
-  h2 {
-    font-size: 2rem;
-  }
+/* Similar Section Styles */
+.similar-section {
+  background: linear-gradient(to top, #000, #111);
+}
+.similar-card {
+  background: transparent !important;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.similar-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 20px rgba(255, 0, 0, 0.2);
+}
 
-  .movie-overview {
-    font-size: 1rem;
+@media (max-width: 960px) {
+  .hero-container {
+    height: auto;
+    padding-top: 80px;
+    padding-bottom: 40px;
   }
-
-  .movie-poster {
-    width: 12em;
+  .movie-banner {
+    opacity: 0.5;
   }
+}
+.tabs-container {
+  max-width: 1200px;
+  width: 95%;
+  margin: 2rem auto;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  background-color: black !important;
 
-  /* Make iframes responsive on mobile */
-  .responsive-iframe {
-    width: 100%;
-    height: 50vh; /* Adjust height for mobile */
-  }
+  /* FIXED HEIGHT SETTING */
+  height: 1000px;
+  display: flex;
+  flex-direction: column;
+}
 
-  .watch-btn {
-    width: 100%;
-    max-width: 100%;
-  }
+/* Force Vuetify's internal containers to take the full remaining height */
+.player-tabs-content {
+  flex-grow: 1;
+  background-color: black !important;
+}
 
-  .similar-section {
-    padding: 1rem;
-  }
+.fill-height-item {
+  height: 100%;
+}
 
-  .similar-sheet {
-    justify-content: center;
-    gap: 1rem;
+.inner-player-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.inner-content-fill {
+  flex-grow: 1;
+  height: 100%;
+  background-color: black !important;
+}
+
+/* Iframe Wrapper for Fixed Height */
+.fixed-iframe-wrapper {
+  width: 100%;
+  height: 100%;
+  background: black;
+}
+
+.full-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.bg-black {
+  background-color: black;
+}
+
+/* Responsiveness: Adjust height for smaller screens so it doesn't overflow */
+@media (max-width: 1000px) {
+  .tabs-container {
+    height: 350px; /* Smaller fixed height for mobile */
   }
 }
 </style>

@@ -1,66 +1,53 @@
 <template>
-  <div style="background-color: black">
+  <div style="background-color: black" class="py-6">
+    <v-card-title class="white--text font-weight-bold ml-4 mb-2">
+      Series Cast
+    </v-card-title>
+
     <div @keyup.right="nextPage" @keyup.left="prevPage">
       <v-carousel
+        v-model="activePage"
         hide-delimiters
-        show-arrows-on-hover
-        style="white-space: nowrap; display: inline-block; overflow: hidden"
-        class="carousel"
+        :show-arrows="cast && cast.length > columns"
+        height="auto"
+        class="cast-carousel"
       >
         <template v-slot:prev="{ on, attrs }">
-          <v-btn
-            icon
-            v-bind="attrs"
-            v-on="on"
-            @click="prevPage"
-            class="carousel-nav"
-          >
-            <v-icon>mdi-chevron-left</v-icon>
+          <v-btn icon v-bind="attrs" v-on="on" class="carousel-nav">
+            <v-icon color="white">mdi-chevron-left</v-icon>
           </v-btn>
         </template>
         <template v-slot:next="{ on, attrs }">
-          <v-btn
-            icon
-            v-bind="attrs"
-            v-on="on"
-            @click="nextPage"
-            class="carousel-nav"
-          >
-            <v-icon>mdi-chevron-right</v-icon>
+          <v-btn icon v-bind="attrs" v-on="on" class="carousel-nav">
+            <v-icon color="white">mdi-chevron-right</v-icon>
           </v-btn>
         </template>
-        <v-carousel-item
-          v-for="(el, index) in slider"
-          :key="index"
-          class="cast"
-        >
-          <div class="d-flex align-center">
+
+        <v-carousel-item v-for="(page, pIndex) in paginatedCast" :key="pIndex">
+          <div class="d-flex justify-center align-center">
             <v-card
-              v-for="(item, index) in cast"
-              :key="index"
-              class="cast-card mx-1"
-              @mouseover="item.isActive = true"
-              @mouseleave="item.isActive = false"
-              style="
-                height: 100%;
-                min-width: 160px;
-                max-width: 160px;
-                overflow: hidden;
-                border: none;
-                background-color: black;
-              "
+              v-for="(item, iIndex) in page"
+              :key="item.id || iIndex"
+              class="cast-card mx-2"
+              style="background-color: #1a1a1a"
             >
               <v-img
-                style="height: 100%; transition: transform 0.3s; border: none"
                 :src="
-                  'https://image.tmdb.org/t/p/w500' + (item.profile_path || '')
+                  item.profile_path
+                    ? 'https://image.tmdb.org/t/p/w342' + item.profile_path
+                    : 'https://via.placeholder.com/342x513?text=No+Photo'
                 "
-                contain
+                aspect-ratio="0.66"
+                cover
                 class="cast-poster"
-              ></v-img>
-              <v-card-text style="padding: 0px !important" class="cast-name">
-                {{ item.original_name }}
-              </v-card-text>
+              >
+                <div class="fill-height d-flex align-end">
+                  <div class="text-overlay w-100">
+                    <div class="cast-name px-1">{{ item.original_name }}</div>
+                    <div class="character-name px-1">{{ item.character }}</div>
+                  </div>
+                </div>
+              </v-img>
             </v-card>
           </div>
         </v-carousel-item>
@@ -71,150 +58,112 @@
 
 <script>
 export default {
-  name: "ProfileCarousel",
+  name: "CastCarousel",
   props: {
     cast: {
       type: Array,
       required: true,
+      default: () => [],
     },
   },
   data() {
     return {
-      slider: [1, 2, 3, 4],
+      activePage: 0,
     };
   },
-  methods: {
-    prevPage() {
-      for (let x = 0; x <= this.columns; x++) {
-        this.cast.unshift(this.cast.pop());
-      }
+  computed: {
+    // Determine how many cards to show per slide
+    columns() {
+      if (this.$vuetify.breakpoint.xl) return 8;
+      if (this.$vuetify.breakpoint.lg) return 6;
+      if (this.$vuetify.breakpoint.md) return 4;
+      if (this.$vuetify.breakpoint.sm) return 3;
+      return 2;
     },
-    nextPage() {
-      for (let x = 0; x <= this.columns; x++) {
-        this.cast.push(this.cast.shift());
+    // Chunk the cast array into pages
+    paginatedCast() {
+      const chunks = [];
+      for (let i = 0; i < this.cast.length; i += this.columns) {
+        chunks.push(this.cast.slice(i, i + this.columns));
       }
+      return chunks;
     },
   },
-  computed: {
-    columns() {
-      if (this.$vuetify.breakpoint.xl) {
-        return 4;
+  methods: {
+    nextPage() {
+      if (this.activePage < this.paginatedCast.length - 1) {
+        this.activePage++;
+      } else {
+        this.activePage = 0;
       }
-
-      if (this.$vuetify.breakpoint.lg) {
-        return 3;
+    },
+    prevPage() {
+      if (this.activePage > 0) {
+        this.activePage--;
+      } else {
+        this.activePage = this.paginatedCast.length - 1;
       }
-
-      if (this.$vuetify.breakpoint.md) {
-        return 2;
-      }
-
-      return 1;
     },
   },
 };
 </script>
 
 <style scoped>
-* {
-  word-break: normal;
+.cast-carousel {
+  background-color: black;
 }
-.cursor-pointer {
-  cursor: pointer;
-}
-.carousel {
-  overflow-x: auto;
-  padding: 1rem 0;
-}
+
 .cast-card {
+  width: 160px;
+  border-radius: 12px;
   overflow: hidden;
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  position: relative;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
+
 .cast-card:hover {
-  transform: translateY(-8px) scale(1.05);
-  box-shadow: 0 12px 32px rgba(255, 0, 0, 0.4);
-  z-index: 10;
+  transform: translateY(-10px);
+  z-index: 5;
+  box-shadow: 0 10px 20px rgba(255, 0, 0, 0.3);
 }
-.cast-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(180deg, transparent 70%, rgba(0, 0, 0, 0.8) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
+
+.text-overlay {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, transparent 100%);
+  padding-bottom: 8px;
+  padding-top: 20px;
 }
-.cast-card:hover::before {
-  opacity: 1;
-}
-.cast-poster {
-  margin: 0; /* Remove margin to eliminate black space */
-  border-radius: 12px;
-  transition: transform 0.3s ease;
-}
-.cast-card:hover .cast-poster {
-  transform: scale(1.1);
-}
-.v-carousel-item {
-  transition: transform 0.5s ease; /* Transition for smooth animation */
-}
+
 .cast-name {
-  color: #f0f0f0;
+  color: white;
   font-weight: bold;
+  font-size: 0.85rem;
   text-align: center;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-  background: linear-gradient(45deg, #ff0000, #ff4500);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-size: 0.9rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 0.5rem 0 !important;
-  margin-top: 0;
-  transition: margin-top 0.3s ease;
 }
-.cast-card:hover .cast-name {
-  margin-top: 20px;
+
+.character-name {
+  color: #ff4500;
+  font-size: 0.7rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
 .carousel-nav {
-  background: rgba(0, 0, 0, 0.7) !important;
-  border-radius: 50% !important;
-  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(5px);
 }
+
 .carousel-nav:hover {
-  background: rgba(255, 0, 0, 0.8) !important;
-  transform: scale(1.1);
+  background: rgba(255, 0, 0, 0.6) !important;
 }
 
-/* Responsive adjustments */
-@media (max-width: 959px) {
+@media (max-width: 600px) {
   .cast-card {
-    min-width: 140px !important;
-    max-width: 140px !important;
-  }
-  .cast-name {
-    font-size: 0.8rem;
-  }
-}
-
-@media (max-width: 599px) {
-  .cast-card {
-    min-width: 120px !important;
-    max-width: 120px !important;
-  }
-  .cast-name {
-    font-size: 0.7rem;
-  }
-  .carousel {
-    padding: 0.5rem 0;
+    width: 130px;
   }
 }
 </style>
