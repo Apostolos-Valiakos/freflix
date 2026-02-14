@@ -43,6 +43,28 @@ export default {
       title: "FreFlix",
     };
   },
+  mounted() {
+    // We attach the listener when the layout mounts
+    if (process.client) {
+      App.addListener("backButton", this.handleBackButton);
+    }
+  },
+  beforeDestroy() {
+    // Good practice: remove listener if layout is destroyed
+    App.removeAllListeners();
+  },
+  methods: {
+    handleBackButton() {
+      // 1. Check if we are on the home page.
+      // In Nuxt, the home route is usually just '/'
+      if (this.$route.path === "/" || this.$route.name === "index") {
+        App.exitApp();
+      } else {
+        // 2. Otherwise, go back one step in history
+        this.$router.back();
+      }
+    },
+  },
   components: { AppHeader, AppFooter },
 };
 </script>
