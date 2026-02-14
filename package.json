@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@capacitor/android": "^5.7.8",
+    "@capacitor/app": "^5.0.8",
     "@capacitor/core": "^5.6.0",
     "@capacitor/ios": "^5.6.0",
     "@nuxtjs/google-analytics": "^2.4.0",
