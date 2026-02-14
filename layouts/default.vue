@@ -13,6 +13,7 @@
 <script>
 import AppFooter from "../components/AppFooter.vue";
 import AppHeader from "../components/AppHeader.vue";
+import { App } from "@capacitor/app";
 
 export default {
   comments: {
