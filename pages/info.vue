@@ -299,6 +299,9 @@ export default {
         );
         this.movie = await movieRes.json();
 
+        this.checkWatchlist();
+        this.saveToHistory();
+
         // 2. Fetch Cast
         const creditsRes = await fetch(
           `https://api.themoviedb.org/3/movie/${id}/credits?language=en-US`,
@@ -381,13 +384,19 @@ export default {
     },
 
     saveToHistory() {
+      if (!this.movie) return;
+
       let history = JSON.parse(localStorage.getItem("history") || "[]");
-      const exists = history.find((m) => m.id === this.movie.id);
-      if (!exists) {
-        history.unshift({ ...this.movie, isSerie: "movie" });
-        if (history.length > 20) history.pop();
-        localStorage.setItem("history", JSON.stringify(history));
+
+      history = history.filter((m) => m.id !== this.movie.id);
+
+      history.push({ ...this.movie, isSerie: "movie" });
+
+      if (history.length > 20) {
+        history = history.slice(0, 20);
       }
+
+      localStorage.setItem("history", JSON.stringify(history));
     },
 
     watchMovie(imdbId) {

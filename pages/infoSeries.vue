@@ -354,13 +354,20 @@ export default {
       this.isAdded = false;
     },
 
-    addToHistory(movie) {
+    addToHistory() {
+      if (!this.movie) return;
+
       let history = JSON.parse(localStorage.getItem("history") || "[]");
-      if (!history.find((m) => m.id === movie.id)) {
-        history.unshift({ ...movie, isSerie: "tv" });
-        if (history.length > 20) history.pop();
-        localStorage.setItem("history", JSON.stringify(history));
+
+      history = history.filter((m) => m.id !== this.movie.id);
+
+      history.push({ ...this.movie, isSerie: "tv" });
+
+      if (history.length > 20) {
+        history = history.slice(0, 20);
       }
+
+      localStorage.setItem("history", JSON.stringify(history));
     },
 
     handleClick(item) {
