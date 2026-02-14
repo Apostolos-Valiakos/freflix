@@ -7,14 +7,11 @@
         class="movie-banner"
         lazy-src="https://via.placeholder.com/1920x1080/000000/FFFFFF?text=Loading..."
       />
-      <!-- Content container - Note: Vuetify padding classes (px-4 px-md-16) are great for responsiveness -->
       <div class="content-overlay px-4 px-md-16">
-        <!-- Title - Responsive font sizes -->
         <h1 class="text-h4 text-sm-h2 text-md-h1 font-weight-black mb-4">
           {{ topMovie.title }}
         </h1>
 
-        <!-- Rating/Metadata -->
         <div class="d-flex align-center mb-4">
           <span class="text-body-2 text-sm-body-1 font-weight-medium">
             {{ new Date(topMovie.release_date).getFullYear() }}
@@ -37,14 +34,11 @@
           </div>
         </v-row>
 
-        <!-- Synopsis - Responsive max-width and now visible on small screens with line-clamping -->
         <p class="synopsis text-body-2 text-sm-body-1">
           {{ topMovie.overview }}
         </p>
 
-        <!-- Buttons - Responsive sizing (using $vuetify.breakpoint) is already robust -->
         <v-form class="button-container d-flex mt-6">
-          <!-- Primary Action: Play -->
           <v-btn
             :large="$vuetify.breakpoint.mdAndUp"
             :small="$vuetify.breakpoint.smAndDown"
@@ -55,7 +49,6 @@
             <v-icon left>mdi-play</v-icon>
             Play
           </v-btn>
-          <!-- Secondary Action: More Info -->
           <v-btn
             :large="$vuetify.breakpoint.mdAndUp"
             :small="$vuetify.breakpoint.smAndDown"
@@ -66,7 +59,6 @@
             <v-icon left color="red">mdi-information-outline</v-icon>
             <span style="color: red">More Info</span>
           </v-btn>
-          <!-- Add to Watchlist -->
           <v-btn
             icon
             class="ml-3 rounded-circle"
@@ -79,6 +71,7 @@
         </v-form>
       </div>
     </section>
+
     <div style="background-color: black">
       <obras
         v-if="watchlist && watchlist.length != 0"
@@ -88,55 +81,25 @@
       />
 
       <obras
-        v-if="newMovies"
-        :obras="newMovies"
-        titulo="Top Rated"
-        type="movie"
-      />
-
-      <obras
-        v-if="horrorItems"
-        :obras="horrorItems"
-        titulo="Horror"
-        type="movie"
-      />
-
-      <obras
-        v-if="fantasyItems"
-        :obras="fantasyItems"
-        titulo="Fantasy"
-        type="movie"
-      />
-
-      <obras
-        v-if="documentaryItems"
-        :obras="documentaryItems"
-        titulo="Documentary"
-        type="movie"
-      />
-      <obras
-        v-if="animationItems"
-        :obras="animationItems"
-        titulo="Animation"
+        v-for="(category, index) in categories"
+        :key="index"
+        v-if="category.items && category.items.length > 0"
+        :obras="category.items"
+        :titulo="category.title"
         type="movie"
       />
     </div>
   </div>
 </template>
-<!-- <script
-  async
-  src="https://www.googletagmanager.com/gtag/js?id=G-XMRB0HFGVK"
-></script> -->
+
 <script>
 window.dataLayer = window.dataLayer || [];
 function gtag() {
   dataLayer.push(arguments);
 }
 gtag("js", new Date());
-
 gtag("config", "G-XMRB0HFGVK");
-</script>
-<script>
+
 export default {
   transition: {
     name: "layout",
@@ -148,15 +111,50 @@ export default {
       watchlist: null,
       isAdded: false,
       topMovie: null,
-      newMovies: [],
       movies: [],
-      horrorItems: [],
-      fantasyItems: [],
-      documentaryItems: [],
-      animationItems: [],
-      randomMovies: [],
-      upcomingMovies: [],
-      series: [],
+      // The configuration array for easy expansion
+      categories: [
+        {
+          title: "Top Rated",
+          endpoint: "/movie/top_rated?language=en-US&page=1",
+          items: [],
+        },
+        {
+          title: "Horror",
+          endpoint: "/discover/movie?with_genres=27",
+          items: [],
+        },
+        {
+          title: "Fantasy",
+          endpoint: "/discover/movie?with_genres=14",
+          items: [],
+        },
+        {
+          title: "Documentary",
+          endpoint: "/discover/movie?with_genres=99",
+          items: [],
+        },
+        {
+          title: "Animation",
+          endpoint: "/discover/movie?with_genres=16",
+          items: [],
+        },
+        {
+          title: "Action",
+          endpoint: "/discover/movie?with_genres=28",
+          items: [],
+        },
+        {
+          title: "Comedy",
+          endpoint: "/discover/movie?with_genres=35",
+          items: [],
+        },
+        {
+          title: "Science Fiction",
+          endpoint: "/discover/movie?with_genres=878",
+          items: [],
+        },
+      ],
     };
   },
 
@@ -168,7 +166,6 @@ export default {
   },
 
   methods: {
-    // API Configuration
     getApiOptions() {
       return {
         method: "GET",
@@ -180,13 +177,11 @@ export default {
       };
     },
 
-    // LocalStorage helpers
     initializeWatchlist() {
       const storedWatchlist = localStorage.getItem("watchlist");
       this.watchlist = storedWatchlist ? JSON.parse(storedWatchlist) : null;
     },
 
-    // Movie data helpers
     ensureBackdropPath(list) {
       return list.map((movie) => ({
         ...movie,
@@ -194,26 +189,21 @@ export default {
       }));
     },
 
-    // Watchlist management
     addToWatchlist(movie) {
       movie.isSerie = "movie";
       let watchlist = JSON.parse(localStorage.getItem("watchlist") || "[]");
-
       const existingIndex = watchlist.findIndex(
         (item) => item.id === movie.id && item.isSerie === movie.isSerie
       );
-
       if (existingIndex >= 0) {
         watchlist.splice(existingIndex, 1);
       }
-
       watchlist.unshift(movie);
       localStorage.setItem("watchlist", JSON.stringify(watchlist));
       this.isAdded = true;
       this.watchlist = watchlist.length ? watchlist : null;
     },
 
-    // Data fetching
     async fetchCategory(url) {
       try {
         const response = await fetch(url, this.getApiOptions());
@@ -228,41 +218,23 @@ export default {
     async initialize() {
       const baseUrl = "https://api.themoviedb.org/3";
 
-      // Parallelize all fetches with Promise.all
-      const [
-        newMoviesData,
-        horrorData,
-        fantasyData,
-        documentaryData,
-        animationData,
-      ] = await Promise.all([
-        this.fetchCategory(`${baseUrl}/movie/top_rated?language=en-US&page=1`),
-        this.fetchCategory(
-          `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=27`
-        ),
-        this.fetchCategory(
-          `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=14`
-        ),
-        this.fetchCategory(
-          `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=99`
-        ),
-        this.fetchCategory(
-          `${baseUrl}/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=16`
-        ),
-      ]);
+      // Map categories to a list of promises
+      const fetchPromises = this.categories.map((cat) =>
+        this.fetchCategory(`${baseUrl}${cat.endpoint}`)
+      );
 
-      // Assign in parallel order to avoid blocking
-      this.newMovies = newMoviesData;
-      this.horrorItems = horrorData;
-      this.fantasyItems = fantasyData;
-      this.documentaryItems = documentaryData;
-      this.animationItems = animationData;
+      // Resolve all at once
+      const results = await Promise.all(fetchPromises);
 
-      // Reuse newMovies for movies if needed (avoids duplicate fetch)
-      this.movies = this.newMovies;
+      // Assign results back to the category objects
+      results.forEach((data, index) => {
+        this.categories[index].items = data;
+      });
+
+      // Set movies variable for the v-if check in template (using Top Rated)
+      this.movies = this.categories[0].items;
     },
 
-    // Navigation
     handleMovieClick(id) {
       this.$router.push({ name: "info", query: { id } });
     },
@@ -288,7 +260,6 @@ export default {
           backdrop_path: topMovieData.backdrop_path || topMovieData.poster_path,
         };
 
-        // Check if the top movie is already in the watchlist to set isAdded state
         const storedWatchlist = localStorage.getItem("watchlist");
         const watchlist = storedWatchlist ? JSON.parse(storedWatchlist) : [];
         const isCurrentlyAdded = watchlist.some(
@@ -298,15 +269,13 @@ export default {
         );
         this.isAdded = isCurrentlyAdded;
 
-        // Parallelize details fetch if needed (but only after setting topMovie)
         const detailsUrl = `${baseUrl}/movie/${this.topMovie.id}?language=en-US`;
         const detailsResponse = await fetch(detailsUrl, this.getApiOptions());
         const detailsData = await detailsResponse.json();
-        console.log(detailsData);
 
         if (detailsData.imdb_id) {
-          this.$set(this.topMovie, "imdb_id", detailsData.imdb_id); // Reactive update
-          this.$set(this.topMovie, "genres", detailsData.genres); // Reactive update
+          this.$set(this.topMovie, "imdb_id", detailsData.imdb_id);
+          this.$set(this.topMovie, "genres", detailsData.genres);
         }
       } catch (error) {
         console.error("Error fetching top movie:", error);
@@ -321,33 +290,27 @@ export default {
 </script>
 
 <style>
-/* Hero Section - Set to full height, content anchored to the top (flex-start)
-*/
 .hero-section {
   height: 100vh;
-  min-height: 500px; /* Ensure a minimum height even on very small devices */
+  min-height: 500px;
   justify-content: flex-end;
   align-items: flex-start;
-  padding: 8em 2.5em; /* Desktop Padding */
+  padding: 8em 2.5em;
   display: flex;
   flex-direction: column;
   object-fit: cover;
   position: relative;
 }
 
-/* Content Overlay - Constrain width for readability on large screens,
-  but ensure it takes full width for mobile responsiveness (handled by px- classes) 
-*/
 .content-overlay {
   z-index: 1;
   max-width: 1200px;
   width: 100%;
-  margin-left: 0 !important; /* 👈 Remove auto-centering */
-  margin-right: auto !important; /* optional, keeps responsive flow */
-  text-align: left !important; /* 👈 Ensure text aligns left */
+  margin-left: 0 !important;
+  margin-right: auto !important;
+  text-align: left !important;
 }
 
-/* Movie Banner Image */
 .movie-banner {
   width: 100%;
   height: 100%;
@@ -360,55 +323,44 @@ export default {
   opacity: 0.8;
 }
 
-/* Typography Base Styles */
 h1,
 p {
   padding: 0;
   margin: 0;
-  color: white; /* Ensure text is white for contrast */
+  color: white;
   text-shadow: 2px 2px 4px rgb(0 0 0 / 45%);
 }
 
 h1 {
-  /* H1 font size is handled by Vuetify classes in template: text-h4 text-sm-h2 text-md-h1 */
-  max-width: 90%; /* Prevent title from taking up too much width */
+  max-width: 90%;
 }
 
 .synopsis {
-  /* Synopsis font size is handled by Vuetify classes in template: text-body-2 text-sm-body-1 */
-  max-width: 40rem; /* Constrain max line length for better desktop readability */
+  max-width: 40rem;
   padding-top: 0.5rem;
   padding-bottom: 1rem;
 }
 
-/* Responsive Overrides for Mobile (less than 600px) */
 @media (max-width: 600px) {
   .hero-section {
-    /* More compact padding on mobile */
     padding-top: 10px;
     padding-bottom: 20px;
-    min-height: 70vh; /* Shorter hero section on mobile */
+    min-height: 70vh;
   }
-
-  /* Force synopsis to full width on mobile */
   .synopsis {
     max-width: 100%;
   }
-
-  /* Button container adjustments for better touch targets */
   .button-container {
     flex-wrap: wrap;
   }
 }
 
-/* Responsive Overrides for Tablet (less than 960px) */
 @media (max-width: 960px) {
   .hero-section {
     padding: 3em 1.5em;
   }
 }
 
-/* Other general styles remain */
 .v-window.v-item-group.theme--dark.v-window--show-arrows-on-hover.v-carousel {
   height: 400px !important;
 }
