@@ -363,10 +363,6 @@ export default {
 
       history.push({ ...this.movie, isSerie: "tv" });
 
-      if (history.length > 20) {
-        history = history.slice(0, 20);
-      }
-
       localStorage.setItem("history", JSON.stringify(history));
     },
 
