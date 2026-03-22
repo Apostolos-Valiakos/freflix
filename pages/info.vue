@@ -165,10 +165,10 @@
             <v-tabs-items v-model="innerTab" class="black-bg">
               <v-tab-item
                 v-for="(src, index) in [
+                  'https://coverapi.store/embed/' + movie.imdb_id,
                   'https://coverapi.space/embed/movie?imdb=' +
                     movie.imdb_id +
                     '&ds_lang=el',
-                  'https://coverapi.store/embed/' + movie.imdb_id,
                 ]"
                 :key="index"
               >
@@ -396,7 +396,10 @@ export default {
     },
 
     watchMovie(imdbId) {
-      window.open(`https://vidsrc.to/embed/movie/${imdbId}`, "_blank");
+      window.open(
+        `https://multiembed.mov/directstream.php?video_id=${imdbId}`,
+        "_blank"
+      );
     },
 
     goToMovie(id) {
