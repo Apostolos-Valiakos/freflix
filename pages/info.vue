@@ -630,7 +630,7 @@ export default {
 .iframe-container-wrapper {
   position: relative;
   width: 100%;
-  padding-bottom: 56.25%; /* Perfect 16:9 ratio */
+  padding-bottom: 65%; /* Perfect 16:9 ratio */
   height: 0;
   background: #000;
   overflow: hidden;
