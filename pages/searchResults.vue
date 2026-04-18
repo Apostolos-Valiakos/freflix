@@ -9,7 +9,7 @@
           class="ma-2 pa-4 search-field flex-grow-1"
           label="Search by Name"
           v-model="searchTerm"
-          @change="onTermChange"
+          @change="onSearchClick"
           clearable
           dense
           hide-details
@@ -112,7 +112,6 @@
             </v-row>
             <v-row class="justify-end">
               <v-btn text color="grey" @click="resetFilters">Reset</v-btn>
-              <v-btn color="red" @click="applyFilters">Apply Filters</v-btn>
             </v-row>
           </v-expansion-panel-content>
         </v-expansion-panel>
@@ -281,27 +280,41 @@ export default {
       this.isFiltering = false;
       this.searchPerCategory("", 1); // Reset to default popular
     },
-    applyFilters() {
-      this.searchTerm = ""; // Clear text search when filtering
-      this.useKeywordSearch = false;
-      this.isFiltering = true;
-      this.page = 1;
-      this.searchResults = []; // Clear current results
-      this.searchWithFilters(1);
-    },
-    onTermChange() {
-      this.isFiltering = false; // Disable advanced filter mode
-      this.useKeywordSearch = false;
-      this.keywordId = "";
-      this.filters.selectedGenre = null; // Reset genre
-      this.search(1);
-    },
     onSearchClick() {
-      if (this.isFiltering) {
-        this.applyFilters();
+      // Reset page and clear results for a fresh search
+      this.page = 1;
+      this.searchResults = [];
+
+      // Check if the user typed something in the search bar
+      if (this.searchTerm && this.searchTerm.trim() !== "") {
+        // OPTION C: Text exists -> Ignore filters and use text search
+        this.isFiltering = false;
+        this.useKeywordSearch = false;
+        this.keywordId = "";
+
+        // Optionally, reset the genre in the UI so the user knows filters were ignored
+        this.filters.selectedGenre = null;
+
+        this.search(1); // Calls the /search/multi API
       } else {
-        this.onTermChange();
+        // OPTION C: Text is empty -> Use advanced filters
+        this.isFiltering = true;
+        this.useKeywordSearch = false;
+
+        this.searchWithFilters(1); // Calls the /discover API
       }
+    },
+
+    resetFilters() {
+      this.filters = {
+        sortBy: "popularity.desc",
+        yearRange: [1980, 2026],
+        minRating: 0,
+        selectedGenre: null,
+      };
+      this.searchTerm = "";
+      this.isFiltering = false;
+      this.onSearchClick(); // Automatically run a fresh default search after resetting
     },
 
     // --- API & SEARCH LOGIC ---
