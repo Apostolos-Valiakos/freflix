@@ -45,24 +45,23 @@ export default {
     };
   },
   mounted() {
-    // We attach the listener when the layout mounts
     if (process.client) {
-      App.addListener("backButton", this.handleBackButton);
+      App.addListener("backButton", this.handleBackButton).then(
+        (handle) => { this._backButtonHandle = handle; }
+      );
     }
   },
   beforeDestroy() {
-    // Good practice: remove listener if layout is destroyed
-    App.removeAllListeners();
+    if (this._backButtonHandle) {
+      this._backButtonHandle.remove();
+    }
   },
   methods: {
-    handleBackButton() {
-      // 1. Check if we are on the home page.
-      // In Nuxt, the home route is usually just '/'
-      if (this.$route.path === "/" || this.$route.name === "index") {
-        App.exitApp();
+    handleBackButton({ canGoBack }) {
+      if (canGoBack) {
+        window.history.back();
       } else {
-        // 2. Otherwise, go back one step in history
-        this.$router.back();
+        App.exitApp();
       }
     },
   },
