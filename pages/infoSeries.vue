@@ -173,6 +173,7 @@
                       "
                       allowfullscreen
                       class="full-iframe"
+                      sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-fullscreen"
                     ></iframe>
                   </div>
                 </v-tab-item>
@@ -182,6 +183,7 @@
                       :src="'https://coverapi.store/embed/' + imdb_id"
                       allowfullscreen
                       class="full-iframe"
+                      sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-fullscreen"
                     ></iframe>
                   </div>
                 </v-tab-item>

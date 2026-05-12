@@ -179,6 +179,7 @@
                     allowfullscreen
                     scrolling="no"
                     class="responsive-iframe"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-fullscreen"
                   ></iframe>
                 </div>
               </v-tab-item>
