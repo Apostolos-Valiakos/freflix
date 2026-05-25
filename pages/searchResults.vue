@@ -158,7 +158,7 @@
             :src="
               movie.backdrop_path
                 ? 'https://image.tmdb.org/t/p/w500' + movie.backdrop_path
-                : 'https://via.placeholder.com/500x281?text=No+Image'
+                : 'https://placehold.co/500x281/111111/FFFFFF?text=No+Image'
             "
             class="movie-image"
           >

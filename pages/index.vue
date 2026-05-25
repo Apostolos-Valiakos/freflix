@@ -5,7 +5,6 @@
         :src="'https://image.tmdb.org/t/p/original' + topMovie.backdrop_path"
         alt="Movie Poster"
         class="movie-banner"
-        lazy-src="https://via.placeholder.com/1920x1080/000000/FFFFFF?text=Loading..."
       />
       <div class="content-overlay px-4 px-md-16">
         <h1 class="text-h4 text-sm-h2 text-md-h1 font-weight-black mb-4">

@@ -35,7 +35,7 @@
                 :src="
                   item.profile_path
                     ? 'https://image.tmdb.org/t/p/w342' + item.profile_path
-                    : 'https://via.placeholder.com/342x513?text=No+Photo'
+                    : 'https://placehold.co/342x513/111111/FFFFFF?text=No+Photo'
                 "
                 aspect-ratio="0.66"
                 cover

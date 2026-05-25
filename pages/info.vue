@@ -227,7 +227,7 @@
               :src="
                 similar.poster_path
                   ? 'https://image.tmdb.org/t/p/w342' + similar.poster_path
-                  : 'https://via.placeholder.com/342x513?text=No+Image'
+                  : 'https://placehold.co/342x513/111111/FFFFFF?text=No+Image'
               "
               class="rounded-lg"
               aspect-ratio="0.66"
