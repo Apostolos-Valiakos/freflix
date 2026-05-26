@@ -166,11 +166,7 @@
                 <v-tab-item>
                   <div class="fixed-iframe-wrapper">
                     <iframe
-                      :src="
-                        'https://coverapi.space/embed/tv?imdb=' +
-                        imdb_id +
-                        '&ds_lang=el'
-                      "
+                      :src="'https://coverapi.store/embed/' + imdb_id"
                       allowfullscreen
                       class="full-iframe"
                       sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-fullscreen"
@@ -180,10 +176,13 @@
                 <v-tab-item>
                   <div class="fixed-iframe-wrapper">
                     <iframe
-                      :src="'https://coverapi.store/embed/' + imdb_id"
+                      :src="
+                        'https://coverapi.space/embed/tv?imdb=' +
+                        imdb_id +
+                        '&ds_lang=el'
+                      "
                       allowfullscreen
                       class="full-iframe"
-                      sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-fullscreen"
                     ></iframe>
                   </div>
                 </v-tab-item>
