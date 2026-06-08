@@ -176,11 +176,7 @@
                 <v-tab-item>
                   <div class="fixed-iframe-wrapper">
                     <iframe
-                      :src="
-                        'https://coverapi.space/embed/tv?imdb=' +
-                        imdb_id +
-                        '&ds_lang=el'
-                      "
+                      :src="'https://streamimdb.ru/embed/tv/' + imdb_id"
                       allowfullscreen
                       class="full-iframe"
                     ></iframe>

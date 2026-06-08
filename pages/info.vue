@@ -166,7 +166,7 @@
               <v-tab-item
                 v-for="(src, index) in [
                   'https://coverapi.store/embed/' + movie.imdb_id,
-                  'https://coverapi.space/embed/movie?imdb=' +
+                  'https://www.playimdb.com/title/' +
                     movie.imdb_id +
                     '&ds_lang=el',
                 ]"
