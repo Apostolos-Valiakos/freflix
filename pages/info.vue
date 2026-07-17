@@ -511,34 +511,8 @@ export default {
   gap: 16px;
 }
 
-/* 4. The iframe itself */
-.full-iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  display: block;
-}
 .black-bg {
   background-color: black !important;
-}
-/* Target the specific wrapper for your iframes */
-.iframe-container-wrapper {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-  height: 0;
-  overflow: hidden; /* This hides the scrollbar */
-}
-
-/* Ensure the iframe itself doesn't trigger scrollbars */
-.responsive-iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: none;
-  overflow: hidden;
 }
 .inner-tab-btn {
   text-transform: none !important;
@@ -615,12 +589,6 @@ export default {
   background-color: black;
 }
 
-/* Responsiveness: Adjust height for smaller screens so it doesn't overflow */
-@media (max-width: 1000px) {
-  .tabs-container {
-    height: 350px; /* Smaller fixed height for mobile */
-  }
-}
 .tabs-container {
   width: 100%;
   max-width: 1100px;
