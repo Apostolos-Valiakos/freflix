@@ -135,76 +135,78 @@
 
     <v-container id="player-section" class="py-12 d-flex justify-center">
       <v-card class="tabs-container">
-        <v-tabs
-          color="red"
-          v-model="tab"
-          background-color="black"
-          centered
-          dark
-          icons-and-text
-        >
-          <v-tabs-slider></v-tabs-slider>
-          <v-tab href="#tab-1"> Greek subs </v-tab>
-          <v-tab href="#tab-2"> Trailer </v-tab>
-        </v-tabs>
+        <div class="tabs-container-inner">
+          <v-tabs
+            color="red"
+            v-model="tab"
+            background-color="black"
+            centered
+            dark
+            icons-and-text
+          >
+            <v-tabs-slider></v-tabs-slider>
+            <v-tab href="#tab-1"> Greek subs </v-tab>
+            <v-tab href="#tab-2"> Trailer </v-tab>
+          </v-tabs>
 
-        <v-tabs-items v-model="tab" class="player-tabs-content">
-          <v-tab-item value="tab-1" class="fill-height-item">
-            <div v-if="movie" class="inner-player-layout">
-              <v-tabs
-                v-model="innerTab"
-                background-color="transparent"
-                centered
-                dark
-                color="red"
-                height="40"
-              >
-                <v-tab>Source 1</v-tab>
-                <v-tab>Source 2</v-tab>
-              </v-tabs>
+          <v-tabs-items v-model="tab" class="player-tabs-content">
+            <v-tab-item value="tab-1" class="fill-height-item">
+              <div v-if="movie" class="inner-player-layout">
+                <v-tabs
+                  v-model="innerTab"
+                  background-color="transparent"
+                  centered
+                  dark
+                  color="red"
+                  height="40"
+                >
+                  <v-tab>Source 1</v-tab>
+                  <v-tab>Source 2</v-tab>
+                </v-tabs>
 
-              <v-tabs-items v-model="innerTab" class="inner-content-fill">
-                <v-tab-item>
-                  <div class="fixed-iframe-wrapper">
-                    <iframe
-                      :src="'https://coverapi.store/embed/' + imdb_id"
-                      allowfullscreen
-                      class="full-iframe"
-                      sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-fullscreen"
-                    ></iframe>
-                  </div>
-                </v-tab-item>
-                <v-tab-item>
-                  <div class="fixed-iframe-wrapper">
-                    <iframe
-                      :src="'https://streamimdb.ru/embed/tv/' + imdb_id"
-                      allowfullscreen
-                      class="full-iframe"
-                    ></iframe>
-                  </div>
-                </v-tab-item>
-              </v-tabs-items>
-            </div>
-          </v-tab-item>
-
-          <v-tab-item value="tab-2" class="fill-height-item">
-            <div class="fixed-iframe-wrapper">
-              <iframe
-                v-if="trailerKey"
-                :src="'https://www.youtube.com/embed/' + trailerKey"
-                frameborder="0"
-                allowfullscreen
-                class="full-iframe"
-              ></iframe>
-              <div
-                v-else
-                class="d-flex align-center justify-center fill-height white--text"
-              >
-                Trailer not available.
+                <v-tabs-items v-model="innerTab" class="inner-content-fill">
+                  <v-tab-item>
+                    <div class="fixed-iframe-wrapper">
+                      <iframe
+                        :src="'https://coverapi.store/embed/' + imdb_id"
+                        allowfullscreen
+                        class="full-iframe"
+                        sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-fullscreen"
+                      ></iframe>
+                    </div>
+                  </v-tab-item>
+                  <v-tab-item>
+                    <div class="fixed-iframe-wrapper">
+                      <iframe
+                        :src="'https://streamimdb.ru/embed/tv/' + imdb_id"
+                        allowfullscreen
+                        class="full-iframe"
+                      ></iframe>
+                    </div>
+                  </v-tab-item>
+                </v-tabs-items>
               </div>
-            </div>
-          </v-tab-item>
-        </v-tabs-items>
+            </v-tab-item>
+
+            <v-tab-item value="tab-2" class="fill-height-item">
+              <div class="fixed-iframe-wrapper">
+                <iframe
+                  v-if="trailerKey"
+                  :src="'https://www.youtube.com/embed/' + trailerKey"
+                  frameborder="0"
+                  allowfullscreen
+                  class="full-iframe"
+                ></iframe>
+                <div
+                  v-else
+                  class="d-flex align-center justify-center fill-height white--text"
+                >
+                  Trailer not available.
+                </div>
+              </div>
+            </v-tab-item>
+          </v-tabs-items>
+        </div>
       </v-card>
     </v-container>
 
@@ -466,18 +468,29 @@ export default {
   border-radius: 8px;
 }
 
-/* PLAYER CONTAINER (FIXED 1000px) */
+/* PLAYER CONTAINER (responsive 16:9, height derived from width so it can
+   never exceed the viewport height on any screen, including TVs) */
 .tabs-container {
+  position: relative;
   max-width: 1200px;
   width: 95%;
   margin: 2rem auto;
   border-radius: 16px;
   overflow: hidden;
-  height: 1000px;
-  display: flex;
-  flex-direction: column;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio, relative to this box's own width */
+  height: 0;
   background-color: black !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+}
+
+.tabs-container-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .tabs-container ::v-deep .v-window,
@@ -534,9 +547,6 @@ export default {
 }
 
 @media (max-width: 1000px) {
-  .tabs-container {
-    height: 500px;
-  }
   .hero-container {
     height: auto;
     padding-top: 80px;
