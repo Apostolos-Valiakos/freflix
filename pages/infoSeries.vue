@@ -1,5 +1,6 @@
 <template>
   <div style="background-color: black; min-height: 100vh">
+    <WatchParty />
     <section v-if="movie" class="hero-container">
       <v-img
         :src="'https://image.tmdb.org/t/p/original' + movie.poster_path"
@@ -259,6 +260,7 @@
 <script>
 import Cast from "../components/cast.vue";
 import AppFooter from "../components/AppFooter.vue";
+import WatchParty from "../components/WatchParty.vue";
 
 const API_CONFIG = {
   baseUrl: "https://api.themoviedb.org/3/tv/",
@@ -271,7 +273,7 @@ const API_CONFIG = {
 
 export default {
   name: "single-series",
-  components: { Cast, AppFooter },
+  components: { Cast, AppFooter, WatchParty },
   data() {
     return {
       isMobile: false,
