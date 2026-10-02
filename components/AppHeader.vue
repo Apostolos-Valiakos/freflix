@@ -26,6 +26,24 @@
       </v-btn>
       <v-btn text color="white" :to="{ path: '/watchlist' }"> Watchlist </v-btn>
       <v-btn text color="white" :to="{ path: '/history' }"> History </v-btn>
+      <v-btn v-if="isLoggedIn" text color="white" :to="{ path: '/liked' }">
+        Liked
+      </v-btn>
+      <v-btn v-if="!isLoggedIn" text color="white" @click="$tmdb.login()">
+        Login
+      </v-btn>
+      <v-menu v-else offset-y left>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn text color="white" v-bind="attrs" v-on="on">
+            {{ username }}
+          </v-btn>
+        </template>
+        <v-list dark color="black">
+          <v-list-item @click="$tmdb.logout()">
+            <v-list-item-title>Logout</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
     </template>
 
     <v-menu v-else offset-y left>
@@ -55,6 +73,16 @@
         <v-list-item :to="{ path: '/history' }">
           <v-list-item-title>History</v-list-item-title>
         </v-list-item>
+        <v-list-item v-if="isLoggedIn" :to="{ path: '/liked' }">
+          <v-list-item-title>Liked</v-list-item-title>
+        </v-list-item>
+        <v-divider></v-divider>
+        <v-list-item v-if="!isLoggedIn" @click="$tmdb.login()">
+          <v-list-item-title>Login</v-list-item-title>
+        </v-list-item>
+        <v-list-item v-else @click="$tmdb.logout()">
+          <v-list-item-title>Logout ({{ username }})</v-list-item-title>
+        </v-list-item>
       </v-list>
     </v-menu>
   </v-app-bar>
@@ -68,47 +96,11 @@ export default {
       // isMobile is true for screen sizes < sm (i.e., less than 600px by default)
       return this.$vuetify.breakpoint.smAndDown;
     },
-  },
-  data() {
-    return {
-      sessionID: "",
-      watchlist: [],
-    };
-  },
-  created() {
-    // Removed manual screen width check; using Vuetify's breakpoint
-    this.createSession();
-    if (localStorage.sessionID) {
-      this.sessionID = localStorage.sessionID;
-    }
-    if (localStorage.watchlist) {
-      this.watchlist = localStorage.watchlist;
-    }
-  },
-  methods: {
-    createSession() {
-      if (!localStorage.sessionID) {
-        const url =
-          "https://api.themoviedb.org/3/authentication/guest_session/new";
-        const options = {
-          method: "GET",
-          headers: {
-            accept: "application/json",
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYjE5NTM3NWNkODk0ZGRlNzkwOGNiNzIxMmQwMTBmOCIsInN1YiI6IjY1ODdmNjU1MmRmZmQ4NWNkYjQ0ZDkwNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.XaBBhvFBh29o9x62S5G3BJ-KVofB-_clblrCU7PUj7M",
-          },
-        };
-
-        fetch(url, options)
-          .then((res) => res.json())
-          .then((json) => {
-            localStorage.sessionID = json.guest_session_id;
-            console.log(localStorage.sessionID);
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      }
+    isLoggedIn() {
+      return this.$tmdb.state.isLoggedIn;
+    },
+    username() {
+      return this.$tmdb.state.username;
     },
   },
 };

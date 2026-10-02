@@ -1,6 +1,5 @@
 <template>
   <div style="background-color: black; min-height: 100vh">
-    <WatchParty />
     <section v-if="movie" class="hero-container">
       <v-img
         :src="'https://image.tmdb.org/t/p/original' + movie.poster_path"
@@ -24,7 +23,10 @@
               alt="Poster Image"
               class="movie-poster-img elevation-20"
             />
-            <div class="mt-6 w-100 d-flex justify-center" style="width: 300px">
+            <div
+              class="mt-6 w-100 d-flex justify-center align-center"
+              style="width: 300px"
+            >
               <v-btn
                 v-if="!isAdded"
                 @click="addToWatchlist(movie)"
@@ -32,8 +34,7 @@
                 dark
                 rounded
                 large
-                block
-                class="action-btn-main"
+                class="action-btn-main flex-grow-1"
               >
                 <v-icon left>mdi-plus</v-icon> Add to Watchlist
               </v-btn>
@@ -45,10 +46,20 @@
                 dark
                 rounded
                 large
-                block
-                class="action-btn-main"
+                class="action-btn-main flex-grow-1"
               >
                 <v-icon left>mdi-check</v-icon> In Watchlist
+              </v-btn>
+              <v-btn
+                v-if="isLoggedIn"
+                icon
+                large
+                class="ml-2"
+                @click="toggleFavorite"
+              >
+                <v-icon color="red" large>{{
+                  isFavorite ? "mdi-heart" : "mdi-heart-outline"
+                }}</v-icon>
               </v-btn>
             </div>
           </v-col>
@@ -108,6 +119,11 @@
               >
                 <v-icon left>mdi-check</v-icon> Added
               </v-btn>
+              <v-btn v-if="isLoggedIn" icon large @click="toggleFavorite">
+                <v-icon color="red" large>{{
+                  isFavorite ? "mdi-heart" : "mdi-heart-outline"
+                }}</v-icon>
+              </v-btn>
             </div>
 
             <div class="genre-list">
@@ -133,9 +149,19 @@
 
     <Cast :cast="credits" v-if="credits && credits.length" />
 
-    <v-container id="player-section" class="py-12 d-flex justify-center">
-      <v-card class="tabs-container">
-        <div class="tabs-container-inner">
+    <div ref="playerFullscreenWrapper" class="player-fullscreen-wrapper">
+      <WatchParty />
+      <v-btn
+        icon
+        dark
+        class="fullscreen-toggle-btn"
+        @click="toggleFullscreen"
+      >
+        <v-icon>{{ isFullscreen ? "mdi-fullscreen-exit" : "mdi-fullscreen" }}</v-icon>
+      </v-btn>
+      <v-container id="player-section" class="py-12 d-flex justify-center">
+        <v-card class="tabs-container">
+          <div class="tabs-container-inner">
           <v-tabs
             color="red"
             v-model="tab"
@@ -205,10 +231,11 @@
                 </div>
               </div>
             </v-tab-item>
-          </v-tabs-items>
-        </div>
-      </v-card>
-    </v-container>
+            </v-tabs-items>
+          </div>
+        </v-card>
+      </v-container>
+    </div>
 
     <v-container v-if="similarMovies.length" class="similar-section pb-12">
       <h2 class="text-h4 white--text mb-8 px-4 text-center font-weight-bold">
@@ -287,7 +314,14 @@ export default {
       tab: "tab-1",
       innerTab: 0,
       isAdded: false,
+      isFavorite: false,
+      isFullscreen: false,
     };
+  },
+  computed: {
+    isLoggedIn() {
+      return this.$tmdb.state.isLoggedIn;
+    },
   },
   async created() {
     this.isMobile = this.$vuetify.breakpoint.smAndDown;
@@ -297,7 +331,23 @@ export default {
       await this.loadAllData(id);
     }
   },
+  mounted() {
+    document.addEventListener("fullscreenchange", this.onFullscreenChange);
+  },
+  beforeDestroy() {
+    document.removeEventListener("fullscreenchange", this.onFullscreenChange);
+  },
   methods: {
+    toggleFullscreen() {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        this.$refs.playerFullscreenWrapper.requestFullscreen();
+      }
+    },
+    onFullscreenChange() {
+      this.isFullscreen = document.fullscreenElement === this.$refs.playerFullscreenWrapper;
+    },
     async loadAllData(id) {
       try {
         const [movieData, similarData, creditsData, idsData, videosData] =
@@ -322,6 +372,7 @@ export default {
 
         this.addToHistory(this.movie);
         this.checkIfMovieIsAdded();
+        this.checkFavorite();
       } catch (error) {
         console.error("Error loading series data:", error);
       }
@@ -339,12 +390,37 @@ export default {
       this.isAdded = watchlist.some((item) => item.id === this.movie.id);
     },
 
+    async checkFavorite() {
+      if (!this.isLoggedIn) {
+        this.isFavorite = false;
+        return;
+      }
+      const states = await this.$tmdb.getAccountStates("tv", this.movie.id);
+      this.isFavorite = !!(states && states.favorite);
+    },
+
+    async toggleFavorite() {
+      const newValue = !this.isFavorite;
+      this.isFavorite = newValue;
+      try {
+        await this.$tmdb.toggleFavorite("tv", this.movie.id, newValue);
+      } catch (err) {
+        console.error(err);
+        this.isFavorite = !newValue;
+      }
+    },
+
     addToWatchlist(movie) {
       let watchlist = JSON.parse(localStorage.getItem("watchlist") || "[]");
       if (!watchlist.some((m) => m.id === movie.id)) {
         watchlist.unshift({ ...movie, isSerie: "tv" });
         localStorage.setItem("watchlist", JSON.stringify(watchlist));
         this.isAdded = true;
+        if (this.isLoggedIn) {
+          this.$tmdb
+            .addToWatchlist("tv", movie.id)
+            .catch((err) => console.error(err));
+        }
       }
     },
 
@@ -353,6 +429,11 @@ export default {
       watchlist = watchlist.filter((m) => m.id !== movie.id);
       localStorage.setItem("watchlist", JSON.stringify(watchlist));
       this.isAdded = false;
+      if (this.isLoggedIn) {
+        this.$tmdb
+          .removeFromWatchlist("tv", movie.id)
+          .catch((err) => console.error(err));
+      }
     },
 
     addToHistory() {
@@ -466,6 +547,32 @@ export default {
   font-weight: bold;
   text-transform: none;
   border-radius: 8px;
+}
+
+.player-fullscreen-wrapper {
+  position: relative;
+}
+
+.player-fullscreen-wrapper:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: black;
+}
+
+.player-fullscreen-wrapper:fullscreen #player-section {
+  width: 100%;
+  max-height: 100vh;
+}
+
+.fullscreen-toggle-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2500;
+  background-color: rgba(0, 0, 0, 0.5) !important;
 }
 
 /* PLAYER CONTAINER (responsive 16:9, height derived from width so it can

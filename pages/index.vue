@@ -73,6 +73,13 @@
 
     <div style="background-color: black">
       <obras
+        v-if="isLoggedIn && recommendations.length != 0"
+        :obras="recommendations"
+        titulo="Recommended for You"
+        type="movie"
+      />
+
+      <obras
         v-if="watchlist && watchlist.length != 0"
         :obras="watchlist"
         titulo="Watchlist"
@@ -123,6 +130,7 @@ export default {
       isAdded: false,
       topMovie: null,
       movies: [],
+      recommendations: [],
       // The configuration array for easy expansion
       categories: [
         {
@@ -169,11 +177,25 @@ export default {
     };
   },
 
+  computed: {
+    isLoggedIn() {
+      return this.$tmdb.state.isLoggedIn;
+    },
+  },
+
   async created() {
     this.initializeWatchlist();
     await this.getTopMovie("movie");
     await this.initialize();
     localStorage.removeItem("searchFilters");
+    if (this.isLoggedIn) {
+      this.$tmdb
+        .getPersonalizedRecommendations()
+        .then((recs) => {
+          this.recommendations = recs;
+        })
+        .catch((err) => console.error(err));
+    }
   },
 
   methods: {

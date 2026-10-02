@@ -1,10 +1,16 @@
 <template>
   <div>
-    <div v-if="isEmpty" class="empty-state">
-      <h1 class="empty-title">The Watchlist is Empty!!!</h1>
+    <div v-if="!isLoggedIn" class="empty-state">
+      <h1 class="empty-title">Log in to see your liked movies!</h1>
+      <v-btn color="red" dark rounded large @click="$tmdb.login()">
+        Login
+      </v-btn>
+    </div>
+    <div v-else-if="isEmpty" class="empty-state">
+      <h1 class="empty-title">You haven't liked anything yet!</h1>
     </div>
     <div v-else style="margin-top: 100px">
-      <v-row v-if="results" class="results-grid">
+      <v-row class="results-grid">
         <v-col
           v-for="(movie, index) in results"
           :key="index"
@@ -22,7 +28,7 @@
 
             <v-card-title
               class="movie-title-section"
-              v-if="movie.isSerie == 'tv'"
+              v-if="movie.isSerie === 'tv'"
             >
               {{ movie.name }}
             </v-card-title>
@@ -36,9 +42,9 @@
               <v-btn
                 class="remove-btn"
                 color="red"
-                @click="removeFromWatchList(index)"
+                @click="removeFavorite(index)"
               >
-                remove from watchlist
+                <v-icon left>mdi-heart-off</v-icon> remove from liked
               </v-btn>
             </v-card-actions>
           </v-card>
@@ -53,69 +59,54 @@ export default {
   data() {
     return {
       isEmpty: false,
-      watchlist: [],
       results: [],
     };
   },
+  computed: {
+    isLoggedIn() {
+      return this.$tmdb.state.isLoggedIn;
+    },
+  },
   async created() {
-    if (this.$tmdb.state.isLoggedIn) {
-      try {
-        this.results = await this.$tmdb.syncWatchlistFromTmdb();
-      } catch (err) {
-        console.error(err);
-        this.results = JSON.parse(
-          window.localStorage.getItem("watchlist") || "[]"
-        );
-      }
-    } else {
-      this.results = JSON.parse(
-        window.localStorage.getItem("watchlist") || "[]"
-      ).reverse();
+    if (!this.isLoggedIn) return;
+    try {
+      this.results = await this.$tmdb.getFavorites();
+    } catch (err) {
+      console.error(err);
     }
     this.isEmpty = this.results.length === 0;
   },
   methods: {
-    addToWatchlist(movie) {
-      var watchlistFromLocalStorage = JSON.parse(
-        localStorage.getItem("watchlist") || "[]"
-      );
-      watchlistFromLocalStorage.push(movie);
-      localStorage.setItem(
-        "watchlist",
-        JSON.stringify(watchlistFromLocalStorage)
-      );
-    },
     seeInfo(movie) {
       if (movie.isSerie === "tv") {
-        this.$router.push({
-          name: "infoSeries",
-          query: { id: movie.id },
-        });
+        this.$router.push({ name: "infoSeries", query: { id: movie.id } });
       } else {
         this.$router.push({ name: "info", query: { id: movie.id } });
       }
     },
-    removeFromWatchList(index) {
+    async removeFavorite(index) {
       const movie = this.results[index];
       this.results.splice(index, 1);
-      localStorage.setItem("watchlist", JSON.stringify(this.results));
-      if (this.$tmdb.state.isLoggedIn) {
-        this.$tmdb
-          .removeFromWatchlist(movie.isSerie === "tv" ? "tv" : "movie", movie.id)
-          .catch((err) => console.error(err));
+      this.isEmpty = this.results.length === 0;
+      try {
+        await this.$tmdb.toggleFavorite(
+          movie.isSerie === "tv" ? "tv" : "movie",
+          movie.id,
+          false
+        );
+      } catch (err) {
+        console.error(err);
       }
     },
   },
 };
 </script>
-<style>
-.space-above {
-  margin-top: 100px;
-  margin: 0; /* Reset default margin */
-}
 
+<style scoped>
 .empty-state {
   display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
   justify-content: center;
   align-items: center;
   height: 50vh;

@@ -1,6 +1,5 @@
 <template>
   <div style="background-color: black; min-height: 100vh">
-    <WatchParty />
     <section v-if="movie" class="hero-container">
       <v-img
         :src="'https://image.tmdb.org/t/p/original' + movie.poster_path"
@@ -25,7 +24,10 @@
               class="movie-poster-img elevation-20"
             />
 
-            <div class="mt-6 w-100 d-flex justify-center" style="width: 300px">
+            <div
+              class="mt-6 w-100 d-flex justify-center align-center"
+              style="width: 300px"
+            >
               <v-btn
                 v-if="!isAdded"
                 @click="addToWatchlist(movie)"
@@ -33,8 +35,7 @@
                 dark
                 rounded
                 large
-                block
-                class="action-btn-main"
+                class="action-btn-main flex-grow-1"
               >
                 <v-icon left>mdi-plus</v-icon> Add to Watchlist
               </v-btn>
@@ -46,10 +47,20 @@
                 dark
                 rounded
                 large
-                block
-                class="action-btn-main"
+                class="action-btn-main flex-grow-1"
               >
                 <v-icon left>mdi-check</v-icon> In Watchlist
+              </v-btn>
+              <v-btn
+                v-if="isLoggedIn"
+                icon
+                large
+                class="ml-2"
+                @click="toggleFavorite"
+              >
+                <v-icon color="red" large>{{
+                  isFavorite ? "mdi-heart" : "mdi-heart-outline"
+                }}</v-icon>
               </v-btn>
             </div>
           </v-col>
@@ -97,6 +108,16 @@
               >
                 <v-icon left>mdi-check</v-icon> In Watchlist
               </v-btn>
+              <v-btn
+                v-if="isMobile && isLoggedIn"
+                icon
+                large
+                @click="toggleFavorite"
+              >
+                <v-icon color="red" large>{{
+                  isFavorite ? "mdi-heart" : "mdi-heart-outline"
+                }}</v-icon>
+              </v-btn>
 
               <v-btn
                 color="white"
@@ -131,86 +152,94 @@
     </section>
 
     <Cast :cast="credits" v-if="credits && credits.length" />
-    <v-container
-      id="player-section"
-      class="py-12 d-flex justify-center"
-      v-if="movie"
-    >
-      <div class="tabs-container">
-        <v-tabs
-          v-model="tab"
-          color="red"
-          background-color="black"
-          centered
-          dark
-          icons-and-text
-        >
-          <v-tab href="#tab-1"> Greek subs </v-tab>
-          <v-tab href="#tab-2"> No subs </v-tab>
-          <v-tab href="#tab-3"> Trailer </v-tab>
-        </v-tabs>
+    <div ref="playerFullscreenWrapper" class="player-fullscreen-wrapper">
+      <WatchParty />
+      <v-btn icon dark class="fullscreen-toggle-btn" @click="toggleFullscreen">
+        <v-icon>{{
+          isFullscreen ? "mdi-fullscreen-exit" : "mdi-fullscreen"
+        }}</v-icon>
+      </v-btn>
+      <v-container
+        id="player-section"
+        class="py-12 d-flex justify-center"
+        v-if="movie"
+      >
+        <div class="tabs-container">
+          <v-tabs
+            v-model="tab"
+            color="red"
+            background-color="black"
+            centered
+            dark
+            icons-and-text
+          >
+            <v-tab href="#tab-1"> Greek subs </v-tab>
+            <v-tab href="#tab-2"> No subs </v-tab>
+            <v-tab href="#tab-3"> Trailer </v-tab>
+          </v-tabs>
 
-        <v-tabs-items v-model="tab" class="player-tabs-content">
-          <v-tab-item value="tab-1">
-            <v-tabs
-              v-model="innerTab"
-              background-color="transparent"
-              centered
-              dark
-              color="red"
-              dense
-            >
-              <v-tab>Source 1</v-tab>
-              <v-tab>Source 2</v-tab>
-            </v-tabs>
-            <v-tabs-items v-model="innerTab" class="black-bg">
-              <v-tab-item
-                v-for="(src, index) in [
-                  'https://coverapi.store/embed/' + movie.imdb_id,
-                  'https://www.playimdb.com/title/' +
-                    movie.imdb_id +
-                    '&ds_lang=el',
-                ]"
-                :key="index"
+          <v-tabs-items v-model="tab" class="player-tabs-content">
+            <v-tab-item value="tab-1">
+              <v-tabs
+                v-model="innerTab"
+                background-color="transparent"
+                centered
+                dark
+                color="red"
+                dense
               >
-                <div class="iframe-container-wrapper">
-                  <iframe
-                    :src="src"
-                    frameborder="0"
-                    allowfullscreen
-                    scrolling="no"
-                    class="responsive-iframe"
-                  ></iframe>
-                </div>
-              </v-tab-item>
-            </v-tabs-items>
-          </v-tab-item>
+                <v-tab>Source 1</v-tab>
+                <v-tab>Source 2</v-tab>
+              </v-tabs>
+              <v-tabs-items v-model="innerTab" class="black-bg">
+                <v-tab-item
+                  v-for="(src, index) in [
+                    'https://coverapi.store/embed/' + movie.imdb_id,
+                    'https://www.playimdb.com/title/' +
+                      movie.imdb_id +
+                      '&ds_lang=el',
+                  ]"
+                  :key="index"
+                >
+                  <div class="iframe-container-wrapper">
+                    <iframe
+                      :src="src"
+                      frameborder="0"
+                      allowfullscreen
+                      scrolling="no"
+                      class="responsive-iframe"
+                    ></iframe>
+                  </div>
+                </v-tab-item>
+              </v-tabs-items>
+            </v-tab-item>
 
-          <v-tab-item value="tab-2">
-            <div
-              class="d-flex align-center justify-center bg-black"
-              style="min-height: 400px"
-            >
-              <v-btn color="red" dark large @click="watchMovie(movie.imdb_id)"
-                >Watch in external player</v-btn
+            <v-tab-item value="tab-2">
+              <div
+                class="d-flex align-center justify-center bg-black"
+                style="min-height: 400px"
               >
-            </div>
-          </v-tab-item>
+                <v-btn color="red" dark large @click="watchMovie(movie.imdb_id)"
+                  >Watch in external player</v-btn
+                >
+              </div>
+            </v-tab-item>
 
-          <v-tab-item value="tab-3">
-            <div class="iframe-container-wrapper">
-              <iframe
-                v-if="trailerKey"
-                :src="'https://www.youtube.com/embed/' + trailerKey"
-                frameborder="0"
-                allowfullscreen
-                class="responsive-iframe"
-              ></iframe>
-            </div>
-          </v-tab-item>
-        </v-tabs-items>
-      </div>
-    </v-container>
+            <v-tab-item value="tab-3">
+              <div class="iframe-container-wrapper">
+                <iframe
+                  v-if="trailerKey"
+                  :src="'https://www.youtube.com/embed/' + trailerKey"
+                  frameborder="0"
+                  allowfullscreen
+                  class="responsive-iframe"
+                ></iframe>
+              </div>
+            </v-tab-item>
+          </v-tabs-items>
+        </div>
+      </v-container>
+    </div>
 
     <v-container v-if="combinedSimilar.length" class="similar-section pb-12">
       <h2 class="text-h4 white--text mb-6 px-4">More Like This</h2>
@@ -257,14 +286,19 @@ export default {
       credits: [],
       combinedSimilar: [],
       isAdded: false,
+      isFavorite: false,
       tab: "tab-1",
       innerTab: 0,
       trailerKey: null,
+      isFullscreen: false,
     };
   },
   computed: {
     isMobile() {
       return this.$vuetify.breakpoint.smAndDown;
+    },
+    isLoggedIn() {
+      return this.$tmdb.state.isLoggedIn;
     },
   },
   watch: {
@@ -273,7 +307,24 @@ export default {
       immediate: true,
     },
   },
+  mounted() {
+    document.addEventListener("fullscreenchange", this.onFullscreenChange);
+  },
+  beforeDestroy() {
+    document.removeEventListener("fullscreenchange", this.onFullscreenChange);
+  },
   methods: {
+    toggleFullscreen() {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        this.$refs.playerFullscreenWrapper.requestFullscreen();
+      }
+    },
+    onFullscreenChange() {
+      this.isFullscreen =
+        document.fullscreenElement === this.$refs.playerFullscreenWrapper;
+    },
     async loadAllData() {
       const id = this.$route.query.id;
       if (!id) return;
@@ -303,6 +354,7 @@ export default {
 
         this.checkWatchlist();
         this.saveToHistory();
+        this.checkFavorite();
 
         // 2. Fetch Cast
         const creditsRes = await fetch(
@@ -369,12 +421,37 @@ export default {
       this.isAdded = watchlist.some((m) => m.id === this.movie.id);
     },
 
+    async checkFavorite() {
+      if (!this.isLoggedIn) {
+        this.isFavorite = false;
+        return;
+      }
+      const states = await this.$tmdb.getAccountStates("movie", this.movie.id);
+      this.isFavorite = !!(states && states.favorite);
+    },
+
+    async toggleFavorite() {
+      const newValue = !this.isFavorite;
+      this.isFavorite = newValue;
+      try {
+        await this.$tmdb.toggleFavorite("movie", this.movie.id, newValue);
+      } catch (err) {
+        console.error(err);
+        this.isFavorite = !newValue;
+      }
+    },
+
     addToWatchlist(movie) {
       let watchlist = JSON.parse(localStorage.getItem("watchlist") || "[]");
       if (!watchlist.some((m) => m.id === movie.id)) {
         watchlist.push({ ...movie, isSerie: "movie" });
         localStorage.setItem("watchlist", JSON.stringify(watchlist));
         this.isAdded = true;
+        if (this.isLoggedIn) {
+          this.$tmdb
+            .addToWatchlist("movie", movie.id)
+            .catch((err) => console.error(err));
+        }
       }
     },
 
@@ -383,6 +460,11 @@ export default {
       watchlist = watchlist.filter((m) => m.id !== movie.id);
       localStorage.setItem("watchlist", JSON.stringify(watchlist));
       this.isAdded = false;
+      if (this.isLoggedIn) {
+        this.$tmdb
+          .removeFromWatchlist("movie", movie.id)
+          .catch((err) => console.error(err));
+      }
     },
 
     saveToHistory() {
@@ -589,6 +671,32 @@ export default {
   background-color: black;
 }
 
+.player-fullscreen-wrapper {
+  position: relative;
+}
+
+.player-fullscreen-wrapper:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: black;
+}
+
+.player-fullscreen-wrapper:fullscreen #player-section {
+  width: 100%;
+  max-height: 100vh;
+}
+
+.fullscreen-toggle-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2500;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
 .tabs-container {
   width: 100%;
   max-width: 1100px;
@@ -600,7 +708,7 @@ export default {
 .iframe-container-wrapper {
   position: relative;
   width: 100%;
-  padding-bottom: 65%; /* Perfect 16:9 ratio */
+  padding-bottom: 35%; /* Perfect 16:9 ratio */
   height: 0;
   background: #000;
   overflow: hidden;

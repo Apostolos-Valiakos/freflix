@@ -33,6 +33,17 @@
                 class="movie-poster"
               ></v-img>
             </a>
+            <v-btn
+              v-if="isLoggedIn"
+              icon
+              small
+              class="favorite-icon"
+              @click.stop="toggleFavorite(item)"
+            >
+              <v-icon color="red">{{
+                favoriteStates[item.id] ? "mdi-heart" : "mdi-heart-outline"
+              }}</v-icon>
+            </v-btn>
           </v-card>
         </div>
       </v-carousel-item>
@@ -71,14 +82,42 @@ export default {
       currentIndex: 0,
       itemsPerPage: 6,
       clicado: 0,
+      favoriteStates: {},
     };
   },
   mounted() {
     if (this.obras && this.obras.length) this.items = this.obras;
     this.isMobile = screen.width < 450;
+    this.fetchStatesForCurrentPage();
   },
 
   methods: {
+    mediaTypeFor(item) {
+      if (item.isSerie) return item.isSerie === "movie" ? "movie" : "tv";
+      return this.type === "movie" ? "movie" : "tv";
+    },
+    async fetchStatesForCurrentPage() {
+      if (!this.isLoggedIn) return;
+      const page = this.pages[this.currentIndex] || [];
+      for (const item of page) {
+        if (!item || this.favoriteStates[item.id] !== undefined) continue;
+        const states = await this.$tmdb.getAccountStates(
+          this.mediaTypeFor(item),
+          item.id
+        );
+        this.$set(this.favoriteStates, item.id, !!(states && states.favorite));
+      }
+    },
+    async toggleFavorite(item) {
+      const newValue = !this.favoriteStates[item.id];
+      this.$set(this.favoriteStates, item.id, newValue);
+      try {
+        await this.$tmdb.toggleFavorite(this.mediaTypeFor(item), item.id, newValue);
+      } catch (err) {
+        console.error(err);
+        this.$set(this.favoriteStates, item.id, !newValue);
+      }
+    },
     getItemUrl(item) {
       let routeName = "";
       if (item.isSerie) {
@@ -144,6 +183,9 @@ export default {
     },
   },
   computed: {
+    isLoggedIn() {
+      return this.$tmdb.state.isLoggedIn;
+    },
     columns() {
       return this.$vuetify.breakpoint.xl
         ? 9
@@ -199,6 +241,9 @@ export default {
         this.currentIndex = 0;
       }
     },
+    currentIndex() {
+      this.fetchStatesForCurrentPage();
+    },
   },
 };
 </script>
@@ -214,11 +259,19 @@ export default {
   justify-content: space-between;
 }
 .movie-card {
+  position: relative;
   border-radius: 8px;
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   transform-origin: center;
   border: none;
+}
+.favorite-icon {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 20000;
+  background-color: rgba(0, 0, 0, 0.5) !important;
 }
 .movie-poster {
   border-radius: 8px;
