@@ -1,69 +1,45 @@
 # freflix
 
-## Build Setup
+Movie and TV browser built on [TMDB](https://www.themoviedb.org/) data.
+Nuxt 4 (client-only) + Tailwind CSS, packaged for Android with Capacitor.
+
+## Setup
 
 ```bash
 # install dependencies
-$ npm install
+npm install
 
-# serve with hot reload at localhost:3000
-$ npm run dev
+# dev server with hot reload at localhost:3000
+npm run dev
 
-# build for production and launch server
-$ npm run build
-$ npm run start
+# static build into .output/public (also linked as dist/)
+npm run generate
 
-# generate static project
-$ npm run generate
+# serve the static build locally
+npx serve .output/public
 ```
 
-For detailed explanation on how things work, check out the [documentation](https://nuxtjs.org).
+The TMDB read token lives in `nuxt.config.ts` (`runtimeConfig.public.tmdbToken`).
+Set `NUXT_PUBLIC_TMDB_TOKEN` to override it.
 
-## Special Directories
+## Android
 
-You can create the following extra directories, some of which have special behaviors. Only `pages` is required; you can delete them if you don't want to use their functionality.
+```bash
+npm run generate
+npx cap sync android
+npx cap open android
+```
 
-### `assets`
+## Layout
 
-The assets directory contains your uncompiled assets such as Stylus or Sass files, images, or fonts.
+| Path | What it holds |
+| --- | --- |
+| `app/pages` | Routes: home, `movies`, `series`, `movie/[id]`, `tv/[id]`, `person/[id]`, `provider/[id]`, `category/[type]/[slug]`, `search`, `lists`, `auth-callback` |
+| `app/components` | UI pieces (nav, hero slider, rows, cards, filters, detail page, player, watch party) |
+| `app/composables` | TMDB fetch + cache, TMDB account login, watchlist/history, ambient colour, infinite lists |
+| `app/utils` | Image/format helpers and `config.ts` (watch region, country list) |
+| `app/middleware/legacy.global.ts` | Redirects from the old URLs (`/info?id=`, `/infoSeries?id=`, `/watchlist`, ...) |
+| `public` | Static files served as-is (`_headers`, `_redirects`, `peerjs.min.js`, sitemap) |
 
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/assets).
-
-### `components`
-
-The components directory contains your Vue.js components. Components make up the different parts of your page and can be reused and imported into your pages, layouts and even other components.
-
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/components).
-
-### `layouts`
-
-Layouts are a great help when you want to change the look and feel of your Nuxt app, whether you want to include a sidebar or have distinct layouts for mobile and desktop.
-
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/layouts).
-
-
-### `pages`
-
-This directory contains your application views and routes. Nuxt will read all the `*.vue` files inside this directory and setup Vue Router automatically.
-
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/get-started/routing).
-
-### `plugins`
-
-The plugins directory contains JavaScript plugins that you want to run before instantiating the root Vue.js Application. This is the place to add Vue plugins and to inject functions or constants. Every time you need to use `Vue.use()`, you should create a file in `plugins/` and add its path to plugins in `nuxt.config.js`.
-
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/plugins).
-
-### `static`
-
-This directory contains your static files. Each file inside this directory is mapped to `/`.
-
-Example: `/static/robots.txt` is mapped as `/robots.txt`.
-
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/static).
-
-### `store`
-
-This directory contains your Vuex store files. Creating a file in this directory automatically activates Vuex.
-
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/store).
+Provider tiles and the provider filter use the region in `app/utils/config.ts`
+(`WATCH_REGION`, default `US`).

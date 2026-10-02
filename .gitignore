@@ -91,3 +91,5 @@ sw.*
 *.swp
 package-lock.json
 package.json
+docs/reference/
+.output

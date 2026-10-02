@@ -1,33 +1,29 @@
 {
   "name": "freflix",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "nuxt",
+    "dev": "nuxt dev",
     "build": "nuxt build",
-    "start": "nuxt start",
     "generate": "nuxt generate",
-    "ionic:build": "npm run build",
-    "ionic:serve": "npm run start"
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "ionic:build": "npm run generate",
+    "ionic:serve": "npm run preview"
   },
   "dependencies": {
     "@capacitor/android": "^5.7.8",
     "@capacitor/app": "^5.0.8",
     "@capacitor/core": "^5.6.0",
-    "@capacitor/ios": "5.7.8",
-    "@nuxtjs/google-analytics": "^2.4.0",
-    "capacitor": "^0.5.6",
-    "core-js": "^3.25.3",
-    "js-cookie": "^3.0.5",
-    "nuxt": "^2.15.8",
-    "peerjs": "^1.5.5",
-    "vue": "^2.7.10",
-    "vue-server-renderer": "^2.7.10",
-    "vue-template-compiler": "^2.7.10",
-    "vuetify": "^2.6.10"
+    "@tailwindcss/vite": "^4.3.3",
+    "lucide-vue-next": "^1.0.0",
+    "nuxt": "^4.5.2",
+    "tailwindcss": "^4.3.3",
+    "vue": "^3.5.0",
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
-    "@capacitor/cli": "5.7.8",
-    "@nuxtjs/vuetify": "^1.12.3"
+    "@capacitor/cli": "5.7.8"
   }
 }
