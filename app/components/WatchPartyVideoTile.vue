@@ -17,8 +17,12 @@
 
 <script setup lang="ts">
 const props = withDefaults(
-  defineProps<{ stream?: MediaStream | null; muted?: boolean; label?: string }>(),
-  { stream: null, muted: false, label: "" }
+  defineProps<{
+    stream?: MediaStream | null;
+    muted?: boolean;
+    label?: string;
+  }>(),
+  { stream: null, muted: false, label: "" },
 );
 
 const video = ref<HTMLVideoElement | null>(null);
@@ -30,6 +34,6 @@ watch(
       if (video.value) video.value.srcObject = stream || null;
     });
   },
-  { immediate: true }
+  { immediate: true },
 );
 </script>

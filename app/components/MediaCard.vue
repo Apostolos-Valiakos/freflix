@@ -6,7 +6,9 @@
   >
     <div
       class="relative isolate overflow-hidden bg-white/5 shadow-xl shadow-black/40"
-      :class="isPerson ? 'aspect-square rounded-full' : 'aspect-[2/3] rounded-xl'"
+      :class="
+        isPerson ? 'aspect-square rounded-full' : 'aspect-[2/3] rounded-xl'
+      "
     >
       <img
         v-if="image"
@@ -72,6 +74,9 @@ const isPerson = computed(() => props.item.media_type === "person");
 const title = computed(() => titleOf(props.item));
 const year = computed(() => yearOf(props.item));
 const image = computed(() =>
-  img(isPerson.value ? props.item.profile_path : props.item.poster_path, "w342")
+  img(
+    isPerson.value ? props.item.profile_path : props.item.poster_path,
+    "w342",
+  ),
 );
 </script>

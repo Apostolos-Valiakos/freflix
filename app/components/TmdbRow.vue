@@ -29,7 +29,7 @@ onMounted(async () => {
       ...props.params,
     });
     items.value = tagItems(json.results, props.type).filter(
-      (item) => item.poster_path
+      (item) => item.poster_path,
     );
   } catch (err) {
     console.error(err);

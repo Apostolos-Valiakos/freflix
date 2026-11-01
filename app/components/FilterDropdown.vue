@@ -84,7 +84,7 @@ const props = withDefaults(
     align?: "left" | "right";
     showDot?: boolean;
   }>(),
-  { allLabel: "", variant: "pill", align: "left", showDot: true }
+  { allLabel: "", variant: "pill", align: "left", showDot: true },
 );
 
 const emit = defineEmits<{
@@ -95,7 +95,7 @@ const open = ref(false);
 const root = ref<HTMLElement | null>(null);
 
 const selected = computed(() =>
-  props.options.find((option) => option.value === props.modelValue)
+  props.options.find((option) => option.value === props.modelValue),
 );
 
 function select(value: string | number | null) {

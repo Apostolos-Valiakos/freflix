@@ -24,10 +24,10 @@ async function login() {
   }
   localStorage.setItem("tmdbPendingRequestToken", json.request_token);
   const redirectTo = encodeURIComponent(
-    `${window.location.origin}/auth-callback`
+    `${window.location.origin}/auth-callback`,
   );
   window.location.assign(
-    `https://www.themoviedb.org/authenticate/${json.request_token}?redirect_to=${redirectTo}`
+    `https://www.themoviedb.org/authenticate/${json.request_token}?redirect_to=${redirectTo}`,
   );
 }
 
@@ -46,7 +46,7 @@ async function handleAuthCallback(query: Record<string, any>) {
     const sessionJson = await tmdbRequest(
       "/authentication/session/new",
       {},
-      { method: "POST", body: { request_token: query.request_token } }
+      { method: "POST", body: { request_token: query.request_token } },
     );
     if (!sessionJson.success || !sessionJson.session_id) {
       return { success: false, reason: "session_failed" };
@@ -85,7 +85,7 @@ function logout() {
     tmdbRequest(
       "/authentication/session",
       {},
-      { method: "DELETE", body: { session_id: sessionId } }
+      { method: "DELETE", body: { session_id: sessionId } },
     ).catch((err) => console.error(err));
   }
   localStorage.removeItem("tmdbSessionId");
@@ -111,7 +111,7 @@ function toggleFavorite(mediaType: MediaType, id: number, value: boolean) {
     {
       method: "POST",
       body: { media_type: mediaType, media_id: id, favorite: value },
-    }
+    },
   );
 }
 
@@ -122,7 +122,7 @@ function setWatchlist(mediaType: MediaType, id: number, value: boolean) {
     {
       method: "POST",
       body: { media_type: mediaType, media_id: id, watchlist: value },
-    }
+    },
   );
 }
 
@@ -133,7 +133,7 @@ async function fetchAccountList(kind: string, mediaType: "movies" | "tv") {
   do {
     const json = await tmdbRequest(
       `/account/${state.accountId}/${kind}/${mediaType}`,
-      { session_id: state.sessionId, page }
+      { session_id: state.sessionId, page },
     );
     results.push(...(json.results || []));
     totalPages = json.total_pages || 1;
@@ -179,7 +179,7 @@ async function getPersonalizedRecommendations() {
           console.error(err);
           return [];
         });
-    })
+    }),
   );
 
   const seen = new Set();
@@ -205,7 +205,7 @@ async function migrateLocalWatchlistToTmdb() {
     const mediaType = mediaTypeOf(item);
     if (!existing.has(`${mediaType}:${item.id}`)) {
       await setWatchlist(mediaType, item.id, true).catch((err) =>
-        console.error(err)
+        console.error(err),
       );
     }
   }

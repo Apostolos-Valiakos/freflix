@@ -32,7 +32,9 @@ const route = useRoute();
 const router = useRouter();
 
 const providerId = computed(() => Number(route.params.id));
-const type = computed<MediaType>(() => (route.query.type === "tv" ? "tv" : "movie"));
+const type = computed<MediaType>(() =>
+  route.query.type === "tv" ? "tv" : "movie",
+);
 const provider = ref<any>(null);
 
 const typeOptions = [
@@ -55,7 +57,9 @@ const { items, loading, sentinel, reset } = useInfiniteList(async (page) => {
   });
   return {
     ...json,
-    results: tagItems(json.results, type.value).filter((item) => item.poster_path),
+    results: tagItems(json.results, type.value).filter(
+      (item) => item.poster_path,
+    ),
   };
 });
 

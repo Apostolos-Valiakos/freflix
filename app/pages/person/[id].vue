@@ -1,6 +1,8 @@
 <template>
   <div v-if="person" class="page-gutter mx-auto max-w-[1400px] pt-28">
-    <div class="flex flex-col items-center gap-8 md:flex-row md:items-start md:gap-12">
+    <div
+      class="flex flex-col items-center gap-8 md:flex-row md:items-start md:gap-12"
+    >
       <div
         class="aspect-square w-48 flex-none overflow-hidden rounded-full border border-white/10 bg-white/5 shadow-2xl md:w-72"
       >
@@ -76,9 +78,14 @@ const chips = computed(() => {
     list.push(`Born ${formatDate(p.birthday)}`);
     const end = p.deathday ? new Date(p.deathday) : new Date();
     const age = Math.floor(
-      (end.getTime() - new Date(p.birthday).getTime()) / (365.25 * 24 * 3600 * 1000)
+      (end.getTime() - new Date(p.birthday).getTime()) /
+        (365.25 * 24 * 3600 * 1000),
     );
-    list.push(p.deathday ? `Died ${formatDate(p.deathday)} (${age})` : `${age} years old`);
+    list.push(
+      p.deathday
+        ? `Died ${formatDate(p.deathday)} (${age})`
+        : `${age} years old`,
+    );
   }
   if (p.place_of_birth) list.push(p.place_of_birth);
   return list;

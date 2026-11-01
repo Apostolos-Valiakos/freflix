@@ -54,7 +54,13 @@ const route = useRoute();
 const router = useRouter();
 
 function defaultFilters(): BrowseFilters {
-  return { genre: null, year: null, sort: "popular", provider: null, country: null };
+  return {
+    genre: null,
+    year: null,
+    sort: "popular",
+    provider: null,
+    country: null,
+  };
 }
 
 function isoDate(offsetDays = 0) {
@@ -126,7 +132,9 @@ const { items, loading, sentinel, reset } = useInfiniteList(async (page) => {
   const json = await tmdbFetch(`/discover/${props.type}`, discoverParams(page));
   return {
     ...json,
-    results: tagItems(json.results, props.type).filter((item) => item.poster_path),
+    results: tagItems(json.results, props.type).filter(
+      (item) => item.poster_path,
+    ),
   };
 });
 
@@ -161,7 +169,7 @@ async function loadUpcoming() {
           })
         : await tmdbFetch("/tv/on_the_air", { language: "en-US" });
     upcoming.value = tagItems(json.results, props.type).filter(
-      (item) => item.backdrop_path
+      (item) => item.backdrop_path,
     );
   } catch (err) {
     console.error(err);

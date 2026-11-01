@@ -1,6 +1,8 @@
 <template>
   <section class="group/row relative py-5">
-    <div class="page-gutter relative z-20 mb-2 flex items-center justify-between">
+    <div
+      class="page-gutter relative z-20 mb-2 flex items-center justify-between"
+    >
       <h2
         class="flex flex-wrap items-center gap-2 text-xl font-semibold text-white/90 drop-shadow-md"
       >
@@ -72,7 +74,7 @@ const props = withDefaults(
     viewAll?: string;
     loading?: boolean;
   }>(),
-  { title: "", items: () => [], type: undefined, viewAll: "" }
+  { title: "", items: () => [], type: undefined, viewAll: "" },
 );
 
 const scroller = ref<HTMLElement | null>(null);
@@ -94,7 +96,7 @@ function scrollBy(direction: number) {
 
 watch(
   () => props.items.length,
-  () => nextTick(updateArrows)
+  () => nextTick(updateArrows),
 );
 onMounted(() => {
   updateArrows();

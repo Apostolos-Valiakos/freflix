@@ -18,12 +18,18 @@
         class="absolute right-0 z-50 w-56 rounded-2xl border border-white/10 bg-raised/95 p-2 shadow-2xl backdrop-blur-xl"
         :class="placement === 'up' ? 'bottom-full mb-4' : 'top-full mt-3'"
       >
-        <button v-if="!account.state.isLoggedIn" class="menu-item" @click="login">
+        <button
+          v-if="!account.state.isLoggedIn"
+          class="menu-item"
+          @click="login"
+        >
           <LogIn class="h-4 w-4" /> Login
         </button>
         <div v-else class="flex items-center gap-3 px-3 py-2.5 text-sm">
           <CircleUser class="h-4 w-4 text-white/60" />
-          <span class="truncate font-semibold">{{ account.state.username }}</span>
+          <span class="truncate font-semibold">{{
+            account.state.username
+          }}</span>
         </div>
 
         <div class="my-1 h-px bg-white/10"></div>

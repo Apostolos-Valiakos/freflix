@@ -31,7 +31,7 @@ const options = computed(() =>
     value: provider.provider_id,
     label: provider.provider_name,
     logo: img(provider.logo_path, "w92"),
-  }))
+  })),
 );
 
 async function load() {
@@ -46,7 +46,7 @@ async function load() {
       watch_region: WATCH_REGION,
     });
     items.value = tagItems(json.results, props.type).filter(
-      (item) => item.poster_path
+      (item) => item.poster_path,
     );
   } catch (err) {
     console.error(err);

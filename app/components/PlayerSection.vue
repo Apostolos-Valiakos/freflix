@@ -30,10 +30,7 @@
         </div>
       </div>
 
-      <div
-        v-if="tab === 'nosubs'"
-        class="flex items-center gap-3 px-3 pb-3"
-      >
+      <div v-if="tab === 'nosubs'" class="flex items-center gap-3 px-3 pb-3">
         <span class="flex-none text-sm font-medium text-white/60">Server</span>
         <SegmentedControl
           class="no-scrollbar min-w-0 max-w-full overflow-x-auto"

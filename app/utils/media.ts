@@ -38,7 +38,8 @@ export function tagItems(results: any[] | undefined, type: MediaType) {
 export function pickLogo(images: any): string | null {
   const logos = images?.logos;
   if (!logos?.length) return null;
-  return (logos.find((logo: any) => logo.iso_639_1 === "en") || logos[0]).file_path;
+  return (logos.find((logo: any) => logo.iso_639_1 === "en") || logos[0])
+    .file_path;
 }
 
 // A poster without lettering, so it can sit behind the title on phones

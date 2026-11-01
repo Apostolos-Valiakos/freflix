@@ -28,6 +28,6 @@ withDefaults(
     loading?: boolean;
     skeletons?: number;
   }>(),
-  { items: () => [], type: undefined, skeletons: 12 }
+  { items: () => [], type: undefined, skeletons: 12 },
 );
 </script>

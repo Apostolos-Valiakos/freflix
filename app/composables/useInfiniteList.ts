@@ -3,7 +3,7 @@ type Page = { results?: any[]; total_pages?: number };
 // Paged list that loads the next page when its sentinel element scrolls into view
 export function useInfiniteList(
   fetchPage: (page: number) => Promise<Page>,
-  maxPages = 500
+  maxPages = 500,
 ) {
   const items = ref<any[]>([]);
   const page = ref(0);
@@ -64,7 +64,7 @@ export function useInfiniteList(
       (entries) => {
         if (entries[0]?.isIntersecting) loadNext();
       },
-      { rootMargin: "600px" }
+      { rootMargin: "600px" },
     );
     observer.observe(el);
   });

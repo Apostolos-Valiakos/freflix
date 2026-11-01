@@ -21,7 +21,7 @@ export default defineNuxtRouteMiddleware((to) => {
   if (path === "/liked" || path === "/history") {
     return navigateTo(
       { path: "/lists", query: { tab: path.slice(1) } },
-      { replace: true }
+      { replace: true },
     );
   }
 });

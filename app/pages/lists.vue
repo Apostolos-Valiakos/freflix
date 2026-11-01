@@ -4,7 +4,11 @@
       <h1 class="flex items-center gap-4 text-4xl font-bold tracking-tight">
         <ListVideo class="h-8 w-8" /> My Lists
       </h1>
-      <SegmentedControl :options="tabs" :model-value="tab" @update:model-value="setTab" />
+      <SegmentedControl
+        :options="tabs"
+        :model-value="tab"
+        @update:model-value="setTab"
+      />
     </div>
 
     <div
@@ -71,7 +75,7 @@ const tabs = [
 const tab = computed(() =>
   route.query.tab === "liked" || route.query.tab === "history"
     ? route.query.tab
-    : "watchlist"
+    : "watchlist",
 );
 
 const liked = ref<any[]>([]);
@@ -129,7 +133,9 @@ function remove(item: any) {
     library.removeFromHistory(item.id, type);
   } else {
     liked.value = liked.value.filter((entry) => entry !== item);
-    account.toggleFavorite(type, item.id, false).catch((err) => console.error(err));
+    account
+      .toggleFavorite(type, item.id, false)
+      .catch((err) => console.error(err));
   }
 }
 
@@ -138,7 +144,7 @@ watch(
   (value) => {
     if (value === "liked") loadLiked();
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 useHead({ title: "My Lists" });

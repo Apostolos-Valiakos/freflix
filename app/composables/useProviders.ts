@@ -10,7 +10,7 @@ export async function fetchProviders(type: MediaType, limit = 20) {
     watch_region: WATCH_REGION,
   });
   const all: any[] = (json.results || []).filter(
-    (provider: any) => provider.logo_path
+    (provider: any) => provider.logo_path,
   );
   const byId = new Map(all.map((provider) => [provider.provider_id, provider]));
 
@@ -18,8 +18,10 @@ export async function fetchProviders(type: MediaType, limit = 20) {
   const rest = all
     .filter((provider) => !FEATURED.includes(provider.provider_id))
     .sort((a, b) => {
-      const pa = a.display_priorities?.[WATCH_REGION] ?? a.display_priority ?? 999;
-      const pb = b.display_priorities?.[WATCH_REGION] ?? b.display_priority ?? 999;
+      const pa =
+        a.display_priorities?.[WATCH_REGION] ?? a.display_priority ?? 999;
+      const pb =
+        b.display_priorities?.[WATCH_REGION] ?? b.display_priority ?? 999;
       return pa - pb;
     });
 
@@ -33,7 +35,7 @@ export async function findProvider(id: number) {
       watch_region: WATCH_REGION,
     });
     const match = (json.results || []).find(
-      (provider: any) => provider.provider_id === id
+      (provider: any) => provider.provider_id === id,
     );
     if (match) return match;
   }

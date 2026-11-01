@@ -35,6 +35,6 @@ import { Calendar } from "lucide-vue-next";
 const props = defineProps<{ item: any; type?: MediaType; badge?: string }>();
 
 const date = computed(() =>
-  formatDate(props.item.release_date || props.item.first_air_date)
+  formatDate(props.item.release_date || props.item.first_air_date),
 );
 </script>

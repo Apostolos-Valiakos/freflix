@@ -104,7 +104,9 @@
         :key="slide.id"
         :aria-label="`Go to slide ${i + 1}`"
         class="h-2 rounded-full transition-all duration-500"
-        :class="i === index ? 'w-8 bg-white' : 'w-2 bg-white/40 hover:bg-white/70'"
+        :class="
+          i === index ? 'w-8 bg-white' : 'w-2 bg-white/40 hover:bg-white/70'
+        "
         @click="goTo(i)"
       ></button>
     </div>
@@ -132,7 +134,7 @@ const current = computed(() => slides.value[index.value]);
 const inList = computed(
   () =>
     !!current.value &&
-    library.inWatchlist(current.value.id, current.value.isSerie)
+    library.inWatchlist(current.value.id, current.value.isSerie),
 );
 
 // Only load artwork for slides that are showing, were shown, or come next
@@ -183,8 +185,8 @@ async function load() {
   // A different pick from today's trending list on every page load
   slides.value = shuffle(
     (json.results || []).filter(
-      (item: any) => item.backdrop_path && item.media_type !== "person"
-    )
+      (item: any) => item.backdrop_path && item.media_type !== "person",
+    ),
   )
     .slice(0, SLIDE_COUNT)
     .map((item: any) => ({
@@ -213,7 +215,7 @@ async function load() {
 
 watch(
   () => current.value?.backdrop_path,
-  (path) => path && setAmbientFromImage(path)
+  (path) => path && setAmbientFromImage(path),
 );
 
 onMounted(() => {

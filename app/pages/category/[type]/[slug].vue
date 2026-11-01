@@ -9,10 +9,12 @@
 <script setup lang="ts">
 const route = useRoute();
 
-const type = computed<MediaType>(() => (route.params.type === "tv" ? "tv" : "movie"));
+const type = computed<MediaType>(() =>
+  route.params.type === "tv" ? "tv" : "movie",
+);
 const slug = computed(() => String(route.params.slug));
 const genreId = computed(() =>
-  slug.value.startsWith("genre-") ? Number(slug.value.slice(6)) : null
+  slug.value.startsWith("genre-") ? Number(slug.value.slice(6)) : null,
 );
 const genreName = ref("");
 
@@ -20,7 +22,8 @@ const noun = computed(() => (type.value === "movie" ? "Movies" : "Series"));
 const title = computed(() => {
   if (slug.value === "trending") return `Trending ${noun.value}`;
   if (slug.value === "top-rated") return `Top Rated ${noun.value}`;
-  if (genreId.value) return genreName.value ? `${genreName.value} ${noun.value}` : noun.value;
+  if (genreId.value)
+    return genreName.value ? `${genreName.value} ${noun.value}` : noun.value;
   return `Popular ${noun.value}`;
 });
 
@@ -43,7 +46,9 @@ const { items, loading, sentinel, reset } = useInfiniteList(async (page) => {
   const json = await request(page);
   return {
     ...json,
-    results: tagItems(json.results, type.value).filter((item) => item.poster_path),
+    results: tagItems(json.results, type.value).filter(
+      (item) => item.poster_path,
+    ),
   };
 });
 
@@ -57,7 +62,8 @@ onMounted(async () => {
       language: "en-US",
     }).catch(() => null);
     genreName.value =
-      json?.genres?.find((genre: any) => genre.id === genreId.value)?.name || "";
+      json?.genres?.find((genre: any) => genre.id === genreId.value)?.name ||
+      "";
   }
 });
 </script>

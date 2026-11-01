@@ -49,7 +49,10 @@ async function get(url: string) {
 }
 
 // Cached GET for catalogue data. Failed requests are not cached.
-export function tmdbFetch<T = any>(path: string, params: Params = {}): Promise<T> {
+export function tmdbFetch<T = any>(
+  path: string,
+  params: Params = {},
+): Promise<T> {
   const url = buildUrl(path, params);
   const hit = cache.get(url);
   if (hit && Date.now() - hit.at < CACHE_TTL) return hit.promise;
@@ -66,7 +69,7 @@ export function tmdbFetch<T = any>(path: string, params: Params = {}): Promise<T
 export function tmdbRequest<T = any>(
   path: string,
   params: Params = {},
-  options: { method?: string; body?: unknown } = {}
+  options: { method?: string; body?: unknown } = {},
 ): Promise<T> {
   return request(buildUrl(path, params), {
     method: options.method || "GET",

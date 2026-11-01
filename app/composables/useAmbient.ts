@@ -34,7 +34,7 @@ function sampleColor(image: HTMLImageElement) {
 
   const scale = 0.55 / total;
   return `rgb(${Math.round(r * scale)}, ${Math.round(g * scale)}, ${Math.round(
-    b * scale
+    b * scale,
   )})`;
 }
 

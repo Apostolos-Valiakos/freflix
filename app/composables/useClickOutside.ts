@@ -2,7 +2,7 @@ import type { Ref } from "vue";
 
 export function useClickOutside(
   target: Ref<HTMLElement | null>,
-  handler: () => void
+  handler: () => void,
 ) {
   function onPointerDown(event: Event) {
     const el = target.value;

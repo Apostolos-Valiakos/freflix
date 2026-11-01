@@ -76,7 +76,10 @@ async function searchByKeyword(page: number) {
     tmdbFetch("/discover/movie", params),
     tmdbFetch("/discover/tv", params),
   ]);
-  const results = [...tagItems(movies.results, "movie"), ...tagItems(tv.results, "tv")]
+  const results = [
+    ...tagItems(movies.results, "movie"),
+    ...tagItems(tv.results, "tv"),
+  ]
     .filter((item) => item.poster_path)
     .sort((a, b) => b.popularity - a.popularity);
   return {
@@ -100,7 +103,7 @@ const { items, loading, sentinel, reset } = useInfiniteList(async (page) => {
   return {
     ...json,
     results: (json.results || []).filter((item: any) =>
-      item.media_type === "person" ? item.profile_path : item.poster_path
+      item.media_type === "person" ? item.profile_path : item.poster_path,
     ),
   };
 }, 50);
@@ -109,7 +112,10 @@ async function loadKeywords() {
   keywords.value = [];
   if (!query.value) return;
   try {
-    const json = await tmdbFetch("/search/keyword", { query: query.value, page: 1 });
+    const json = await tmdbFetch("/search/keyword", {
+      query: query.value,
+      page: 1,
+    });
     keywords.value = (json.results || []).slice(0, 12);
   } catch (err) {
     console.error(err);

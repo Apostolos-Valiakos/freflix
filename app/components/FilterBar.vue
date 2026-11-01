@@ -99,7 +99,7 @@ const hasFilters = computed(
     props.modelValue.year != null ||
     props.modelValue.provider != null ||
     props.modelValue.country != null ||
-    props.modelValue.sort !== "popular"
+    props.modelValue.sort !== "popular",
 );
 
 function update(key: keyof BrowseFilters, value: any) {

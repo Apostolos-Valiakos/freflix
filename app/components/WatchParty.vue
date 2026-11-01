@@ -11,16 +11,30 @@
         @mousedown="startDrag"
         @touchstart="startDrag"
       >
-        <span class="text-sm font-bold">Watch Party ({{ participantCount }})</span>
+        <span class="text-sm font-bold"
+          >Watch Party ({{ participantCount }})</span
+        >
         <div class="flex gap-0.5">
-          <button class="party-icon" aria-label="Copy invite link" @click.stop="copyInviteLink">
+          <button
+            class="party-icon"
+            aria-label="Copy invite link"
+            @click.stop="copyInviteLink"
+          >
             <Copy class="h-4 w-4" />
           </button>
-          <button class="party-icon" aria-label="Minimize" @click.stop="isMinimized = !isMinimized">
+          <button
+            class="party-icon"
+            aria-label="Minimize"
+            @click.stop="isMinimized = !isMinimized"
+          >
             <Maximize2 v-if="isMinimized" class="h-4 w-4" />
             <Minus v-else class="h-4 w-4" />
           </button>
-          <button class="party-icon" aria-label="Leave party" @click.stop="leaveParty">
+          <button
+            class="party-icon"
+            aria-label="Leave party"
+            @click.stop="leaveParty"
+          >
             <X class="h-4 w-4" />
           </button>
         </div>
@@ -42,15 +56,27 @@
           />
         </div>
         <div class="flex justify-center gap-3 pt-2">
-          <button class="party-control" aria-label="Toggle microphone" @click="toggleMic">
+          <button
+            class="party-control"
+            aria-label="Toggle microphone"
+            @click="toggleMic"
+          >
             <Mic v-if="micEnabled" class="h-5 w-5" />
             <MicOff v-else class="h-5 w-5" />
           </button>
-          <button class="party-control" aria-label="Toggle camera" @click="toggleCamera">
+          <button
+            class="party-control"
+            aria-label="Toggle camera"
+            @click="toggleCamera"
+          >
             <Video v-if="cameraEnabled" class="h-5 w-5" />
             <VideoOff v-else class="h-5 w-5" />
           </button>
-          <button class="party-control text-accent-hot" aria-label="Hang up" @click="leaveParty">
+          <button
+            class="party-control text-accent-hot"
+            aria-label="Hang up"
+            @click="leaveParty"
+          >
             <PhoneOff class="h-5 w-5" />
           </button>
         </div>
@@ -133,7 +159,7 @@ let dragOffset = { x: 0, y: 0 };
 let isDragging = false;
 
 const participantCount = computed(
-  () => Object.keys(remoteStreams.value).length + 1
+  () => Object.keys(remoteStreams.value).length + 1,
 );
 const panelStyle = computed(() => {
   if (position.value.top === null) return {};
@@ -227,7 +253,10 @@ function registerCall(peerId: string, call: any) {
   activeCalls = { ...activeCalls, [peerId]: call };
   call.on("stream", (remoteStream: MediaStream) => {
     statusMessage.value = "";
-    remoteStreams.value = { ...remoteStreams.value, [peerId]: markRaw(remoteStream) };
+    remoteStreams.value = {
+      ...remoteStreams.value,
+      [peerId]: markRaw(remoteStream),
+    };
   });
   call.on("close", () => removePeer(peerId));
   call.on("error", (err: any) => console.error(err));
@@ -244,7 +273,7 @@ async function setupMedia() {
     throw new Error(
       "Camera/mic access requires a secure connection (https:// or localhost). " +
         "If you're testing over a plain http:// LAN address, enable " +
-        "chrome://flags/#unsafely-treat-insecure-origin-as-secure for this exact origin and relaunch the browser."
+        "chrome://flags/#unsafely-treat-insecure-origin-as-secure for this exact origin and relaunch the browser.",
     );
   }
   localStream.value = await navigator.mediaDevices.getUserMedia({
