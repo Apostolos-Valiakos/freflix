@@ -7,7 +7,9 @@
         <picture v-if="media.backdrop_path || media.poster_path">
           <source
             media="(max-width: 767px)"
-            :srcset="img(mobileArt || media.backdrop_path || media.poster_path, 'w780')"
+            :srcset="
+              img(mobileArt || media.backdrop_path || media.poster_path, 'w780')
+            "
           />
           <img
             :src="img(media.backdrop_path || media.poster_path, 'original')"
@@ -43,7 +45,10 @@
             v-if="media.genres?.length"
             class="mt-4 flex flex-wrap items-center justify-center gap-x-3 text-lg font-medium text-white/90 lg:justify-start"
           >
-            <template v-for="(genre, i) in media.genres.slice(0, 3)" :key="genre.id">
+            <template
+              v-for="(genre, i) in media.genres.slice(0, 3)"
+              :key="genre.id"
+            >
               <span v-if="i" class="text-white/40">•</span>
               <NuxtLink
                 :to="`/category/${type}/genre-${genre.id}`"
@@ -63,7 +68,9 @@
             </button>
             <button
               class="action-btn"
-              :aria-label="inList ? 'Remove from watchlist' : 'Add to watchlist'"
+              :aria-label="
+                inList ? 'Remove from watchlist' : 'Add to watchlist'
+              "
               :title="inList ? 'In Watchlist' : 'Add to Watchlist'"
               @click="library.toggleWatchlist(media, type)"
             >
@@ -189,7 +196,7 @@
           v-for="episode in orderedEpisodes"
           :key="episode.id"
           class="group/ep w-[280px] flex-none text-left lg:w-[318px]"
-          @click="scrollToPlayer"
+          @click="playEpisode(episode)"
         >
           <div
             class="relative aspect-video overflow-hidden rounded-xl bg-white/5 shadow-xl shadow-black/40"
@@ -201,7 +208,9 @@
               loading="lazy"
               class="h-full w-full object-cover transition-transform duration-500 ease-hover group-hover/ep:scale-105"
             />
-            <span class="ep-badge left-2 top-2">E{{ episode.episode_number }}</span>
+            <span class="ep-badge left-2 top-2"
+              >E{{ episode.episode_number }}</span
+            >
             <span v-if="episode.runtime" class="ep-badge bottom-2 right-2">
               {{ episode.runtime }}m
             </span>
@@ -232,7 +241,14 @@
     <CastRow v-if="cast.length" :cast="cast" />
     <TrailerRow v-if="trailers.length" :videos="trailers" />
 
-    <PlayerSection :type="type" :imdb-id="imdbId" :trailer-key="trailers[0]?.key" />
+    <PlayerSection
+      :type="type"
+      :imdb-id="imdbId"
+      :tmdb-id="media.id"
+      :trailer-key="trailers[0]?.key"
+      :season="playing.season"
+      :episode="playing.episode"
+    />
 
     <MediaRow
       v-if="related.length"
@@ -275,6 +291,8 @@ const expanded = ref(false);
 const isFavorite = ref(false);
 
 const seasonNumber = ref<number | null>(null);
+// The episode the "No subs" servers play
+const playing = ref({ season: 1, episode: 1 });
 const episodes = ref<any[]>([]);
 const episodesLoading = ref(false);
 const newestFirst = ref(false);
@@ -288,7 +306,7 @@ const logo = computed(() => pickLogo(media.value?.images));
 const mobileArt = computed(() => pickTextlessPoster(media.value?.images));
 
 const imdbId = computed(
-  () => media.value?.imdb_id || media.value?.external_ids?.imdb_id || null
+  () => media.value?.imdb_id || media.value?.external_ids?.imdb_id || null,
 );
 
 const years = computed(() => {
@@ -301,24 +319,29 @@ const years = computed(() => {
 });
 
 const runtime = computed(() =>
-  isMovie.value ? formatRuntime(media.value.runtime) : ""
+  isMovie.value ? formatRuntime(media.value.runtime) : "",
 );
 
 const certification = computed(() => {
   const m = media.value;
   if (isMovie.value) {
-    const us = m.release_dates?.results?.find((r: any) => r.iso_3166_1 === "US");
-    return us?.release_dates?.find((r: any) => r.certification)?.certification || "";
+    const us = m.release_dates?.results?.find(
+      (r: any) => r.iso_3166_1 === "US",
+    );
+    return (
+      us?.release_dates?.find((r: any) => r.certification)?.certification || ""
+    );
   }
   return (
-    m.content_ratings?.results?.find((r: any) => r.iso_3166_1 === "US")?.rating || ""
+    m.content_ratings?.results?.find((r: any) => r.iso_3166_1 === "US")
+      ?.rating || ""
   );
 });
 
 const credit = computed(() => {
   if (isMovie.value) {
     const director = media.value.credits?.crew?.find(
-      (person: any) => person.job === "Director"
+      (person: any) => person.job === "Director",
     );
     return director ? { label: "Director", name: director.name } : null;
   }
@@ -350,7 +373,9 @@ const facts = computed(() => {
 });
 
 const companies = computed(() => {
-  const list = isMovie.value ? media.value.production_companies : media.value.networks;
+  const list = isMovie.value
+    ? media.value.production_companies
+    : media.value.networks;
   return (list || []).filter((company: any) => company.logo_path).slice(0, 2);
 });
 
@@ -358,7 +383,7 @@ const cast = computed(() => media.value?.credits?.cast || []);
 
 const trailers = computed(() => {
   const videos = (media.value?.videos?.results || []).filter(
-    (video: any) => video.site === "YouTube"
+    (video: any) => video.site === "YouTube",
   );
   const main = videos.filter((video: any) => video.type === "Trailer");
   const teasers = videos.filter((video: any) => video.type === "Teaser");
@@ -367,7 +392,7 @@ const trailers = computed(() => {
 
 const seasons = computed(() => {
   const all = (media.value?.seasons || []).filter(
-    (season: any) => season.episode_count > 0
+    (season: any) => season.episode_count > 0,
   );
   const regular = all.filter((season: any) => season.season_number > 0);
   return regular.length ? regular : all;
@@ -377,12 +402,20 @@ const seasonOptions = computed(() =>
   seasons.value.map((season: any) => ({
     value: season.season_number,
     label: season.name || `Season ${season.season_number}`,
-  }))
+  })),
 );
 
 const orderedEpisodes = computed(() =>
-  newestFirst.value ? [...episodes.value].reverse() : episodes.value
+  newestFirst.value ? [...episodes.value].reverse() : episodes.value,
 );
+
+function playEpisode(episode: any) {
+  playing.value = {
+    season: episode.season_number,
+    episode: episode.episode_number,
+  };
+  scrollToPlayer();
+}
 
 function scrollToPlayer() {
   document
@@ -406,9 +439,12 @@ async function loadEpisodes() {
   episodesLoading.value = true;
   episodes.value = [];
   try {
-    const json = await tmdbFetch(`/tv/${props.id}/season/${seasonNumber.value}`, {
-      language: "en-US",
-    });
+    const json = await tmdbFetch(
+      `/tv/${props.id}/season/${seasonNumber.value}`,
+      {
+        language: "en-US",
+      },
+    );
     episodes.value = json.episodes || [];
   } catch (err) {
     console.error(err);
@@ -476,6 +512,7 @@ async function load() {
 
   if (!isMovie.value) {
     seasonNumber.value = seasons.value[0]?.season_number ?? null;
+    playing.value = { season: seasonNumber.value ?? 1, episode: 1 };
   }
 
   account

@@ -13,6 +13,12 @@
             :options="sourceOptions"
             @update:model-value="sourceIndex = Number($event)"
           />
+          <span
+            v-if="tab === 'nosubs' && type === 'tv'"
+            class="text-sm font-semibold text-white/70"
+          >
+            S{{ season }} E{{ episode }}
+          </span>
           <button
             class="glass-soft grid h-11 w-11 place-items-center rounded-full text-white/80 transition hover:text-white"
             :aria-label="isFullscreen ? 'Exit fullscreen' : 'Fullscreen'"
@@ -22,6 +28,19 @@
             <Maximize v-else class="h-5 w-5" />
           </button>
         </div>
+      </div>
+
+      <div
+        v-if="tab === 'nosubs'"
+        class="flex items-center gap-3 px-3 pb-3"
+      >
+        <span class="flex-none text-sm font-medium text-white/60">Server</span>
+        <SegmentedControl
+          class="no-scrollbar min-w-0 max-w-full overflow-x-auto"
+          :model-value="String(serverIndex)"
+          :options="serverOptions"
+          @update:model-value="serverIndex = Number($event)"
+        />
       </div>
 
       <div
@@ -38,17 +57,25 @@
             scrolling="no"
             class="player-embed"
           ></iframe>
-          <p v-else class="player-message">No sources available for this title.</p>
+          <p v-else class="player-message">
+            No sources available for this title.
+          </p>
         </template>
 
-        <div v-else-if="tab === 'nosubs'" class="player-message">
-          <button
-            class="flex h-12 items-center gap-2 rounded-full bg-accent px-6 font-semibold text-white transition hover:bg-accent-hot"
-            @click="openExternal"
-          >
-            <ExternalLink class="h-5 w-5" /> Watch in external player
-          </button>
-        </div>
+        <template v-else-if="tab === 'nosubs'">
+          <iframe
+            v-if="serverSrc"
+            :key="serverSrc"
+            :src="serverSrc"
+            :sandbox="SERVERS[serverIndex]?.sandbox"
+            allowfullscreen
+            scrolling="no"
+            class="player-embed"
+          ></iframe>
+          <p v-else class="player-message">
+            No servers available for this title.
+          </p>
+        </template>
 
         <template v-else>
           <iframe
@@ -65,13 +92,51 @@
 </template>
 
 <script setup lang="ts">
-import { ExternalLink, Maximize, Minimize } from "lucide-vue-next";
+import { Maximize, Minimize } from "lucide-vue-next";
 
-const props = defineProps<{
-  type: MediaType;
-  imdbId?: string | null;
-  trailerKey?: string | null;
-}>();
+const props = withDefaults(
+  defineProps<{
+    type: MediaType;
+    imdbId?: string | null;
+    tmdbId?: number | null;
+    trailerKey?: string | null;
+    season?: number;
+    episode?: number;
+  }>(),
+  { imdbId: null, tmdbId: null, trailerKey: null, season: 1, episode: 1 },
+);
+
+// The "No subs" servers, in the order they are listed. `idType` says which id the server's URLs take.
+const SERVERS: {
+  name: string;
+  idType: "imdb" | "tmdb";
+  // Pop-ups are blocked by this; set it only on servers that still play inside a sandbox
+  sandbox?: string;
+  movie: (id: string | number) => string;
+  tv: (id: string | number, season: number, episode: number) => string;
+}[] = [
+  {
+    name: "moviesapi",
+    idType: "tmdb",
+    sandbox: "allow-scripts allow-same-origin allow-forms allow-presentation",
+    movie: (id) => `https://moviesapi.to/movie/${id}`,
+    tv: (id, s, e) => `https://moviesapi.to/tv/${id}/${s}/${e}`,
+  },
+  {
+    name: "vidsrc",
+    idType: "tmdb",
+    movie: (id) =>
+      `https://embed.vidsrc.si/embed/movie/${id}?autoplay=1&ds_lang=el`,
+    tv: (id, s, e) =>
+      `https://embed.vidsrc.si/embed/tv/${id}/${s}/${e}?autoplay=1&ds_lang=el`,
+  },
+  {
+    name: "multiembed",
+    idType: "imdb",
+    movie: (id) => `https://multiembed.mov/?video_id=${id}`,
+    tv: (id, s, e) => `https://multiembed.mov/?video_id=${id}&s=${s}&e=${e}`,
+  },
+];
 
 // `chrome` is the height of the embed's own toolbar above its 16:9 video
 type Source = { src: string; sandbox?: string; chrome?: number };
@@ -80,21 +145,29 @@ const COVERAPI_CHROME = 35;
 
 const tab = ref("greek");
 const sourceIndex = ref(0);
+const serverIndex = ref(0);
 const wrapper = ref<HTMLElement | null>(null);
 const isFullscreen = ref(false);
 
-const tabs = computed(() =>
-  props.type === "movie"
-    ? [
-        { value: "greek", label: "Greek subs" },
-        { value: "nosubs", label: "No subs" },
-        { value: "trailer", label: "Trailer" },
-      ]
-    : [
-        { value: "greek", label: "Greek subs" },
-        { value: "trailer", label: "Trailer" },
-      ]
-);
+const tabs = [
+  { value: "greek", label: "Greek subs" },
+  { value: "nosubs", label: "No subs" },
+  { value: "trailer", label: "Trailer" },
+];
+
+const serverOptions = SERVERS.map((server, i) => ({
+  value: String(i),
+  label: server.name,
+}));
+
+const serverSrc = computed(() => {
+  const server = SERVERS[serverIndex.value];
+  const id = server?.idType === "tmdb" ? props.tmdbId : props.imdbId;
+  if (!server || !id) return "";
+  return props.type === "movie"
+    ? server.movie(id)
+    : server.tv(id, props.season, props.episode);
+});
 
 const sources = computed<Source[]>(() => {
   const id = props.imdbId;
@@ -117,19 +190,12 @@ const sources = computed<Source[]>(() => {
 });
 
 const sourceOptions = computed(() =>
-  sources.value.map((_, i) => ({ value: String(i), label: `Source ${i + 1}` }))
+  sources.value.map((_, i) => ({ value: String(i), label: `Source ${i + 1}` })),
 );
 const activeSource = computed(() => sources.value[sourceIndex.value]);
 const frameChrome = computed(() =>
-  tab.value === "greek" ? activeSource.value?.chrome || 0 : 0
+  tab.value === "greek" ? activeSource.value?.chrome || 0 : 0,
 );
-
-function openExternal() {
-  window.open(
-    `https://multiembed.mov/directstream.php?video_id=${props.imdbId}`,
-    "_blank"
-  );
-}
 
 function toggleFullscreen() {
   if (document.fullscreenElement) {
@@ -148,14 +214,15 @@ watch(
   () => {
     tab.value = "greek";
     sourceIndex.value = 0;
-  }
+    serverIndex.value = 0;
+  },
 );
 
 onMounted(() =>
-  document.addEventListener("fullscreenchange", onFullscreenChange)
+  document.addEventListener("fullscreenchange", onFullscreenChange),
 );
 onBeforeUnmount(() =>
-  document.removeEventListener("fullscreenchange", onFullscreenChange)
+  document.removeEventListener("fullscreenchange", onFullscreenChange),
 );
 </script>
 
