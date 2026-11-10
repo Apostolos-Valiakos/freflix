@@ -120,14 +120,6 @@ const SERVERS: {
     tv: (id, s, e) => `https://moviesapi.to/tv/${id}/${s}/${e}`,
   },
   {
-    name: "vidsrc",
-    idType: "tmdb",
-    movie: (id) =>
-      `https://embed.vidsrc.si/embed/movie/${id}?autoplay=1&ds_lang=el`,
-    tv: (id, s, e) =>
-      `https://embed.vidsrc.si/embed/tv/${id}/${s}/${e}?autoplay=1&ds_lang=el`,
-  },
-  {
     name: "multiembed",
     idType: "imdb",
     movie: (id) => `https://multiembed.mov/?video_id=${id}`,
@@ -172,7 +164,14 @@ const sources = computed<Source[]>(() => {
   if (props.type === "movie") {
     return [
       { src: `https://coverapi.store/embed/${id}`, chrome: COVERAPI_CHROME },
-      { src: `https://www.playimdb.com/title/${id}&ds_lang=el` },
+      // TMDB id; ds_lang=el opens it with Greek subtitles selected
+      ...(props.tmdbId
+        ? [
+            {
+              src: `https://embed.vidsrc.si/embed/movie/${props.tmdbId}?autoplay=1&ds_lang=el`,
+            },
+          ]
+        : []),
     ];
   }
   return [
