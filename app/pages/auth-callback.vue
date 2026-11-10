@@ -2,7 +2,7 @@
   <div class="flex min-h-screen flex-col items-center justify-center gap-4">
     <template v-if="status === 'pending'">
       <LoaderCircle class="h-12 w-12 animate-spin text-accent" />
-      <p>Signing you in...</p>
+      <p>Signing you in and syncing your watchlist…</p>
     </template>
     <template v-else>
       <p>{{ errorMessage }}</p>

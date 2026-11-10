@@ -68,9 +68,10 @@ async function handleAuthCallback(query: Record<string, any>) {
     state.username = account.username || "";
     state.isLoggedIn = true;
 
-    migrateLocalWatchlistToTmdb()
-      .then(() => syncWatchlist())
-      .catch((err) => console.error("Watchlist migration failed:", err));
+    // Upload this device's watchlist and pull the account's before leaving the login page
+    await syncWatchlist().catch((err) =>
+      console.error("Watchlist sync failed:", err),
+    );
 
     return { success: true };
   } catch (err) {
@@ -192,23 +193,6 @@ async function getPersonalizedRecommendations() {
     }
   }
   return merged.slice(0, 18);
-}
-
-async function migrateLocalWatchlistToTmdb() {
-  const localWatchlist = JSON.parse(localStorage.getItem("watchlist") || "[]");
-  if (!localWatchlist.length) return;
-
-  const remote = await fetchAccountWatchlist();
-  const existing = new Set(remote.map((item) => `${item.isSerie}:${item.id}`));
-
-  for (const item of localWatchlist) {
-    const mediaType = mediaTypeOf(item);
-    if (!existing.has(`${mediaType}:${item.id}`)) {
-      await setWatchlist(mediaType, item.id, true).catch((err) =>
-        console.error(err),
-      );
-    }
-  }
 }
 
 export function useTmdbAccount() {
